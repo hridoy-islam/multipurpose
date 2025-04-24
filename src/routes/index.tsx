@@ -1,0 +1,74 @@
+import ProtectedRoute from '@/components/shared/ProtectedRoute';
+import ForgotPassword from '@/pages/auth/forget-password';
+import SignUpPage from '@/pages/auth/sign-up';
+import { Suspense, lazy } from 'react';
+import { Navigate, Outlet, useRoutes } from 'react-router-dom';
+import Otp from '@/pages/auth/otp';
+import AdminLayout from '@/components/layout/admin-layout';
+import { DashboardPage } from '@/pages/Dashboard';
+const SignInPage = lazy(() => import('@/pages/auth/signin'));
+
+// ----------------------------------------------------------------------
+
+export default function AppRouter() {
+  const adminRoutes = [
+    {
+      path: '/admin',
+      element: (
+        <AdminLayout>
+          <ProtectedRoute>
+            <Suspense>
+              <Outlet />
+            </Suspense>
+          </ProtectedRoute>
+        </AdminLayout>
+      ),
+      children: [
+        {
+          element: <DashboardPage />,
+          index: true
+        }
+      ]
+    }
+  ];
+
+  const publicRoutes = [
+    {
+      path: '/',
+      element: <SignInPage />,
+      index: true
+    },
+    {
+      path: '/signup',
+      element: <SignUpPage />,
+      index: true
+    },
+    {
+      path: '/forgot-password',
+      element: <ForgotPassword />,
+      index: true
+    },
+    {
+      path: '/otp',
+      element: <Otp />,
+      index: true
+    },
+    // {
+    //   path: '/new-password',
+    //   element: <NewPassword />,
+    //   index: true
+    // },
+    // {
+    //   path: '/404',
+    //   element: <NotFound />
+    // },
+    {
+      path: '*',
+      element: <Navigate to="/404" replace />
+    }
+  ];
+
+  const routes = useRoutes([...publicRoutes, ...adminRoutes]);
+
+  return routes;
+}

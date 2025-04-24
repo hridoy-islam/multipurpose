@@ -93,14 +93,14 @@ export default function Otp() {
 
   return (
     <>
-      <div className="container bg-cyan-100 py-4 h-svh flex-col items-center justify-center bg-primary lg:max-w-none lg:px-0">
-        <div className=" flex lg:w-9/12 gap-6 items-center mx-auto shadow-2xl bg-cyan-50 justify-center space-y-2 sm:w-[480px] lg:p-7">
+      <div className="container bg-purple-50 py-4 h-svh flex-col items-center justify-center bg-primary lg:max-w-none lg:px-0">
+        <div className=" flex lg:w-9/12 gap-6 items-center mx-auto shadow-2xl justify-center space-y-2 sm:w-[480px] lg:p-7">
           <div className="mb-4 flex items-center justify-center">
             <img src={OTP} alt="OTP" className="w-full" />            
           </div>
           <Card className="p-6">
             <div className="mb-2 flex flex-col space-y-2 text-left">
-              <h1 className="text-md font-semibold tracking-tight">
+              <h1 className="text-md font-semibold tracking-tight text-supperagent">
                 Verification Code
               </h1>
               <p className="text-sm text-muted">
@@ -132,7 +132,7 @@ export default function Otp() {
                     <Button
                       disabled={otp.some((digit) => digit === '')}
                       onClick={handleOtpSubmit}
-                      className="ml-auto mt-5 w-full bg-background text-white hover:bg-background"
+                      className="ml-auto mt-5 w-full bg-supperagent text-white hover:bg-background"
                       variant="outline"
                     >
                       Verify OTP
@@ -146,7 +146,7 @@ export default function Otp() {
               Don't have an account?{' '}
               <Link
                 to="/sign-up"
-                className="text-muted underline underline-offset-4"
+                className=" underline underline-offset-4 text-supperagent"
               >
                 Sign up
               </Link>

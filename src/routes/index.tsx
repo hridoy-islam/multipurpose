@@ -9,6 +9,7 @@ import Otp from '@/pages/auth/otp';
 import AdminLayout from '@/components/layout/admin-layout';
 import { DashboardPage } from '@/pages/Dashboard';
 import ErrorPage from '@/pages/ErrorPage/';
+import NewPassword from '@/pages/auth/NewPassword';
 
 const SignInPage = lazy(() => import('@/pages/auth/signin'));
 
@@ -58,11 +59,11 @@ export default function AppRouter() {
       index: true
     },
     
-    // {
-    //   path: '/new-password',
-    //   element: <NewPassword />,
-    //   index: true
-    // },
+    {
+      path: '/new-password',
+      element: <NewPassword />,
+      index: true
+    },
     {
       path: '/404',
       element: <ErrorPage />

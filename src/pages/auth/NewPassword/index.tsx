@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
 
-import forgotpass from '../../../assets/imges/home/forgotPassword.png';
+import resetpass from '../../../assets/imges/home/resetpassword.png';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Enter a valid email address' })
@@ -27,7 +27,7 @@ const formSchema = z.object({
 
 type UserFormValue = z.infer<typeof formSchema>;
 
-export default function ForgotPassword() {
+export default function NewPassword() {
   const { loading, error } = useSelector((state: any) => state.auth);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -50,17 +50,17 @@ export default function ForgotPassword() {
 
   return (
     <>
-      <div className="container pt-20  h-svh items-center justify-center bg-primary bg-purple-50 lg:max-w-none lg:px-0">
+      <div className="container py-10  h-svh items-center justify-center bg-primary bg-purple-50 lg:max-w-none lg:px-0">
         <div className='w-8/12 mx-auto shadow-2xl flex p-5'>
           <div>
             <img
-              src={forgotpass}
+              src={resetpass}
               alt="Forgot Password Illustration"
               width={350}
               height={200}
             />
           </div>
-          <div className="mx-auto flex w-full flex-col justify-center space-y-2 sm:w-[480px] lg:p-8">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-2 sm:w-[480px] lg:p-6">
             <div className="mb-4 flex items-center justify-center">
               {/* <img src="/logo.png" alt="Logo" className="w-1/2" /> */}
               <h3 className="text-4xl font-bold text-supperagent">MultiPurpose</h3>
@@ -68,7 +68,7 @@ export default function ForgotPassword() {
             <Card className="p-6">
               <div className="mb-2 flex flex-col space-y-2 text-left">
                 <h1 className="text-md font-semibold tracking-tight">
-                  Forgot Password ?
+                  New Password 
                 </h1>
                 <p className="text-sm text-muted">
                   Enter your registered email and <br /> we will send you a link
@@ -77,18 +77,36 @@ export default function ForgotPassword() {
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="w-full space-y-2"
+                    className="w-full space-y-3"
                   >
                     <FormField
                       control={form.control}
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel>Confirm Password</FormLabel>
                           <FormControl>
                             <Input
-                              type="email"
-                              placeholder="Enter your email..."
+                              type="password"
+                              placeholder="Confirm Password..."
+                              disabled={loading}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>New Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="Enter New Password..."
                               disabled={loading}
                               {...field}
                             />
@@ -100,7 +118,7 @@ export default function ForgotPassword() {
 
                     <Button
                       disabled={loading}
-                      className="ml-auto w-full bg-supperagent text-white hover:bg-background"
+                      className="ml-auto w-full bg-supperagent text-white hover:bg-supperagent hover:bg-opacity-80"
                       type="submit"
                     >
                       Reset Password

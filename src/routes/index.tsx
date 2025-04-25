@@ -19,6 +19,9 @@ import Holiday from '@/pages/Hr/Holidays';
 import MyStuff from '@/pages/Hr/MyStuff';
 import Employee from '@/pages/Hr/Employee';
 import Attendance from '@/pages/Hr/Attendance';
+import PayRoll from '@/pages/Hr/Payroll';
+import Recruitment from '@/pages/Hr/Recruitment';
+import Settings from '@/pages/Hr/Settings';
 
 const SignInPage = lazy(() => import('@/pages/auth/signin'));
 
@@ -85,6 +88,21 @@ export default function AppRouter() {
         {
           path: 'hr/attendance',
           element: <Attendance />,
+        
+        },
+        {
+          path: 'hr/payroll',
+          element: <PayRoll />,
+        
+        },
+        {
+          path: 'hr/recruitment',
+          element: <Recruitment />,
+        
+        },
+        {
+          path: 'hr/settings',
+          element: <Settings />,
         
         },
       ]

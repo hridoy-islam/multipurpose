@@ -12,9 +12,9 @@ export default function AdminLayout({
     <div className="min-h-screen bg-gray-50">
       <AutoLogout inactivityLimit={30 * 60 * 1000} />
       <TopNav />
-      <SideNav />
+      {/* <SideNav /> */}
 
-      <main className="px-4 mx-auto py-6">
+      <main>
       {children}
       </main>
       <Toaster />

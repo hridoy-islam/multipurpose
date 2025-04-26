@@ -18,7 +18,27 @@ import {
   DraftingCompass,
   ClipboardPaste,
   PiggyBank,
-  Vault
+  Vault,
+  UserRoundCheck,
+  LayoutDashboard,
+  Box,
+  PencilRuler,
+  FileCheck2,
+  Settings,
+  LayoutPanelTop,
+  ArrowBigUp,
+  Award,
+  BookText,
+  FileCheck2Icon,
+  Calendar,
+  CircleDollarSign,
+  CircleGauge,
+  DoorOpen,
+  CopyPlus,
+  ListChecks,
+  ReceiptText,
+  Mails,
+  CircleCheckBig
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
@@ -35,42 +55,86 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { logout } from '@/redux/features/authSlice';
 const navItems = [
-  { icon: HomeIcon, label: 'Dashboard', href: '/admin' },
+  { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/hr' },
   {
-    icon: ClipboardListIcon,
-    label: 'Management',
-    href: '/management',
+    icon: UserRoundCheck,
+    label: 'Profile',
+    href: 'profile',
+    // subItems: [
+    //   { icon: Users, label: 'Agents', href: 'agents' },
+    //   { icon: Link2, label: 'Course Relation', href: 'course-fee' }
+    // ]
+  },
+  {
+    icon: Box,
+    label: 'Holidays',
+    href: 'holiday',
+    
+  },
+  {
+    icon: PencilRuler,
+    label: 'MyStuff',
+    href: 'my-stuff',
+    
+  },
+  { icon: UsersIcon, label: 'Employee', href: 'employee' ,
     subItems: [
-      { icon: Users, label: 'Agents', href: 'agents' },
-      { icon: Link2, label: 'Course Relation', href: 'course-fee' }
+      { icon: Users, label: 'Employee List', href: 'employee' },
+      { icon: LayoutPanelTop, label: 'Department', href: 'department' },
+      { icon: ArrowBigUp, label: 'Shift', href: 'shift' },
+      { icon: Award, label: 'Designation', href: 'designation' },
+      { icon: BookText, label: 'Training', href: 'training' }
     ]
   },
-  { icon: UsersIcon, label: 'Students', href: 'students' },
-  { icon: UserIcon, label: 'Enrolled', href: '#' },
-  { icon: FileTextIcon, label: 'Invoices', href: 'invoice' },
-  { icon: ClipboardPaste, label: 'Remit', href: 'remit' },
-  {
-    icon: Settings2Icon,
-    label: 'Settings',
-    href: '/settings',
+  { icon: FileCheck2, label: 'Attendence', href: 'attendance',
     subItems: [
-      {
-        icon: Settings2,
-        label: 'Perameters',
-        href: '/settings/',
-        subItems: [
-          { icon: Landmark, label: 'Institution', href: 'institution' },
-          { icon: BookOpenCheck, label: 'Courses', href: 'courses' },
-          { icon: RefreshCw, label: 'Terms', href: 'terms' },
-          { icon: CalendarCheck, label: 'Academic Year', href: 'academic-year' },
-          { icon: Vault , label: 'Bank List', href: 'bank-list' }
-        ]
-      },
-      { icon: CircleUser, label: 'Staffs', href: 'staff' },
-      { icon: AtSign, label: 'Emails', href: 'emails' },
-      { icon: DraftingCompass, label: 'Drafts', href: 'drafts' }
+      { icon: FileCheck2, label: 'Attendance List', href: 'attendance' },
+      { icon: CircleCheckBig, label: 'Attendance Approve', href: 'attendance-approve' },
+      { icon: Calendar, label: 'Attendance Report', href: 'attendance-report' },
+      
     ]
-  }
+   },
+  { icon: CircleDollarSign, label: 'Payroll', href: 'payroll' },
+  { icon: CircleGauge, label: 'Leave', href: 'leave-manage' },
+  { icon: FileTextIcon, label: 'Notice', href: 'notice' },
+  { icon: DoorOpen, label: 'Vacancy', href: 'vacancy' },
+  { icon: CopyPlus, label: 'Recruitment', href: 'recruitment',
+    subItems: [
+      { icon: ListChecks, label: 'Candidate List', href: 'candidate-list' },    
+      
+    ]
+   },
+  { icon: Settings, label: 'Settings', href: 'settings',
+    subItems: [
+      { icon: ReceiptText, label: 'Company Details', href: 'company-details' },
+      { icon: Mails, label: 'Email Setup', href: 'email-setup' },
+      
+      
+    ]
+   },
+
+  // {
+  //   icon: Settings2Icon,
+  //   label: 'Settings',
+  //   href: '/settings',
+  //   subItems: [
+  //     {
+  //       icon: Settings2,
+  //       label: 'Perameters',
+  //       href: '/settings/',
+  //       subItems: [
+  //         { icon: Landmark, label: 'Institution', href: 'institution' },
+  //         { icon: BookOpenCheck, label: 'Courses', href: 'courses' },
+  //         { icon: RefreshCw, label: 'Terms', href: 'terms' },
+  //         { icon: CalendarCheck, label: 'Academic Year', href: 'academic-year' },
+  //         { icon: Vault , label: 'Bank List', href: 'bank-list' }
+  //       ]
+  //     },
+  //     { icon: CircleUser, label: 'Staffs', href: 'staff' },
+  //     { icon: AtSign, label: 'Emails', href: 'emails' },
+  //     { icon: DraftingCompass, label: 'Drafts', href: 'drafts' }
+  //   ]
+  // }
 ];
 const NavItem = ({ item, depth = 0 }) => {
   if (!item) return null; // Ensure no invalid items render
@@ -195,7 +259,7 @@ export function SideNav() {
         : navItems;
 
   return (
-    <nav className="flex space-x-6 bg-white px-4 py-4 shadow-sm">
+    <nav className="flex space-x-6 bg-white px-4 py-4 shadow-sm ">
       {filteredNavItems.map((item) => (
         <div key={item.href}>
           {item.subItems ? (

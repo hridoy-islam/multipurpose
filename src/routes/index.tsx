@@ -2,8 +2,7 @@ import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import ForgotPassword from '@/pages/auth/forget-password';
 import SignUpPage from '@/pages/auth/sign-up';
 
-
-import { Suspense, lazy } from 'react';
+import { Children, Suspense, lazy } from 'react';
 import { Navigate, Outlet, useRoutes } from 'react-router-dom';
 import Otp from '@/pages/auth/otp';
 import AdminLayout from '@/components/layout/admin-layout';
@@ -22,6 +21,16 @@ import Attendance from '@/pages/Hr/Attendance';
 import PayRoll from '@/pages/Hr/Payroll';
 import Recruitment from '@/pages/Hr/Recruitment';
 import Settings from '@/pages/Hr/Settings';
+import HrLayout from '@/components/layout/hr-layout';
+import Department from '@/pages/Hr/Department';
+import Shift from '@/pages/Hr/Shift';
+import Designation from '@/pages/Hr/Designation';
+import Training from '@/pages/Hr/Training';
+import AttendanceApprove from '@/pages/Hr/Attendance-Approve';
+import AttendanceReport from '@/pages/Hr/Attendance-Report';
+import CandidateList from '@/pages/Hr/Candidate-List';
+import CompanyDetails from '@/pages/Hr/Company-Details';
+import EmailSetup from '@/pages/Hr/Email-Setup';
 
 const SignInPage = lazy(() => import('@/pages/auth/signin'));
 
@@ -47,64 +56,94 @@ export default function AppRouter() {
         },
         {
           path: 'hr',
-          element: <HrPage />,
-        
-        },
-        {
-          path: 'hr/notice',
-          element: <NoticeBoard />,
-        
-        },
-        {
-          path: 'hr/leave-manage',
-          element: <LeaveManagement />,
-        
-        },
-        {
-          path: 'hr/vacancy',
-          element: <Vacancy />,
-        
-        },
-        {
-          path: 'hr/profile',
-          element: <Profile />,
-        
-        },
-        {
-          path: 'hr/holiday',
-          element: <Holiday />,
-        
-        },
-        {
-          path: 'hr/my-stuff',
-          element: <MyStuff />,
-        
-        },
-        {
-          path: 'hr/employee',
-          element: <Employee />,
-        
-        },
-        {
-          path: 'hr/attendance',
-          element: <Attendance />,
-        
-        },
-        {
-          path: 'hr/payroll',
-          element: <PayRoll />,
-        
-        },
-        {
-          path: 'hr/recruitment',
-          element: <Recruitment />,
-        
-        },
-        {
-          path: 'hr/settings',
-          element: <Settings />,
-        
-        },
+          element: <HrLayout />,
+          children: [
+            {
+              element: <HrPage />,
+              index: true
+            },          
+            {
+              path: 'profile',
+              element: <Profile />
+            },
+            {
+              path: 'holiday',
+              element: <Holiday />
+            },
+            {
+              path: 'my-stuff',
+              element: <MyStuff />
+            },
+            {
+              path: 'employee',
+              element: <Employee />
+            },
+            {
+              path: 'department',
+              element: <Department/>
+            },
+            {
+              path: 'shift',
+              element: <Shift/>
+            },
+            {
+              path: 'designation',
+              element: <Designation />
+            },
+            {
+              path: 'training',
+              element: <Training />
+            },
+            {
+              path: 'attendance',
+              element: <Attendance />
+            },
+            {
+              path: 'attendance-approve',
+              element: <AttendanceApprove />
+            },
+            {
+              path: 'attendance-report',
+              element: <AttendanceReport />
+            },
+            {
+              path: 'payroll',
+              element: <PayRoll />
+            },
+            {
+              path: 'leave-manage',
+              element: <LeaveManagement />
+            },
+            {
+              path: 'notice',
+              element: <NoticeBoard />
+            },          
+            {
+              path: 'vacancy',
+              element: <Vacancy />
+            },
+            {
+              path: 'recruitment',
+              element: <Recruitment />
+            },
+            {
+              path: 'candidate-list',
+              element: <CandidateList />
+            },
+            {
+              path: 'settings',
+              element: <Settings />
+            },
+            {
+              path: 'company-details',
+              element: <CompanyDetails />
+            },
+            {
+              path: 'email-setup',
+              element: <EmailSetup />
+            }
+          ]
+        }
       ]
     }
   ];
@@ -130,7 +169,7 @@ export default function AppRouter() {
       element: <Otp />,
       index: true
     },
-    
+
     {
       path: '/new-password',
       element: <NewPassword />,

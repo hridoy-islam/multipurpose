@@ -14,9 +14,11 @@ import {
 import axiosInstance from '@/lib/axios';
 import { useToast } from '@/components/ui/use-toast';
 import { BlinkingDots } from '@/components/shared/blinking-dots';
-// import { DataTablePagination } from '../students/view/components/data-table-pagination';
+
 import { Input } from '@/components/ui/input';
 import moment from 'moment';
+import { DynamicPagination } from '@/components/shared/DynamicPagination';
+import { DepartmentDialog } from './Components/departmentDialog';
 
 export default function Department() {
   const [department, setDepartment] = useState<any>([]);
@@ -50,70 +52,70 @@ export default function Department() {
 
  
 
-//   const handleSubmit = async (data) => {
-//     try {
-//       let response;
-//       if (editingInstitution) {
-//         // Update institution
-//         response = await axiosInstance.patch(
-//           `/institutions/${editingInstitution?._id}`,
-//           data
-//         );
-//       } else {
-//         // Create new institution
-//         data.status = '1';
-//         response = await axiosInstance.post(`/institutions`, data);
-//       }
+  const handleSubmit = async (data) => {
+    try {
+      let response;
+      if (editingDepartment) {
+        // Update institution
+        response = await axiosInstance.patch(
+          `/hr/department/${editingDepartment?._id}`,
+          data
+        );
+      } else {
+        // Create new institution
+        
+        response = await axiosInstance.post(`/hr/department`, data);
+      }
 
-//       // Check if the API response indicates success
-//       if (response.data && response.data.success === true) {
-//         toast({
-//           title: response.data.message || 'Record Updated successfully',
-//           className: 'bg-supperagent border-none text-white'
-//         });
-//       } else if (response.data && response.data.success === false) {
-//         toast({
-//           title: response.data.message || 'Operation failed',
-//           className: 'bg-red-500 border-none text-white'
-//         });
-//       } else {
-//         toast({
-//           title: 'Unexpected response. Please try again.',
-//           className: 'bg-red-500 border-none text-white'
-//         });
-//       }
+      // Check if the API response indicates success
+      if (response.data && response.data.success === true) {
+        toast({
+          title: response.data.message || 'Record Updated successfully',
+          className: 'bg-supperagent border-none text-white'
+        });
+      } else if (response.data && response.data.success === false) {
+        toast({
+          title: response.data.message || 'Operation failed',
+          className: 'bg-red-500 border-none text-white'
+        });
+      } else {
+        toast({
+          title: 'Unexpected response. Please try again.',
+          className: 'bg-red-500 border-none text-white'
+        });
+      }
 
-//       // Refresh data
-//       fetchData(currentPage, entriesPerPage);
-//       setEditingInstitution(undefined); // Reset editing state
-//     } catch (error) {
-//       toast({
-//         title: 'An error occurred. Please try again.',
-//         className: 'bg-red-500 border-none text-white'
-//       });
-//     }
-//   };
+      // Refresh data
+      fetchData(currentPage, entriesPerPage);
+      setEditingDepartment(undefined); // Reset editing state
+    } catch (error) {
+      toast({
+        title: 'An error occurred. Please try again.',
+        className: 'bg-red-500 border-none text-white'
+      });
+    }
+  };
 
-//   const handleStatusChange = async (id, status) => {
-//     try {
-//       const updatedStatus = status ? '1' : '0';
-//       await axiosInstance.patch(`/institutions/${id}`, {
-//         status: updatedStatus
-//       });
-//       toast({
-//         title: 'Record updated successfully',
-//         className: 'bg-supperagent border-none text-white'
-//       });
-//       fetchData(currentPage, entriesPerPage);
-//     } catch (error) {
-//       console.error('Error updating status:', error);
-//     }
-//   };
+  const handleStatusChange = async (id, status) => {
+    try {
+      const updatedStatus = status ? 'active' : 'inactive';
+      await axiosInstance.patch(`/hr/department/${id}`, {
+        status: updatedStatus
+      });
+      toast({
+        title: 'Record updated successfully',
+        className: 'bg-supperagent border-none text-white'
+      });
+      fetchData(currentPage, entriesPerPage);
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
 
-//   const handleEdit = (institution) => {
-//     setEditingInstitution(institution);
-//     setDialogOpen(true);
-//   };
+  const handleEdit = (department) => {
+    setEditingDepartment(department);
+    setDialogOpen(true);
+  };
 
   useEffect(() => {
     fetchData(currentPage, entriesPerPage);
@@ -177,14 +179,24 @@ export default function Department() {
                 <TableRow key={department._id}>
                   <TableCell>{department.departmentName}</TableCell>                  
                   <TableCell className="text-center">
-                    {department.status}
+                   
+                    <Switch
+                      checked={department.status == "active"}
+                      onCheckedChange={(checked) =>
+                        handleStatusChange(department._id, checked)
+                      }
+                      className="mx-auto"
+                    />
+
+
+
                   </TableCell>
                   <TableCell className="text-center">
                     <Button
                       variant="ghost"
                       className="border-none bg-supperagent text-white hover:bg-supperagent/90"
                       size="icon"
-                    //   onClick={() => handleEdit(institution)}
+                      onClick={() => handleEdit(department)}
                     >
                       <Pen className="h-4 w-4" />
                     </Button>
@@ -194,23 +206,23 @@ export default function Department() {
             </TableBody>
           </Table>
         )}
-        {/* <DataTablePagination
+        <DynamicPagination
           pageSize={entriesPerPage}
           setPageSize={setEntriesPerPage}
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
-        /> */}
+        />
       </div>
-      {/* <InstitutionDialog
+      <DepartmentDialog
         open={dialogOpen}
         onOpenChange={(open) => {
           setDialogOpen(open);
-          if (!open) setEditingInstitution(undefined);
+          if (!open) setEditingDepartment(undefined);
         }}
         onSubmit={handleSubmit}
-        initialData={editingInstitution}
-      /> */}
+        initialData={editingDepartment}
+      />
     </div>
   );
 }

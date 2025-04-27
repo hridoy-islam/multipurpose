@@ -143,7 +143,7 @@ const NavItem = ({ item, depth = 0 }) => {
       <DropdownMenuSub>
         <DropdownMenuSubTrigger className="flex w-full cursor-pointer items-center justify-between">
           <div className="flex items-center space-x-2">
-            <item.icon className="h-5 w-5" />
+            <item.icon className="h-4 w-4" />
             <span>{item.label}</span>
           </div>
         </DropdownMenuSubTrigger>
@@ -160,9 +160,9 @@ const NavItem = ({ item, depth = 0 }) => {
     <DropdownMenuItem asChild>
       <Link
         to={item.href}
-        className="flex w-full cursor-pointer items-center space-x-2 text-sm font-medium text-white hover:text-supperagent"
+        className="flex w-full cursor-pointer items-center space-x-2 text-xs font-medium text-white hover:text-supperagent"
       >
-        <item.icon className="h-5 w-5" />
+        <item.icon className="h-4 w-4" />
         <span>{item.label}</span>
       </Link>
     </DropdownMenuItem>
@@ -259,14 +259,14 @@ export function SideNav() {
         : navItems;
 
   return (
-    <nav className="flex space-x-6 bg-white px-4 py-4 shadow-sm ">
+    <nav className="flex space-x-3 bg-white px-3  py-4 shadow-sm ">
       {filteredNavItems.map((item) => (
         <div key={item.href}>
           {item.subItems ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="flex cursor-pointer items-center space-x-2 text-sm font-medium text-gray-600 hover:text-supperagent">
-                  <item.icon className="h-5 w-5" />
+                  <item.icon className="h-4 w-4" />
                   <span>{item.label}</span>
                   <ChevronDown className="h-4 w-4" />
                 </div>
@@ -285,7 +285,7 @@ export function SideNav() {
                 item.href === '/students' && 'text-supperagent'
               )}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-4 w-4" />
               <span>{item.label}</span>
             </Link>
           )}

@@ -31,7 +31,7 @@ export default function SignInPage() {
 
       {/* Right Section */}
       <div className="relative hidden w-1/2 bg-supperagent lg:block">
-        <div className="flex h-full flex-col gap-5 p-8">
+        <div className="flex h-full flex-col gap-4 p-8">
           {/* Logo */}
           <div className="flex items-center gap-2 text-white">
             <Layers className="h-6 w-6" />
@@ -40,7 +40,7 @@ export default function SignInPage() {
 
           {/* Main Content */}
           <div className="relative z-10 ml-auto">
-            <div className="mb-5 ">
+            <div className="mb-4 ">
               <img
                 src={signIn}
                 alt="Desk illustration"

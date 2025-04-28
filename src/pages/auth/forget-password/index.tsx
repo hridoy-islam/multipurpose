@@ -100,7 +100,7 @@ export default function ForgotPassword() {
 
                     <Button
                       disabled={loading}
-                      className="ml-auto w-full bg-supperagent text-white hover:bg-background"
+                      className="ml-auto w-full bg-supperagent text-white hover:bg-purple-700"
                       type="submit"
                     >
                       Reset Password

@@ -31,6 +31,10 @@ import AttendanceReport from '@/pages/Hr/Attendance-Report';
 import CandidateList from '@/pages/Hr/Candidate-List';
 import CompanyDetails from '@/pages/Hr/Company-Details';
 import EmailSetup from '@/pages/Hr/Email-Setup';
+import CreateVacancy from '@/pages/Hr/Vacancy/CreateVacancy';
+import EditVacancy from '@/pages/Hr/Vacancy/EditVacancy';
+
+
 
 const SignInPage = lazy(() => import('@/pages/auth/signin'));
 
@@ -61,7 +65,7 @@ export default function AppRouter() {
             {
               element: <HrPage />,
               index: true
-            },          
+            },
             {
               path: 'profile',
               element: <Profile />
@@ -80,11 +84,11 @@ export default function AppRouter() {
             },
             {
               path: 'department',
-              element: <Department/>
+              element: <Department />
             },
             {
               path: 'shift',
-              element: <Shift/>
+              element: <Shift />
             },
             {
               path: 'designation',
@@ -117,11 +121,21 @@ export default function AppRouter() {
             {
               path: 'notice',
               element: <NoticeBoard />
-            },          
+            },
             {
               path: 'vacancy',
-              element: <Vacancy />
-            },
+              element: <Vacancy />,
+              
+            },  
+            {
+              path: 'create-vacancy',
+              element: <CreateVacancy/>
+            },     
+            {
+              path: 'edit-vacancy/:id',
+              element: <EditVacancy/>
+            },     
+
             {
               path: 'recruitment',
               element: <Recruitment />

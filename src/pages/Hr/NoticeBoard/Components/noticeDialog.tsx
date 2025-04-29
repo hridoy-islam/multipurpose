@@ -23,6 +23,7 @@ export function NoticeDialog({ open, onOpenChange, onSubmit, initialData }) {
     setNoticeDate(moment(initialData?.noticeDate).format('MMMM Do YYYY') || '');
     setNoticeBy(initialData?.noticeBy || '');
   }, [initialData]);
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();

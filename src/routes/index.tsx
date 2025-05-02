@@ -33,6 +33,10 @@ import CompanyDetails from '@/pages/Hr/Company-Details';
 import EmailSetup from '@/pages/Hr/Email-Setup';
 import CreateVacancy from '@/pages/Hr/Vacancy/CreateVacancy';
 import EditVacancy from '@/pages/Hr/Vacancy/EditVacancy';
+import AddApplicant from '@/pages/Hr/Vacancy/AddApplicant';
+import ViewApplicant from '@/pages/Hr/Vacancy/ViewApplicants';
+import RecruitApplicantForm from '@/pages/Hr/Recruitment/RecruitApplicantForm';
+import CreateTraining from '@/pages/Hr/Training/CreateTraining';
 
 
 
@@ -99,6 +103,10 @@ export default function AppRouter() {
               element: <Training />
             },
             {
+              path: 'create-training',
+              element: <CreateTraining />
+            },
+            {
               path: 'attendance',
               element: <Attendance />
             },
@@ -130,6 +138,18 @@ export default function AppRouter() {
             {
               path: 'create-vacancy',
               element: <CreateVacancy/>
+            },     
+            {
+              path: 'add-applicant/:id',
+              element: <AddApplicant/>
+            },     
+            {
+              path: 'view-applicant/:id',
+              element: <ViewApplicant/>
+            },     
+            {
+              path: 'recruit-applicant/:id',
+              element: <RecruitApplicantForm/>
             },     
             {
               path: 'edit-vacancy/:id',

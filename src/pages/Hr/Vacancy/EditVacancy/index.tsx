@@ -16,10 +16,9 @@ import {
 } from '@/components/ui/select';
 import { useEffect, useState } from 'react';
 
-
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 type Inputs = {
   title: string;
@@ -38,47 +37,57 @@ export default function EditVacancy() {
     control,
     register,
     handleSubmit,
+    watch,
     formState: { errors }
   } = useForm<Inputs>();
+
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     console.log(data);
 
-    const response = await axiosInstance.post(`/hr/vacancy`, data);
+    const response = await axiosInstance.patch(`/hr/vacancy/${id}`, data);
+    if (response) {
+      navigate(`/admin/hr/vacancy`);
+    }
     console.log(response);
   };
 
   const [editVacancy, setEditVacancy] = useState('');
-
-  const {id} = useParams()
 
   useEffect(() => {
     const fetchVacancy = async () => {
       try {
         const response = await axiosInstance.get(`/hr/vacancy/${id}`);
         console.log(response.data.data);
-        setEditVacancy(response.data.data)
+        setEditVacancy(response.data.data);
       } catch (error) {
         console.error('Error fetching vacancy:', error);
       }
     };
-  
+
     fetchVacancy();
-  }, [id]); 
-  
+  }, [id]);
+
+  console.log(editVacancy)
 
   // watch input value by passing the name of it
 
   const { user } = useSelector((state: any) => state.auth);
-  console.log(user._id)
+  console.log(user._id);
+
+  const rawNegotiable = watch('salaryRange.negotiable');
+  const negotiable = rawNegotiable === 'true';
 
   return (
     /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
     <div className="flex flex-col space-y-2 p-2 md:p-2">
-      <div className="flex flex-row space-x-6 rounded-lg bg-white p-2 shadow-sm">
-        <div className=" mx-auto basis-5/6">
+      <h1 className="text-2xl font-semibold">Edit Vacancy</h1>
+      <div className="flex flex-row space-x-6 rounded-lg bg-white p-4 shadow-sm">
+        <div className=" w-full">
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-2 gap-5 pb-2">
+            <div className="grid grid-cols-3 items-center gap-5 pb-2">
               <div>
                 <Label>Title</Label>
                 <Input
@@ -87,20 +96,6 @@ export default function EditVacancy() {
                   {...register('title', { required: 'Title is required' })}
                 />
                 <ErrorMessage message={errors.title?.message?.toString()} />
-              </div>
-
-              <div>
-                <Label>Description</Label>
-                <Textarea
-                  id="description"
-                  defaultValue={editVacancy.description}
-                  {...register('description', {
-                    required: 'Description is required'
-                  })}
-                ></Textarea>
-                <ErrorMessage
-                  message={errors.description?.message?.toString()}
-                />
               </div>
 
               <div>
@@ -144,20 +139,6 @@ export default function EditVacancy() {
               </div>
 
               <div>
-                <Label>Salary Range</Label>
-                <Input
-                  id="salaryrange"
-                  defaultValue={editVacancy.salaryrange}
-                  {...register('salaryrange', {
-                    required: 'Salary Range is required'
-                  })}
-                />
-                <ErrorMessage
-                  message={errors.salaryrange?.message?.toString()}
-                />
-              </div>
-
-              <div>
                 <Label>Skills</Label>
                 <Input
                   id="skillsRequired"
@@ -185,34 +166,120 @@ export default function EditVacancy() {
                   message={errors.applicationDeadline?.message?.toString()}
                 />
               </div>
-              <div>
-                <Label>Posted By</Label>
-                <Input
-                  id="postedBy"
-                  value={user._id}
-                  {...register('postedBy', {
-                    required: 'Posted By is required'
-                  })}
-                />
-                <ErrorMessage message={errors.postedBy?.message?.toString()} />
-              </div>
 
-              <div>
+              {/* <div>
                 <Label>Status</Label>
-                <Input
-                  id="status"
-                  defaultValue={editVacancy.status}
-                  {...register('status', {
-                    required: 'Status By is required'
-                  })}
-                />
+                <Controller
+                  name="status"
+                  control={control}
+                  rules={{ required: 'Status Type is required' }}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger id="status">
+                        <SelectValue placeholder="Select Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">active</SelectItem>
+                        <SelectItem value="closed">closed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />          
                 <ErrorMessage message={errors.status?.message?.toString()} />
+              </div> */}
+
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  id="description"
+                  defaultValue={editVacancy.description}
+                  className=" resize-y rounded-lg border border-gray-300  p-3 text-sm shadow-sm"
+                  {...register('description', {
+                    required: 'Description is required'
+                  })}
+                ></Textarea>
+                <ErrorMessage
+                  message={errors.description?.message?.toString()}
+                />
               </div>
 
-              <input
+              <div>
+                <Label>Salary Range</Label>
+
+                <div>
+                  <label className="mb-1 block text-sm">
+                    Is the salary negotiable?
+                  </label>
+                  <div className="mb-4 flex gap-4">
+                    <label className="flex items-center gap-2">
+                      <Input
+                        type="radio"
+                        value="true"
+                        defaultValue={editVacancy?.salaryRange?.negotiable}
+                        {...register('salaryRange.negotiable', {
+                          required: true
+                        })}
+                      />
+                      Yes
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <Input
+                        type="radio"
+                        value="false"
+                        defaultValue={editVacancy?.salaryRange?.negotiable}
+                        {...register('salaryRange.negotiable', {
+                          required: true
+                        })}
+                      />
+                      No
+                    </label>
+                  </div>
+
+                  {negotiable === false && (
+                    <div className="flex items-center gap-3">
+                      <label className="mb-1 block font-medium">Min</label>
+                      <Input
+                        type="number"
+                        defaultValue={editVacancy?.salaryRange?.min}
+                        className="mb-2 w-full border px-2 py-1"
+                        {...register('salaryRange.min', {
+                          valueAsNumber: true,
+                          required: 'Minimum salary is required'
+                        })}
+                      />
+                      {errors.salaryRange?.min && (
+                        <p className="text-sm text-red-500">
+                          {errors.salaryRange.min.message}
+                        </p>
+                      )}
+
+                      <label className="mb-1 block font-medium">Max</label>
+                      <Input
+                        type="number"
+                        defaultValue={editVacancy?.salaryRange?.max}
+                        className="mb-2 w-full border px-2 py-1"
+                        {...register('salaryRange.max', {
+                          valueAsNumber: true,
+                          required: 'Maximum salary is required'
+                        })}
+                      />
+                      {errors.salaryRange?.max && (
+                        <p className="text-sm text-red-500">
+                          {errors.salaryRange.max.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button
                 type="submit"
-                className="w-32 border-none  bg-supperagent text-white hover:bg-supperagent/90"
-              />
+                className=" border-none bg-supperagent text-white hover:bg-supperagent/90"
+              >
+                Submit
+              </Button>
             </div>
           </form>
         </div>

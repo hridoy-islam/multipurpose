@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -16,13 +15,11 @@ import axiosInstance from '@/lib/axios';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 
-
 import { useToast } from '@/components/ui/use-toast';
 import { Camera } from 'lucide-react';
 
 import { useParams } from 'react-router-dom';
 import { ImageUploader } from './Components/userImage-uploader';
-
 
 const profileFormSchema = z.object({
   name: z.string().nonempty('Name is required'),
@@ -44,7 +41,7 @@ export default function CompanyDetails() {
   );
   const { toast } = useToast();
   const { id } = useParams();
- 
+
   const defaultValues: Partial<ProfileFormValues> = {
     name: profileData?.name || '',
     email: profileData?.email || '',
@@ -103,6 +100,7 @@ export default function CompanyDetails() {
 
   return (
     <div className="flex flex-col space-y-2 p-2 md:p-2">
+      <h1 className="mb-2 text-2xl font-semibold ">Company Details</h1>
       <div className="flex flex-row space-x-8 rounded-lg bg-white p-4 shadow-sm">
         <div className="flex basis-1/6 items-center justify-start">
           <div className="relative h-48 w-48 overflow-hidden">
@@ -114,7 +112,7 @@ export default function CompanyDetails() {
               alt={`${user?.name}`}
               className="h-full w-full object-contain"
             />
-           
+
             <Button
               size="icon"
               variant="theme"
@@ -226,10 +224,15 @@ export default function CompanyDetails() {
                   />
                 </div>
                 <div className="flex justify-end">
-               
-                  <Button variant="theme" type="submit">
+                  <Button
+                    type="submit"
+                    className="border-none bg-supperagent text-white hover:bg-supperagent/90"
+                  >
                     Update Details
                   </Button>
+                  {/* <Button variant="theme" type="submit">
+                    Update Details
+                  </Button> */}
                 </div>
               </div>
             </form>
@@ -246,4 +249,3 @@ export default function CompanyDetails() {
     </div>
   );
 }
-

@@ -259,7 +259,7 @@ export function SideNav() {
         : navItems;
 
   return (
-    <nav className="flex space-x-3 bg-white px-3  py-4 shadow-sm ">
+    <nav className="flex space-x-3 bg-white px-2.5  py-4 shadow-sm ">
       {filteredNavItems.map((item) => (
         <div key={item.href}>
           {item.subItems ? (

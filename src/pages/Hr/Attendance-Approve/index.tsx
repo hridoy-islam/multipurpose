@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Pen, Plus } from 'lucide-react';
+import { Eye, Pen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -10,83 +9,113 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-// import { InstitutionDialog } from './components/institution-dialog';
 import axiosInstance from '@/lib/axios';
 import { useToast } from '@/components/ui/use-toast';
 import { BlinkingDots } from '@/components/shared/blinking-dots';
-// import { DataTablePagination } from '../students/view/components/data-table-pagination';
-import { Input } from '@/components/ui/input';
-import moment from 'moment';
 import { DynamicPagination } from '@/components/shared/DynamicPagination';
+import moment from 'moment';
+import { Input } from '@/components/ui/input';
+import { useRouter } from '@/routes/hooks';
+import { useNavigate } from 'react-router-dom';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { count } from 'console';
 
-// import { AttendanceDialog } from './Components';
-
-export default function AttendanceApprove() {
-  const [attendence, setAttendance] = useState<any>([]);
+export default function AttendanceApprovalPage() {
+  const [attendanceList, setAttendance] = useState<any[]>([]);
+  const [groupedData, setGroupedData] = useState<
+    Array<{ date: string; count: number }>
+  >([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingAttendence, setEditingAttendence] = useState<any>();
-  const [initialLoading, setInitialLoading] = useState(true); // New state for initial loading
+  const [editingAttendance, setEditingAttendance] = useState<any>();
+  const [initialLoading, setInitialLoading] = useState(true);
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const fetchData = async (page, entriesPerPage, searchTerm = '') => {
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth() + 1)); // Months are 0-indexed
+  const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
+  const fetchData = async (
+    page,
+    entriesPerPage,
+    searchTerm = '',
+    month?: string,
+    year?: string
+  ) => {
     try {
-      if (initialLoading) setInitialLoading(true);
+      setInitialLoading(true);
       const response = await axiosInstance.get(`/hr/attendance?approvalStatus=pending`, {
         params: {
           page,
           limit: entriesPerPage,
-          ...(searchTerm ? { searchTerm } : {})
+          ...(searchTerm ? { searchTerm } : {}),
+          ...(month ? { month } : {}),
+          ...(year ? { year } : {})
         }
       });
-      setAttendance(response.data.data.result);
+  
+      const result = response.data.data.result;
+      setAttendance(result);
       setTotalPages(response.data.data.meta.totalPage);
+  
+      const grouped = result.reduce((acc, item) => {
+        const date = moment(item.clockIn).format('YYYY-MM-DD');
+        const existing = acc.find((entry) => entry.date === date);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          acc.push({ date, count: 1 });
+        }
+        return acc;
+      }, []);
+      setGroupedData(grouped);
     } catch (error) {
       console.error('Error fetching Attendance:', error);
     } finally {
       setInitialLoading(false);
     }
   };
+  
+
+  const navigate = useNavigate();
+
+  const handleRowClick = (date: string, count: number) => {
+    navigate(`/admin/hr/attendance-approve/attendance-list?date=${date}`, {
+      state: { count, date },
+    });
+  };
+  
 
   const handleSubmit = async (data) => {
     try {
       let response;
-      if (editingAttendence) {
-        // Update institution
+      if (editingAttendance) {
         response = await axiosInstance.patch(
-          `/hr/attendance/${editingAttendence?._id}`,
+          `/hr/attendance/${editingAttendance?._id}`,
           data
         );
       } else {
-        // Create new institution
-
         response = await axiosInstance.post(`/hr/attendance/clock-in`, data);
       }
 
-      // Check if the API response indicates success
-      if (response.data && response.data.success === true) {
+      if (response.data?.success) {
         toast({
-          title: response.data.message || 'Record Updated successfully',
+          title: response.data.message || 'Record updated successfully',
           className: 'bg-supperagent border-none text-white'
         });
-      } else if (response.data && response.data.success === false) {
-        toast({
-          title: response.data.message || 'Operation failed',
-          className: 'bg-red-500 border-none text-white'
-        });
       } else {
-        toast({
-          title: 'Unexpected response. Please try again.',
-          className: 'bg-red-500 border-none text-white'
-        });
+        throw new Error('Unexpected response');
       }
 
-      // Refresh data
       fetchData(currentPage, entriesPerPage);
-      setEditingAttendence(undefined); // Reset editing state
+      setEditingAttendance(undefined);
     } catch (error) {
       toast({
         title: 'An error occurred. Please try again.',
@@ -95,61 +124,64 @@ export default function AttendanceApprove() {
     }
   };
 
-    // const handleStatusChange = async (id, status) => {
-    //   try {
-    //     const updatedStatus = status ? 'active' : 'inactive';
-    //     await axiosInstance.patch(`/hr/attendence/${id}`, {
-    //       status: updatedStatus
-    //     });
-    //     toast({
-    //       title: 'Record updated successfully',
-    //       className: 'bg-supperagent border-none text-white'
-    //     });
-    //     fetchData(currentPage, entriesPerPage);
-    //   } catch (error) {
-    //     console.error('Error updating status:', error);
-    //   }
-    // };
-
-  const handleEdit = (notice) => {
-    setEditingAttendence(notice);
-    setDialogOpen(true);
-  };
+ ;
 
   useEffect(() => {
     fetchData(currentPage, entriesPerPage);
   }, [currentPage, entriesPerPage]);
 
   const handleSearch = () => {
-    fetchData(currentPage, entriesPerPage, searchTerm);
+    if (selectedMonth && selectedYear) {
+      fetchData(currentPage, entriesPerPage, searchTerm, selectedMonth, selectedYear);
+    }
   };
+  
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Pending Attendances</h1>
-        {/* <Button
-          className="bg-supperagent text-white hover:bg-supperagent/90"
-          size={'sm'}
-          onClick={() => setDialogOpen(true)}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          New Attendance
-        </Button> */}
+       <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Pending Attendance List</h1>
       </div>
 
       <div className="flex items-center space-x-4">
-        <Input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search by Attendance Type"
-          className="h-8 max-w-[400px]"
-        />
+        <div className="flex items-center space-x-2">
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="h-8 w-[140px] rounded-md border border-gray-300 px-2 focus:outline-none focus:ring-2 focus:ring-supperagent">
+              <SelectValue placeholder="Select Month" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }, (_, i) => (
+                <SelectItem key={i} value={String(i + 1)}>
+                  {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Year Select Dropdown */}
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="h-8 w-[120px] rounded-md border border-gray-300 px-2 focus:outline-none focus:ring-2 focus:ring-supperagent">
+              <SelectValue placeholder="Select Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 50 }, (_, i) => {
+                const year = currentYear - 5 + i;
+                return (
+                  <SelectItem key={year} value={String(year)}>
+                    {year}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+
         <Button
           onClick={handleSearch}
           size="sm"
           className="min-w-[100px] border-none bg-supperagent text-white hover:bg-supperagent/90"
+          disabled={!selectedMonth || !selectedYear}
         >
           Search
         </Button>
@@ -160,7 +192,7 @@ export default function AttendanceApprove() {
           <div className="flex justify-center py-6">
             <BlinkingDots size="large" color="bg-supperagent" />
           </div>
-        ) : attendence.length === 0 ? (
+        ) : groupedData.length === 0 ? (
           <div className="flex justify-center py-6 text-gray-500">
             No records found.
           </div>
@@ -168,57 +200,29 @@ export default function AttendanceApprove() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Stuff Name</TableHead>
-                <TableHead>Clock In</TableHead>
-                <TableHead>Clock Out</TableHead>
-                {/* <TableHead></TableHead> */}
-                {/* <TableHead className="w-32 text-center">Status</TableHead> */}
-                <TableHead className="w-32 text-center"  >Actions</TableHead>
-                
+                <TableHead>Date</TableHead>
+                <TableHead>Attendance Count</TableHead>
+                <TableHead className="w-32 text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {attendence.map((attendence) => (
-                <TableRow key={attendence._id}>
-                  <TableCell>{attendence.userId.name}</TableCell>                  
-                  <TableCell>
-                    {moment(attendence.checkIn).format('MMMM Do YYYY, h:mm:ss a')}
-                  </TableCell>
-                  <TableCell>
-                    {moment(attendence.checkOut).format('MMMM Do YYYY, h:mm:ss a')}
-                  </TableCell>
-                  
-                  {/* <TableCell className="text-center">
-                    <Switch
-                      checked={attendence.status == 'active'}
-                      onCheckedChange={(checked) =>
-                        handleStatusChange(attendence._id, checked)
-                      }
-                      className="mx-auto"
-                    />
-                  </TableCell> */}
-                  <TableCell className="text-center flex  gap-4">
-
-                    {/* edit button  */}
+              {groupedData.map(({ date, count }) => (
+                <TableRow key={date} onClick={() => handleRowClick(date,count)} className='cursor-pointer'>
+                  <TableCell>{moment(date).format('MMMM Do YYYY')}</TableCell>
+                  <TableCell>{count}</TableCell>
+                  <TableCell className="text-center">
                     <Button
                       variant="ghost"
                       className="border-none bg-supperagent text-white hover:bg-supperagent/90"
                       size="icon"
-                      onClick={() => handleEdit(attendence)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // prevent row click
+                        handleRowClick(date,count);
+                      }}
                     >
-                      <Pen className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
                     </Button>
-                    
-                    {/* approve button  */}
-                    <Button
-                      variant="ghost"
-                      className="border-none w-32 bg-supperagent text-white hover:bg-supperagent/90"
-                      size="icon"
-                    //   onClick={() => handleEdit(attendence)}
-                    >
-                      Approve
-                    </Button>
-                  </TableCell>                  
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -232,16 +236,8 @@ export default function AttendanceApprove() {
           onPageChange={setCurrentPage}
         />
       </div>
-      {/* <AttendanceDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) setEditingAttendence(undefined);
-        }}
-        onSubmit={handleSubmit}
-        initialData={editingAttendence}
-      /> */}
+
+      
     </div>
   );
 }
- 

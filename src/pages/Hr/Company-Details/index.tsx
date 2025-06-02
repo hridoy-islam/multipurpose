@@ -60,7 +60,7 @@ export default function CompanyDetails() {
 
   const fetchProfileData = async () => {
     try {
-      const response = await axiosInstance.get(`/users/${id}`);
+      const response = await axiosInstance.get(`/users/${user._id}`);
       const data = response.data.data;
       setProfileData(data);
       form.reset(data);
@@ -80,10 +80,10 @@ export default function CompanyDetails() {
 
   const onSubmit = async (data: ProfileFormValues) => {
     try {
-      await axiosInstance.patch(`/users/${id}`, data);
+      await axiosInstance.patch(`/users/${user._id}`, data);
       toast({
         title: 'Company Details Updated',
-        className: 'bg-theme border-none text-white'
+        className: 'border-none text-white'
       });
     } catch (error) {
       toast({
@@ -101,9 +101,9 @@ export default function CompanyDetails() {
   return (
     <div className="flex flex-col space-y-2 p-2 md:p-2">
       <h1 className="mb-2 text-2xl font-semibold ">Company Details</h1>
-      <div className="flex flex-row space-x-8 rounded-lg bg-white p-4 shadow-sm">
+      <div className="flex flex-col  rounded-lg bg-white p-4 shadow-sm">
         <div className="flex basis-1/6 items-center justify-start">
-          <div className="relative h-48 w-48 overflow-hidden">
+          <div className="relative h-48 w-48 overflow-hidden ROUNDED">
             <img
               src={
                 profileData?.imageUrl ||

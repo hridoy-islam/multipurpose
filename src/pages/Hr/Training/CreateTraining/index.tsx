@@ -84,7 +84,7 @@ export default function CreateTraining() {
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="w-1/3">
                     <FormLabel>Training Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter training name" {...field} />
@@ -133,67 +133,73 @@ export default function CreateTraining() {
               />
 
               {/* Validity Days - conditional */}
-              {isRecurring && (
-                <FormField
-                  control={form.control}
-                  name="validityDays"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Validity Days</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g., 90"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === ''
-                                ? undefined
-                                : Number(e.target.value)
-                            )
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+              <div className="flex w-full  flex-row items-center justify-between gap-4">
+                {isRecurring && (
+                  <FormField
+                    control={form.control}
+                    name="validityDays"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>Validity Days</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 90"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === ''
+                                  ? undefined
+                                  : Number(e.target.value)
+                              )
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
-              {/* Reminder Before Days - conditional */}
-              {isRecurring && (
-                <FormField
-                  control={form.control}
-                  name="reminderBeforeDays"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Remind how many days before expiry?</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g., 10"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === ''
-                                ? undefined
-                                : Number(e.target.value)
-                            )
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+                {/* Reminder Before Days - conditional */}
+                {isRecurring && (
+                  <FormField
+                    control={form.control}
+                    name="reminderBeforeDays"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>
+                          Remind how many days before expiry?
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 10"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === ''
+                                  ? undefined
+                                  : Number(e.target.value)
+                              )
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+              <div className='flex w-full items-center justify-end gap-4'>
 
               <Button
                 type="submit"
                 className="border-none bg-supperagent text-white hover:bg-supperagent/90"
-              >
+                >
                 Submit
               </Button>
+                </div>
             </form>
           </Form>
         </div>

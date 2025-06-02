@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pen, Plus } from 'lucide-react';
+import { Eye, Pen, Plus, PlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -50,53 +50,10 @@ export default function Vacancy() {
     }
   };
 
-  const handleSubmit = async (data) => {
-    try {
-      let response;
-      if (editingVacancy) {
-        // Update institution
-        response = await axiosInstance.patch(
-          `/hr/vacancy/${editingVacancy?._id}`,
-          data
-        );
-      } else {
-        // Create new institution
-
-        response = await axiosInstance.post(`/hr/vacancy`, data);
-      }
-
-      // Check if the API response indicates success
-      if (response.data && response.data.success === true) {
-        toast({
-          title: response.data.message || 'Record Updated successfully',
-          className: 'bg-supperagent border-none text-white'
-        });
-      } else if (response.data && response.data.success === false) {
-        toast({
-          title: response.data.message || 'Operation failed',
-          className: 'bg-red-500 border-none text-white'
-        });
-      } else {
-        toast({
-          title: 'Unexpected response. Please try again.',
-          className: 'bg-red-500 border-none text-white'
-        });
-      }
-
-      // Refresh data
-      fetchData(currentPage, entriesPerPage);
-      setEditingVacancy(undefined); // Reset editing state
-    } catch (error) {
-      toast({
-        title: 'An error occurred. Please try again.',
-        className: 'bg-red-500 border-none text-white'
-      });
-    }
-  };
 
   const handleStatusChange = async (id, status) => {
     try {
-      const updatedStatus = status ? 'active' : 'inactive';
+      const updatedStatus = status ? 'active' : 'closed';
       await axiosInstance.patch(`/hr/vacancy/${id}`, {
         status: updatedStatus
       });
@@ -124,8 +81,9 @@ export default function Vacancy() {
     navigate('/admin/hr/create-vacancy');
   };
 
-  const handleEdit = (id) => {
-    navigate(`/admin/hr/edit-vacancy/${id}`);
+  const handleEdit = (data) => {
+   
+    navigate(`/admin/hr/edit-vacancy/${data._id}`);
   };
 
   return (
@@ -171,17 +129,15 @@ export default function Vacancy() {
         ) : (
           <Table>
             <TableHeader>
-              <TableRow className="">
+              <TableRow>
                 <TableHead>Title</TableHead>
                 <TableHead> Employment Type</TableHead>
                 <TableHead> Application Deadline</TableHead>
                 <TableHead>Posted By</TableHead>
-                <TableHead className=" text-center">Status</TableHead>
-                <TableHead className=" text-center" colSpan={3}>
+                <TableHead>Status</TableHead>
+                <TableHead className=" text-right" colSpan={3}>
                   Actions
                 </TableHead>
-                <TableHead className=" text-center"></TableHead>
-                <TableHead className=" text-center"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -193,7 +149,7 @@ export default function Vacancy() {
                     {moment(vacancy.applicationDeadline).format('MMMM Do YYYY')}
                   </TableCell>
                   <TableCell>{vacancy.postedBy.name}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell>
                     <Switch
                       checked={vacancy.status == 'active'}
                       onCheckedChange={(checked) =>
@@ -202,36 +158,33 @@ export default function Vacancy() {
                       className="mx-auto"
                     />
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="flex flex-row items-end justify-end gap-2 text-right">
+                    <Button
+                      variant="ghost"
+                      className=" border-none bg-supperagent  text-sm text-white hover:bg-supperagent/90"
+                      size="icon"
+                      onClick={() => {
+                        navigate(`/admin/hr/view-applicant/${vacancy._id}`, {
+                          state: { vacancy }
+                        });
+                      }}
+                    >
+                      <Eye size={24} />
+                    </Button>
                     <Button
                       variant="ghost"
                       className="border-none bg-supperagent text-white hover:bg-supperagent/90"
                       size="icon"
                       onClick={() => {
-                        handleEdit(vacancy._id);
+                        handleEdit(vacancy);
                       }}
                     >
                       <Pen className="h-4 w-4" />
                     </Button>
-                  </TableCell>
-                  <TableCell className="text-center ">
+
                     <Button
                       variant="ghost"
-                      className="w-32 border-none bg-supperagent px-4 text-sm text-white hover:bg-supperagent/90"
-                      size="icon"
-                      onClick={() => {
-                        navigate(`/admin/hr/view-applicant/${vacancy._id}`, {
-                          state: { vacancy_title: vacancy.title }
-                        });
-                      }}
-                    >
-                      View Applicants
-                    </Button>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Button
-                      variant="ghost"
-                      className="w-32 border-none bg-supperagent px-2 text-sm text-white hover:bg-supperagent/90"
+                      className=" border-none bg-supperagent px-2 text-sm text-white hover:bg-supperagent/90"
                       size="icon"
                       onClick={() => {
                         navigate(`/admin/hr/add-applicant/${vacancy._id}`, {
@@ -239,7 +192,7 @@ export default function Vacancy() {
                         });
                       }}
                     >
-                      Add Applicant
+                      <PlusIcon />
                     </Button>
                   </TableCell>
                 </TableRow>

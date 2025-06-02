@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { countries } from '@/types';
 
 // Zod validation schema for the contact information form
 const contactSchema = z.object({
@@ -63,12 +64,14 @@ interface ContactStepProps {
   defaultValues?: Partial<ContactData>;
   onSaveAndContinue: (data: ContactData) => void;
   onSave: (data: ContactData) => void;
+  onBack: () => void;
 }
 
 export function ContactStep({
   defaultValues,
   onSaveAndContinue,
-  onSave
+  onSave,
+  onBack
 }: ContactStepProps) {
   const form = useForm<ContactData>({
     resolver: zodResolver(contactSchema),
@@ -99,12 +102,13 @@ export function ContactStep({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="space-y-10">
             {/* Contact Details */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Contact Information</h2>
-
-              <div className="grid grid-cols-2 gap-4">
+            <div>
+              <h2 className="mb-4 text-2xl font-semibold text-gray-800">
+                Contact Information
+              </h2>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="homePhone"
@@ -112,13 +116,12 @@ export function ContactStep({
                     <FormItem>
                       <FormLabel>Home Phone</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input className="w-full" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="mobilePhone"
@@ -126,13 +129,12 @@ export function ContactStep({
                     <FormItem>
                       <FormLabel>Mobile Phone</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input className="w-full" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="otherPhone"
@@ -140,13 +142,12 @@ export function ContactStep({
                     <FormItem>
                       <FormLabel>Other Phone</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input className="w-full" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="email"
@@ -154,7 +155,7 @@ export function ContactStep({
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input type="email" {...field} />
+                        <Input className="w-full" type="email" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -164,10 +165,11 @@ export function ContactStep({
             </div>
 
             {/* Address Information */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Address Information</h2>
-
-              <div className="grid grid-cols-2 gap-4">
+            <div>
+              <h2 className="mb-4 text-2xl font-semibold text-gray-800">
+                Address Information
+              </h2>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="address"
@@ -175,13 +177,12 @@ export function ContactStep({
                     <FormItem>
                       <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input className="w-full" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="cityOrTown"
@@ -189,13 +190,12 @@ export function ContactStep({
                     <FormItem>
                       <FormLabel>City or Town</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input className="w-full" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="stateOrProvince"
@@ -203,13 +203,12 @@ export function ContactStep({
                     <FormItem>
                       <FormLabel>State or Province</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input className="w-full" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="postCode"
@@ -217,22 +216,32 @@ export function ContactStep({
                     <FormItem>
                       <FormLabel>Post Code</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input className="w-full" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="country"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Country</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} {...field}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Country" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {countries.map((country, index) => (
+                            <SelectItem key={index} value={country}>
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -242,20 +251,23 @@ export function ContactStep({
           </div>
         </CardContent>
 
-        <div className="flex justify-end space-x-4 pb-4 pr-6">
+        <div className="flex justify-between p-4">
           <Button
-            type="submit"
-            className="border-none bg-supperagent text-white hover:bg-supperagent/90"
-            onClick={handleSave}
+            type="button" // ✅ Prevents form submission
+            className="border-none bg-black text-white hover:bg-black/90"
+            onClick={(e) => {
+              e.preventDefault(); // ✅ Prevent default form behavior
+              onBack();
+            }}
           >
-            Save
+            Back
           </Button>
 
           <Button
             type="submit"
-            className="border border-supperagent text-supperagent"
+            className=" bg-supperagent text-white hover:bg-supperagent/90"
           >
-            Save & Continue
+            Save 
           </Button>
         </div>
       </form>

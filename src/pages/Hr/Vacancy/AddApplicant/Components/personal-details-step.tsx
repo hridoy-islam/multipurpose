@@ -88,11 +88,11 @@ export function PersonalDetailsStep({
       firstName: defaultValues?.firstName || '',
       initial: defaultValues?.initial || '',
       lastName: defaultValues?.lastName || '',
-      dateOfBirth: defaultValues?.dateOfBirth || new Date(),
+      dateOfBirth: defaultValues?.dateOfBirth || undefined,
       nationalInsuranceNumber: defaultValues?.nationalInsuranceNumber || '',
       nhsNumber: defaultValues?.nhsNumber || '',
-      applicationDate: defaultValues?.applicationDate || new Date(),
-      availableFromDate: defaultValues?.availableFromDate || new Date(),
+      applicationDate: defaultValues?.applicationDate || undefined,
+      availableFromDate: defaultValues?.availableFromDate || undefined,
       employmentType: defaultValues?.employmentType || '',
       position: defaultValues?.position || '',
       source: defaultValues?.source || '',
@@ -126,7 +126,7 @@ export function PersonalDetailsStep({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6 pt-6">
-            <h1 className=" text-2xl text-supperagent">Personal Details</h1>
+            <h1 className=" text-2xl ">Personal Details</h1>
             {/* Profile Picture Upload */}
             <div className="flex basis-1/6 items-center justify-start">
               <div className="relative h-48 w-48 overflow-hidden">
@@ -249,7 +249,7 @@ export function PersonalDetailsStep({
             </div>
 
             {/* Other Fields */}
-            <h1 className=" text-2xl text-supperagent">Official Numbers</h1>
+            <h1 className=" text-2xl ">Official Numbers</h1>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -281,7 +281,7 @@ export function PersonalDetailsStep({
             </div>
 
             {/* Application Details */}
-            <h1 className=" text-2xl text-supperagent">Application Details</h1>
+            <h1 className=" text-2xl">Application Details</h1>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -409,19 +409,19 @@ export function PersonalDetailsStep({
             </div>
 
             <div className="flex justify-end space-x-4">
-              <Button
+              {/* <Button
                 type="submit"
                 className="border-none bg-supperagent text-white hover:bg-supperagent/90"
                 onClick={handleSave}
               >
                 Save
-              </Button>
+              </Button> */}
 
               <Button
                 type="submit"
-                className="border border-supperagent text-supperagent"
+                className=" bg-supperagent text-white hover:bg-supperagent/90"
               >
-                Save & Continue
+                Save 
               </Button>
             </div>
           </CardContent>

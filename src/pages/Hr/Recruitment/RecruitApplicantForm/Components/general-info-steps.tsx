@@ -20,19 +20,13 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-
 import { useSelector } from 'react-redux';
-
 import { useParams } from 'react-router-dom';
 import moment from 'moment';
 
 const generalInfoSchema = z.object({
-  availableFrom: z.date({
-    required_error: 'Available from date is required'
-  }),
-  startDate: z.date({
-    required_error: 'Start date is required'
-  }),
+  availableFrom: z.date({ required_error: 'Available from date is required' }),
+  startDate: z.date({ required_error: 'Start date is required' }),
   wtrDocumentUrl: z.string().url().optional(),
   area: z.string().min(1, { message: 'Area is required' }),
   isFullTime: z.boolean().optional(),
@@ -63,38 +57,27 @@ export function GeneralInformation({
   onSaveAndContinue,
   onSave
 }: GeneralInfoStepProps) {
-  const { user } = useSelector((state: any) => state.auth);
-
-  const { id } = useParams();
 
   const form = useForm<GeneralInfoData>({
     resolver: zodResolver(generalInfoSchema),
     defaultValues: {
       availableFrom: defaultValues?.availableFrom
         ? new Date(defaultValues.availableFrom)
-        : new Date(), // z.date() expects a Date, not a string
-
+        : undefined,
       startDate: defaultValues?.startDate
         ? new Date(defaultValues.startDate)
-        : new Date(), // same reason
-
+        : undefined,
       wtrDocumentUrl: defaultValues?.wtrDocumentUrl || '',
-
       area: defaultValues?.area || '',
-
-      isFullTime: defaultValues?.isFullTime ?? false, // optional boolean
-
-      carTravelAllowance: defaultValues?.carTravelAllowance ?? false, // optional boolean
-
+      isFullTime: defaultValues?.isFullTime ?? false,
+      carTravelAllowance: defaultValues?.carTravelAllowance ?? false,
       employmentType: defaultValues?.employmentType || '',
-
       rightToWork: {
-        hasExpiry: defaultValues?.rightToWork?.hasExpiry ?? false, // required boolean
+        hasExpiry: defaultValues?.rightToWork?.hasExpiry ?? false,
         expiryDate: defaultValues?.rightToWork?.expiryDate
           ? new Date(defaultValues.rightToWork.expiryDate)
-          : undefined // optional date
+          : undefined
       },
-
       payroll: {
         payrollNumber: defaultValues?.payroll?.payrollNumber || '',
         paymentMethod: defaultValues?.payroll?.paymentMethod || ''
@@ -112,42 +95,12 @@ export function GeneralInformation({
     onSave(data);
   }
 
-  //   const handleUploadComplete = (data) => {
-  //     setUploadOpen(false);
-  //   };
-
   return (
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6 pt-6">
-            {/* Profile Picture Upload */}
-            {/* <div className="flex basis-1/6 items-center justify-start">
-              <div className="relative h-48 w-48 overflow-hidden">
-                <img
-                  src={
-                    profileData?.imageUrl ||
-                    'https://kzmjkvje8tr2ra724fhh.lite.vusercontent.net/placeholder.svg'
-                  }
-                  alt={`${user?.name}`}
-                  className="h-full w-full object-contain"
-                />
-
-                <Button
-                  size="icon"
-                  variant="theme"
-                  onClick={() => setUploadOpen(true)}
-                  className="absolute bottom-2 right-2 z-10"
-                >
-                  <Camera className="h-6 w-6" />
-                </Button>
-              </div>
-            </div> */}
-
-            {/* Title */}
-
-            {/* Name Fields */}
-            <div className=" grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <FormField
                 control={form.control}
                 name="availableFrom"
@@ -211,9 +164,8 @@ export function GeneralInformation({
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            // Convert to URL or handle file upload logic
                             const url = URL.createObjectURL(file);
-                            field.onChange(url); // or custom upload handler
+                            field.onChange(url);
                           }
                         }}
                       />
@@ -237,6 +189,7 @@ export function GeneralInformation({
                 )}
               />
 
+              {/* Replace Radio with Select: Full Time? */}
               <FormField
                 control={form.control}
                 name="isFullTime"
@@ -244,36 +197,26 @@ export function GeneralInformation({
                   <FormItem>
                     <FormLabel>Full Time?</FormLabel>
                     <FormControl>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2">
-                          <Input
-                            type="radio"
-                            value="true"
-                            checked={field.value === true}
-                            onChange={() => field.onChange(true)}
-                          />
-                          Yes
-                        </label>
-                        <label className="flex items-center gap-2">
-                          <Input
-                            type="radio"
-                            value="false"
-                            checked={field.value === false}
-                            onChange={() => field.onChange(false)}
-                          />
-                          No
-                        </label>
-                      </div>
+                      <Select
+                        onValueChange={(value) => field.onChange(value === 'true')}
+                        defaultValue={field.value?.toString()}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Yes</SelectItem>
+                          <SelectItem value="false">No</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            {/* Other Fields */}
-            {/* <h1 className=" text-2xl text-supperagent">Official Numbers</h1> */}
-            <div>
+           
+              {/* Replace Radio with Select: Car Travel Allowance? */}
               <FormField
                 control={form.control}
                 name="carTravelAllowance"
@@ -281,26 +224,18 @@ export function GeneralInformation({
                   <FormItem>
                     <FormLabel>Car Travel Allowance?</FormLabel>
                     <FormControl>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2">
-                          <Input
-                            type="radio"
-                            value="true"
-                            checked={field.value === true}
-                            onChange={() => field.onChange(true)}
-                          />
-                          Yes
-                        </label>
-                        <label className="flex items-center gap-2">
-                          <Input
-                            type="radio"
-                            value="false"
-                            checked={field.value === false}
-                            onChange={() => field.onChange(false)}
-                          />
-                          No
-                        </label>
-                      </div>
+                      <Select
+                        onValueChange={(value) => field.onChange(value === 'true')}
+                        defaultValue={field.value?.toString()}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Yes</SelectItem>
+                          <SelectItem value="false">No</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -333,9 +268,9 @@ export function GeneralInformation({
                   </FormItem>
                 )}
               />
-            </div>
+  
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {/* Replace Radio with Select: Right to Work Has Expiry? */}
               <FormField
                 control={form.control}
                 name="rightToWork.hasExpiry"
@@ -343,26 +278,18 @@ export function GeneralInformation({
                   <FormItem>
                     <FormLabel>Right to Work Has Expiry?</FormLabel>
                     <FormControl>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2">
-                          <Input
-                            type="radio"
-                            value="true"
-                            checked={field.value === true}
-                            onChange={() => field.onChange(true)}
-                          />
-                          Yes
-                        </label>
-                        <label className="flex items-center gap-2">
-                          <Input
-                            type="radio"
-                            value="false"
-                            checked={field.value === false}
-                            onChange={() => field.onChange(false)}
-                          />
-                          No
-                        </label>
-                      </div>
+                      <Select
+                        onValueChange={(value) => field.onChange(value === 'true')}
+                        defaultValue={field.value?.toString()}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Yes</SelectItem>
+                          <SelectItem value="false">No</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -393,9 +320,7 @@ export function GeneralInformation({
                   </FormItem>
                 )}
               />
-            </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="payroll.payrollNumber"
@@ -426,9 +351,7 @@ export function GeneralInformation({
                           <SelectValue placeholder="Select Method" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Bank Transfer">
-                            Bank Transfer
-                          </SelectItem>
+                          <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
                           <SelectItem value="Cheque">Cheque</SelectItem>
                           <SelectItem value="Cash">Cash</SelectItem>
                         </SelectContent>
@@ -441,19 +364,19 @@ export function GeneralInformation({
             </div>
 
             <div className="flex justify-end space-x-4">
-              <Button
+              {/* <Button
                 type="submit"
                 className="border-none bg-supperagent text-white hover:bg-supperagent/90"
                 onClick={handleSave}
               >
                 Save
-              </Button>
+              </Button> */}
 
               <Button
                 type="submit"
-                className="border border-supperagent text-supperagent"
+                className=" bg-supperagent text-white hover:bg-supperagent/90"
               >
-                Save & Continue
+                Save 
               </Button>
             </div>
           </CardContent>

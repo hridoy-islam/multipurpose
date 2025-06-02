@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, MoveLeft } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/components/ui/use-toast';
 import { formSteps } from './Components/form-steps';
@@ -31,7 +31,7 @@ export default function AddApplicant() {
   const [formData, setFormData] = useState<FormData>({});
   const [formSubmitted, setFormSubmitted] = useState(false);
 
-  console.log(formData);
+
 
   const { toast } = useToast();
 
@@ -112,7 +112,7 @@ export default function AddApplicant() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const location = useLocation();
+  
   const { vacancyTitle } = location.state || {};
   console.log(vacancyTitle);
 
@@ -164,6 +164,8 @@ export default function AddApplicant() {
 
   // Render the current step
   const renderStep = () => {
+    const handleBack = () => setCurrentStep((prev) => Math.max(1, prev - 1));
+  
     switch (currentStep) {
       case 1:
         return (
@@ -179,20 +181,21 @@ export default function AddApplicant() {
             defaultValues={formData.contact}
             onSaveAndContinue={handleContactSaveAndContinue}
             onSave={handleContactSave}
+            onBack={handleBack}
           />
         );
-
       case 3:
         return (
           <DemographicInfoStep
             defaultValues={formData.demography}
             onSaveAndContinue={handledemographySaveAndContinue}
             onSave={handledemographySave}
+            onBack={handleBack}
           />
         );
       case 4:
-        return <ReviewStep formData={formData} onSubmit={handleSubmit} />;
-
+        return <ReviewStep formData={formData} onSubmit={handleSubmit} onBack={handleBack}/>;
+  
       default:
         return (
           <div className="rounded-lg bg-gray-50 p-8 text-center">
@@ -222,6 +225,7 @@ export default function AddApplicant() {
         );
     }
   };
+  
 
   if (formSubmitted) {
     return (
@@ -238,15 +242,19 @@ export default function AddApplicant() {
 
   return (
     <div className="mx-auto w-full ">
-      <h1 className="mb-3 text-2xl font-semibold ">Add Applicant</h1>
+      <div className='-mt-2 flex flex-row items-center justify-between pb-2'>
 
+      <h1 className=" text-2xl font-semibold ">Add Applicant</h1>
+      <Button className='bg-supperagent text-white hover:bg-supperagent/90 h-8' onClick={()=> navigate(-1)}><MoveLeft/> Back</Button>
+
+      </div>
       <Card>
-        <StepsIndicator
+        {/* <StepsIndicator
           currentStep={currentStep}
           completedSteps={completedSteps}
           steps={formSteps}
           onStepClick={handleStepClick}
-        />
+        /> */}
 
         {renderStep()}
       </Card>

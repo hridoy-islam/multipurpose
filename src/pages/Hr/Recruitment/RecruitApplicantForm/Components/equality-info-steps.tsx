@@ -27,6 +27,8 @@ import { useParams } from 'react-router-dom';
 import moment from 'moment';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { countries, nationalities, relationships } from '@/types';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const equalityInfoSchema = z.object({
   equalityInformation: z.object({
@@ -82,12 +84,14 @@ interface EqualityInfoStepProps {
   defaultValues?: Partial<EqualityInfoData>;
   onSaveAndContinue: (data: EqualityInfoData) => void;
   onSave: (data: EqualityInfoData) => void;
+  onBack: () => void;
 }
 
 export function EqualityInfomation({
   defaultValues,
   onSaveAndContinue,
-  onSave
+  onSave,
+  onBack
 }: EqualityInfoStepProps) {
   const { user } = useSelector((state: any) => state.auth);
 
@@ -149,35 +153,9 @@ export function EqualityInfomation({
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6 pt-6">
-            {/* Profile Picture Upload */}
-            {/* <div className="flex basis-1/6 items-center justify-start">
-              <div className="relative h-48 w-48 overflow-hidden">
-                <img
-                  src={
-                    profileData?.imageUrl ||
-                    'https://kzmjkvje8tr2ra724fhh.lite.vusercontent.net/placeholder.svg'
-                  }
-                  alt={`${user?.name}`}
-                  className="h-full w-full object-contain"
-                />
-
-                <Button
-                  size="icon"
-                  variant="theme"
-                  onClick={() => setUploadOpen(true)}
-                  className="absolute bottom-2 right-2 z-10"
-                >
-                  <Camera className="h-6 w-6" />
-                </Button>
-              </div>
-            </div> */}
-
-            {/* Title */}
-
-            {/* Name Fields */}
-            <div className=" grid grid-cols-1 gap-6 md:grid-cols-3">
-              {/* Equality Information */}
+          <CardContent className="space-y-4 pt-6">
+            {/* Equality Information */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <FormField
                 control={form.control}
                 name="equalityInformation.nationality"
@@ -186,7 +164,6 @@ export function EqualityInfomation({
                     <FormLabel>Nationality</FormLabel>
                     <FormControl>
                       <Select
-                        {...field}
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
@@ -194,9 +171,9 @@ export function EqualityInfomation({
                           <SelectValue placeholder="Select country" />
                         </SelectTrigger>
                         <SelectContent>
-                          {countryList.map((c) => (
-                            <SelectItem key={c.code} value={c.name}>
-                              {c.name}
+                          {countries.map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {c}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -214,10 +191,7 @@ export function EqualityInfomation({
                   <FormItem>
                     <FormLabel>Religion</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Enter or select religion"
-                      />
+                      <Input {...field} placeholder="Enter religion" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -235,16 +209,10 @@ export function EqualityInfomation({
                         onValueChange={(value) =>
                           field.onChange(value === 'true')
                         }
-                        value={
-                          field.value === true
-                            ? 'true'
-                            : field.value === false
-                              ? 'false'
-                              : ''
-                        }
+                        defaultValue={field.value?.toString()}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select option" />
+                          <SelectValue placeholder="Select an option" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="true">Yes</SelectItem>
@@ -262,7 +230,7 @@ export function EqualityInfomation({
                   control={form.control}
                   name="equalityInformation.disabilityDetails"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="md:col-span-3">
                       <FormLabel>Disability Details</FormLabel>
                       <FormControl>
                         <Textarea
@@ -275,8 +243,11 @@ export function EqualityInfomation({
                   )}
                 />
               )}
+            </div>
 
-              {/* Beneficiary */}
+            {/* Beneficiary Information */}
+            <h1 className='font-semibold text-xl '>Beneficiary Information</h1>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <FormField
                 control={form.control}
                 name="beneficiary.fullName"
@@ -299,7 +270,6 @@ export function EqualityInfomation({
                     <FormLabel>Relationship</FormLabel>
                     <FormControl>
                       <Select
-                        {...field}
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
@@ -307,10 +277,11 @@ export function EqualityInfomation({
                           <SelectValue placeholder="Select relationship" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Spouse">Spouse</SelectItem>
-                          <SelectItem value="Parent">Parent</SelectItem>
-                          <SelectItem value="Sibling">Sibling</SelectItem>
-                          <SelectItem value="Friend">Friend</SelectItem>
+                          {relationships.map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {c}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -354,154 +325,167 @@ export function EqualityInfomation({
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="beneficiary.sameAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Same Address</FormLabel>
-                    <FormControl>
-                      <label className="flex items-center gap-2">
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        Same as my address
-                      </label>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {!sameAddress && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="beneficiary.address.line1"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Address Line 1</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Enter address line 1"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="beneficiary.address.line2"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Address Line 2</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Enter address line 2 (optional)"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="beneficiary.address.city"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>City</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Enter city" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="beneficiary.address.state"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>State</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Enter state (optional)"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="beneficiary.address.postCode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Postcode</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Enter postcode" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="beneficiary.address.country"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Country</FormLabel>
-                        <FormControl>
-                          <Select
-                            {...field}
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select country" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {countryList.map((c) => (
-                                <SelectItem key={c.code} value={c.name}>
-                                  {c.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
             </div>
+            <FormField
+              control={form.control}
+              name="beneficiary.sameAddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Same Address</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(value) =>
+                        field.onChange(value === 'true')
+                      }
+                      defaultValue={field.value?.toString()}
+                      className="flex gap-4"
+                    >
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="true" />
+                        </FormControl>
+                        <FormLabel className="text-sm">Yes</FormLabel>
+                      </FormItem>
 
-            <div className="flex justify-end space-x-4">
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="false" />
+                        </FormControl>
+                        <FormLabel className="text-sm">No</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {!sameAddress && (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="beneficiary.address.line1"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address Line 1</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter address line 1" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="beneficiary.address.line2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address Line 2</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Enter address line 2 (optional)"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="beneficiary.address.city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter city" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="beneficiary.address.state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>State</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Enter state (optional)"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="beneficiary.address.postCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Postcode</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter postcode" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="beneficiary.address.country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Country</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select country" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {nationalities.map((c) => (
+                              <SelectItem key={c} value={c}>
+                                {c}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-between">
               <Button
-                type="submit"
-                className="border-none bg-supperagent text-white hover:bg-supperagent/90"
-                onClick={handleSave}
+                type="button" // ✅ Prevents form submission
+                className="border-none bg-black text-white hover:bg-black/90"
+                onClick={(e) => {
+                  e.preventDefault(); // ✅ Prevent default form behavior
+                  onBack();
+                }}
               >
-                Save
+                Back
               </Button>
 
               <Button
                 type="submit"
-                className="border border-supperagent text-supperagent"
+                className=" bg-supperagent text-white hover:bg-supperagent/90"
               >
-                Save & Continue
+                Save
               </Button>
             </div>
           </CardContent>

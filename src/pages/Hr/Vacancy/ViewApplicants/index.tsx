@@ -1,5 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Pen, Plus } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import {
+  CalendarDays,
+  CheckCircle,
+  Code,
+  Info,
+  MapPin,
+  MoreVertical,
+  MoveLeft,
+  Plus,
+  PlusCircle,
+  UserRoundPlus,
+  UserX
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -9,32 +21,60 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-
 import { useToast } from '@/components/ui/use-toast';
 import axiosInstance from '@/lib/axios';
 import { BlinkingDots } from '@/components/shared/blinking-dots';
-
 import { Input } from '@/components/ui/input';
 import { DynamicPagination } from '@/components/shared/DynamicPagination';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
+import moment from 'moment';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 
 export default function ViewApplicant() {
-  const [applicant, setApplicant] = useState<any>([]);
+  const [applicants, setApplicants] = useState<any[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingApplicant, setEditingApplicant] = useState<any>();
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedToReject, setSelectedToReject] = useState<string | null>(null);
+
+  const rejectButtonRef = useRef<HTMLButtonElement>(null); // For focus restoration
 
   const { id } = useParams();
   const location = useLocation();
-  const { vacancyTitle } = location.state || {};
-  console.log(vacancyTitle)
+  const vacancy = location.state?.vacancy || 'All Applicants';
+  const navigate = useNavigate();
 
-  const fetchData = async (page, entriesPerPage, searchTerm = '') => {
+  const fetchData = async (
+    page: number,
+    entriesPerPage: number,
+    searchTerm = ''
+  ) => {
     try {
       if (initialLoading) setInitialLoading(true);
       const response = await axiosInstance.get(
@@ -48,10 +88,13 @@ export default function ViewApplicant() {
         }
       );
 
-      console.log(response);
-      // const vacancyWiseApplicant = allApplicants.filter(applicant => applicant.vacancyId === id)
+      const sorted = response.data.data.result.sort(
+        (a: any, b: any) =>
+          (b.status === 'shortlisted' ? 1 : 0) -
+          (a.status === 'shortlisted' ? 1 : 0)
+      );
 
-      setApplicant(response.data.data.result);
+      setApplicants(sorted);
       setTotalPages(response.data.data.meta.totalPage);
     } catch (error) {
       console.error('Error fetching applicants:', error);
@@ -60,220 +103,287 @@ export default function ViewApplicant() {
     }
   };
 
-  // const handleSubmit = async (data) => {
-  //   if (editingEmailConfig) {
-  //     await axiosInstance.put(`/email-configs/${editingEmailConfig?.id}`, data);
-  //     toast({
-  //       title: 'Email configuration updated successfully',
-  //       className: 'bg-supperagent border-none text-white'
-  //     });
-  //     fetchData(currentPage, entriesPerPage);
-  //     setEditingEmailConfig(undefined);
-  //   } else {
-  //     await axiosInstance.post(`/email-configs`, data);
-  //     toast({
-  //       title: 'Email configuration created successfully',
-  //       className: 'bg-supperagent border-none text-white'
-  //     });
-  //     fetchData(currentPage, entriesPerPage);
-  //   }
-  // };
+  const handleSearch = () => {
+    setCurrentPage(1);
+    fetchData(currentPage, entriesPerPage, searchTerm);
+  };
 
-  const handleSubmit = async (data) => {
+  const handleDelete = async (applicantId: string) => {
     try {
-      let response;
-
-      if (editingApplicant) {
-        // Update email configuration
-        response = await axiosInstance.patch(
-          `/hr/email-setup/${editingApplicant?._id}`,
-          data
-        );
-      } else {
-        // Create new email configuration
-        response = await axiosInstance.post(`/hr/email-setup`, data);
-      }
-
-      // Check if the API response indicates success
-      if (response.data && response.data.success === true) {
-        toast({
-          title: 'Email configuration updated successfully',
-          className: 'bg-supperagent border-none text-white'
-        });
-      } else if (response.data && response.data.success === false) {
-        toast({
-          title: 'Operation failed',
-          className: 'bg-red-500 border-none text-white'
-        });
-      } else {
-        toast({
-          title: 'Unexpected response. Please try again.',
-          className: 'bg-red-500 border-none text-white'
-        });
-      }
-
-      // Refresh data
+      await axiosInstance.patch(`/hr/applicant/${applicantId}`, {
+        status: 'rejected'
+      });
+      toast({ title: 'Applicant rejected successfully' });
       fetchData(currentPage, entriesPerPage);
     } catch (error) {
+      console.error('Error rejecting applicant:', error);
       toast({
-        title: 'An error occurred. Please try again.',
-        className: 'bg-red-500 border-none text-white'
+        title: 'Failed to reject applicant',
+        variant: 'destructive'
       });
-    } finally {
-      setEditingApplicant(undefined); // Reset editing state
     }
   };
 
-  // const handleStatusChange = async (id, status) => {
-  //   try {
-  //     const updatedStatus = status ? '1' : '0';
-  //     await axiosInstance.patch(`/email-configs/${id}`, {
-  //       status: updatedStatus
-  //     });
-  //     toast({
-  //       title: 'Email configuration updated successfully',
-  //       className: 'bg-supperagent border-none text-white'
-  //     });
-  //     fetchData();
-  //   } catch (error) {
-  //     console.error('Error updating status:', error);
-  //   }
-  // };
+  const handleStatusChange = async (
+    applicantId: string,
+    currentStatus: string
+  ) => {
+    try {
+      const newStatus =
+        currentStatus === 'shortlisted' ? 'applied' : 'shortlisted';
 
-  const handleEdit = (emailConfig) => {
-    setEditingApplicant(emailConfig);
-    setDialogOpen(true);
+      await axiosInstance.patch(`/hr/applicant/${applicantId}`, {
+        status: newStatus
+      });
+
+      toast({
+        title: `Status updated to ${newStatus === 'shortlisted' ? 'Shortlisted' : 'Applied'}`
+      });
+
+      fetchData(currentPage, entriesPerPage, searchTerm);
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      toast({
+        title: 'Failed to update status',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleBack = () => {
+    navigate(-1);
   };
 
   useEffect(() => {
     fetchData(currentPage, entriesPerPage);
   }, [currentPage, entriesPerPage]);
 
-  const handleSearch = () => {
-    fetchData(currentPage, entriesPerPage, searchTerm);
-  };
-
-  const navigate = useNavigate();
+  console.log(vacancy);
 
   return (
     <div className="space-y-3">
+      <Card className="-mt-3 w-full rounded-lg bg-white p-6 shadow-md">
+        <div className="flex flex-col items-start justify-between gap-1 text-sm text-gray-700">
+          <div className="flex w-full flex-row items-center justify-between gap-2">
+            <h2 className="truncate text-lg font-semibold text-gray-800">
+              Vacancy Title: {vacancy.title}
+            </h2>
+            <Button
+              className="h-8 bg-supperagent text-white hover:bg-supperagent/90"
+              onClick={handleBack}
+            >
+              <MoveLeft />
+              Back
+            </Button>
+          </div>
+          <div className="flex w-full flex-row items-center justify-between">
+            <div className="flex min-w-[250px] flex-col items-start gap-2  ">
+              <span className="font-medium">Employment Type:</span>
+              <span>{vacancy.employmentType}</span>
+            </div>
+
+            <div className="flex min-w-[250px] flex-col items-start gap-2 ">
+              <span className="font-medium">Skills Required:</span>
+              <span>{vacancy.skillsRequired}</span>
+            </div>
+
+            <div className="flex min-w-[250px] flex-col items-start gap-2 ">
+              <span className="font-medium">Salary Range:</span>
+              <span>
+                {vacancy.salaryRange.min} - {vacancy.salaryRange.max}{' '}
+                {vacancy.salaryRange.negotiable ? '(Negotiable)' : ''}
+              </span>
+            </div>
+
+            <div className="flex min-w-[180px] flex-col items-start gap-2 ">
+              <span className="font-medium">Location:</span>
+              <span>{vacancy.location}</span>
+            </div>
+
+            <div className="flex min-w-[200px] flex-col items-start gap-2 ">
+              <span className="font-medium">Deadline:</span>
+              <span>
+                {moment(vacancy.applicationDeadline).format('MMM D, YYYY')}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">All Applicants</h1>
-        {/* <Button
-          className="bg-supperagent text-white hover:bg-supperagent/90"
-          size={'sm'}
-          onClick={() => setDialogOpen(true)}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          New Email Configuration
-        </Button> */}
-      </div>
-      <div className="flex items-center space-x-4">
-        <Input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search by title"
-          className="h-8 max-w-[400px]"
-        />
+        <div className="flex flex-row items-center gap-6 ">
+          <h1 className="text-2xl font-semibold">All Applicants</h1>
+
+          <div className="flex items-center space-x-4">
+            <Input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name or email"
+              className="h-8 min-w-[400px]"
+            />
+            <Button
+              onClick={handleSearch}
+              size="sm"
+              className="bg-supperagent text-white hover:bg-supperagent/90"
+            >
+              Search
+            </Button>
+          </div>
+        </div>
         <Button
-          onClick={handleSearch}
-          size="sm"
-          className="min-w-[100px] border-none bg-supperagent text-white hover:bg-supperagent/90"
+          onClick={() => {
+            navigate(`/admin/hr/add-applicant/${vacancy._id}`);
+          }}
+          className="h-8 bg-supperagent text-white hover:bg-supperagent/90"
         >
-          Search
+          <Plus /> Create Applicant
         </Button>
       </div>
+
+      {/* Applicant Table */}
       <div className="rounded-md bg-white p-4 shadow-2xl">
         {initialLoading ? (
           <div className="flex justify-center py-6">
             <BlinkingDots size="large" color="bg-supperagent" />
           </div>
-        ) : applicant.length === 0 ? (
+        ) : applicants.length === 0 ? (
           <div className="flex justify-center py-6 text-gray-500">
             No records found.
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Vacancy Title</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Employment Type</TableHead>
-                <TableHead>Address</TableHead>
-                {/* <TableHead className="w-32 text-center">Actions</TableHead> */}
-                <TableHead className=" text-center" colSpan={3}>
-                  Actions
-                </TableHead>
-                <TableHead className=" text-center"></TableHead>
-                <TableHead className=" text-center"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody >
-              {applicant.map((applicant) => (
-                <TableRow key={applicant._id} className=''>
-                  <TableCell>
-                    {' '}
-                    {applicant.firstName} {applicant.lastName}
-                  </TableCell>
-                  <TableCell>{applicant.email}</TableCell>
-                  {/* <TableCell>{applicant.vacancyTitle}</TableCell> */}
-                  <TableCell>{applicant.position}</TableCell>
-                  <TableCell>{applicant.employmentType}</TableCell>
-                  <TableCell>{applicant.address}</TableCell>
-
-                  {/* <TableCell className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="bg-supperagent text-white hover:bg-supperagent/90"
-                      onClick={() => handleEdit(applicant)}
-                    >
-                      <Pen className="h-4 w-4" />
-                    </Button>
-                  </TableCell> */}
-
-                  <TableCell className="text-center ">
-                    <Button
-                      variant="ghost"
-                      className="w-32 border-none bg-supperagent px-4 text-sm text-white hover:bg-supperagent/90"
-                      size="icon"
-                      onClick={() => {
-                        navigate(
-                          `/admin/hr/recruit-applicant/${applicant._id}`
-                        );
-                      }}
-                    >
-                      Recruit
-                    </Button>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Button
-                      variant="ghost"
-                      className="w-32 border-none bg-supperagent px-2 text-sm text-white hover:bg-supperagent/90"
-                      size="icon"
-                      onClick={() => {
-                        navigate(`/admin/hr/add-applicant/${applicant._id}`);
-                      }}
-                    >
-                      Reject
-                    </Button>
-                  </TableCell>
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Vacancy Title</TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Employment Type</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {applicants.map((app) => (
+                  <TableRow
+                    key={app._id}
+                    className={
+                      app.status === 'shortlisted' ? 'bg-green-100' : ''
+                    }
+                  >
+                    <TableCell>
+                      {app.firstName} {app.lastName}
+                      {(app.status === 'hired' ||
+                        app.status === 'rejected') && (
+                        <Badge
+                          className={`ml-2 ${app.status === 'hired' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
+                        >
+                          {app.status === 'hired' ? 'Hired' : 'Rejected'}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>{app.email}</TableCell>
+                    <TableCell>{app.position}</TableCell>
+                    <TableCell>{app.employmentType}</TableCell>
+                    <TableCell>{app.address}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-5 w-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent
+                          align="end"
+                          className="border-gray-200 bg-white text-black"
+                        >
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleStatusChange(app._id, app.status)
+                            }
+                            className="cursor-pointer hover:bg-supperagent hover:text-white"
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            {app.status === 'shortlisted'
+                              ? 'Remove from Shortlisted'
+                              : 'Make Shortlisted'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              navigate(
+                                `/admin/hr/recruit-applicant/${app._id}`,
+                                { state: { applicant: app } }
+                              )
+                            }
+                            className="cursor-pointer hover:bg-supperagent hover:text-white"
+                          >
+                            <UserRoundPlus className="mr-2 h-4 w-4" />
+                            Recruit Applicant
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() => {
+                              handleDelete(app._id);
+                            }}
+                            className="cursor-pointer text-destructive hover:bg-red-700 hover:text-white"
+                          >
+                            <UserX className="mr-2 h-4 w-4" />
+                            Reject
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            <DynamicPagination
+              pageSize={entriesPerPage}
+              setPageSize={setEntriesPerPage}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
-        <DynamicPagination
-          pageSize={entriesPerPage}
-          setPageSize={setEntriesPerPage}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
       </div>
+
+      {/* Confirmation Dialog
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) {
+            setSelectedToReject(null);
+            rejectButtonRef.current?.focus(); // Restore focus
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Are you sure?</DialogTitle>
+            <DialogDescription>This will mark the applicant as rejected. This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => {
+                if (selectedToReject) {
+                  handleDelete(selectedToReject);
+                  setDialogOpen(false);
+                }
+              }}
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog> */}
     </div>
   );
 }

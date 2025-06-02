@@ -174,7 +174,9 @@ export default function TrainingBoard() {
                 <TableHead>Training Name</TableHead>
                 <TableHead>Training Description</TableHead>
                 <TableHead>Is Recurring</TableHead>            
-                <TableHead className="w-32 text-center">Actions</TableHead>
+                <TableHead>Validity Days</TableHead>            
+                <TableHead>Expiry Days</TableHead>            
+                <TableHead className=" text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -182,26 +184,20 @@ export default function TrainingBoard() {
                 <TableRow key={training._id}>
                   <TableCell>{training.name}</TableCell>
                   <TableCell>{training.description}</TableCell>
-                  <TableCell>
+                  
+                  <TableCell >
                     {training.isRecurring === true ? "Yes" : "No"}
                     {/* {moment(training.isRecurring).format('MMMM Do YYYY')} */}
                   </TableCell>
                 
-                  {/* <TableCell className="text-center">
-                    <Switch
-                      checked={training.status == 'active'}
-                      onCheckedChange={(checked) =>
-                        handleStatusChange(training._id, checked)
-                      }
-                      className="mx-auto"
-                    />
-                  </TableCell> */}
-                  <TableCell className="text-center">
+                  <TableCell >{training.validityDays}</TableCell>
+                  <TableCell >{training.reminderBeforeDays}</TableCell>
+                  <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       className="border-none bg-supperagent text-white hover:bg-supperagent/90"
                       size="icon"
-                      onClick={()=>{navigate(`/admin/hr/create-training`)}}
+                      onClick={()=>{navigate(`/admin/hr/edit-training/${training._id}`)}}
                     >
                       <Pen className="h-4 w-4" />
                     </Button>

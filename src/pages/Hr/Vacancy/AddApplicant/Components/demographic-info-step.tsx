@@ -58,6 +58,7 @@ interface AddressStepProps {
   defaultValues?: Partial<DemographyData>;
   onSaveAndContinue: (data: DemographyData) => void;
   onSave: (data: DemographyData) => void;
+  onBack: () => void; // Add this prop for the back button
 }
 
 // List of countries for the dropdown
@@ -80,7 +81,8 @@ const countries = [
 export function DemographicInfoStep({
   defaultValues,
   onSaveAndContinue,
-  onSave
+  onSave,
+  onBack
 }: AddressStepProps) {
   const form = useForm<DemographyData>({
     resolver: zodResolver(demographicinfoSchema),
@@ -134,7 +136,7 @@ export function DemographicInfoStep({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <CardContent className="pt-6">
+        <CardContent  className='space-y-4'>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {/* Demographic Information */}
             <FormField
@@ -319,20 +321,23 @@ export function DemographicInfoStep({
           </div>
 
           
-          <div className="flex justify-end space-x-4 mt-4">
-              <Button
-                type="submit"
-                className="border-none bg-supperagent text-white hover:bg-supperagent/90"
-                onClick={handleSave}
-              >
-                Save
-              </Button>
+          <div className="flex justify-between">
+          <Button
+            type="button" // ✅ Prevents form submission
+            className="border-none bg-black text-white hover:bg-black/90"
+            onClick={(e) => {
+              e.preventDefault(); // ✅ Prevent default form behavior
+              onBack();
+            }}
+          >
+            Back
+          </Button>
 
               <Button
                 type="submit"
-                className="border border-supperagent text-supperagent"
+                className=" bg-supperagent text-white hover:bg-supperagent/90"
               >
-                Save & Continue
+                Save 
               </Button>
             </div>
         </CardContent>

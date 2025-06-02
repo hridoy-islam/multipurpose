@@ -37,6 +37,17 @@ import AddApplicant from '@/pages/Hr/Vacancy/AddApplicant';
 import ViewApplicant from '@/pages/Hr/Vacancy/ViewApplicants';
 import RecruitApplicantForm from '@/pages/Hr/Recruitment/RecruitApplicantForm';
 import CreateTraining from '@/pages/Hr/Training/CreateTraining';
+import AddDesignation from '@/pages/Hr/Designation/CreateDesignation';
+import EditDesignation from '@/pages/Hr/Designation/EditDesignation';
+import EditTraining from '@/pages/Hr/Training/EditTraining';
+import EmployeeForm from '@/pages/Hr/Recruitment/employeeForm';
+import EditEmployee from '@/pages/Hr/Employee/editEmployee';
+import CreateShift from '@/pages/Hr/Shift/CreateShift';
+import EditShift from '@/pages/Hr/Shift/EditShift';
+import EmployeeRate from '@/pages/Hr/Employee/employeeRate';
+import AttendanceList from '@/pages/Hr/Attendance/attendaceList';
+import AttendanceApprovalPage from '@/pages/Hr/Attendance-Approve';
+import AttendanceApproveList from '@/pages/Hr/Attendance-Approve/attendance-list';
 
 
 
@@ -87,6 +98,16 @@ export default function AppRouter() {
               element: <Employee />
             },
             {
+              path: 'employee/:id',
+              element: <EditEmployee />
+            },
+           
+            {
+              path: 'employee/:id/employee-rate',
+              element: <EmployeeRate />
+            },
+           
+            {
               path: 'department',
               element: <Department />
             },
@@ -95,8 +116,24 @@ export default function AppRouter() {
               element: <Shift />
             },
             {
+              path: 'create-shift',
+              element: <CreateShift />
+            },
+            {
+              path: 'edit-shift/:id',
+              element: <EditShift />
+            },
+            {
               path: 'designation',
               element: <Designation />
+            },
+            {
+              path: 'designation/create',
+              element: <AddDesignation />
+            },
+            {
+              path: 'designation/edit/:id',
+              element: <EditDesignation />
             },
             {
               path: 'training',
@@ -107,12 +144,24 @@ export default function AppRouter() {
               element: <CreateTraining />
             },
             {
+              path: 'edit-training/:id',
+              element: <EditTraining />
+            },
+            {
               path: 'attendance',
               element: <Attendance />
             },
             {
+              path: 'attendance/attendance-list',
+              element: <AttendanceList />
+            },
+            {
               path: 'attendance-approve',
-              element: <AttendanceApprove />
+              element: <AttendanceApprovalPage />
+            },
+            {
+              path: 'attendance-approve/attendance-list',
+              element: <AttendanceApproveList />
             },
             {
               path: 'attendance-report',
@@ -152,6 +201,10 @@ export default function AppRouter() {
               element: <RecruitApplicantForm/>
             },     
             {
+              path: 'recruit-applicant/employee',
+              element: <EmployeeForm/>
+            },     
+            {
               path: 'edit-vacancy/:id',
               element: <EditVacancy/>
             },     
@@ -162,7 +215,7 @@ export default function AppRouter() {
             },
             {
               path: 'candidate-list',
-              element: <CandidateList />
+              element: <Recruitment />
             },
             {
               path: 'settings',

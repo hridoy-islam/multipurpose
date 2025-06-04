@@ -108,11 +108,13 @@ export default function EmployeeRate() {
           const selected: Shift[] = [];
 
           ratesData.forEach((rate: EmployeeRate) => {
-            const shiftId = rate.shiftId[0];
+            const shiftObj = rate.shiftId[0]; // assuming this is the object with `_id`
+            const shiftId = shiftObj?._id; // get actual string ID
             const shift = shiftsResponse.data.data?.result.find(
               (s: Shift) => s._id === shiftId
             );
-            if (shift) {
+
+            if (shift && shiftId) {
               ratesMap[shiftId] = {
                 id: rate._id,
                 rates: rate.rates
@@ -138,6 +140,8 @@ export default function EmployeeRate() {
 
     fetchData();
   }, [employeeId]);
+
+
 
   const handleAddShift = async (shift: Shift) => {
     if (selectedShifts.some((s) => s._id === shift._id)) return;

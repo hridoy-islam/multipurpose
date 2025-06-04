@@ -10,23 +10,22 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-// import { InstitutionDialog } from './components/institution-dialog';
 import axiosInstance from '@/lib/axios';
 import { useToast } from '@/components/ui/use-toast';
 import { BlinkingDots } from '@/components/shared/blinking-dots';
-// import { DataTablePagination } from '../students/view/components/data-table-pagination';
 import { Input } from '@/components/ui/input';
 import moment from 'moment';
 import { DynamicPagination } from '@/components/shared/DynamicPagination';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { AttendanceDialog } from '../Components';
+import { AttendanceDialog } from './components';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function AttendanceList() {
   const [attendence, setAttendance] = useState<any>([]);
+  const [employeeRates, setEmployeeRates] = useState<any>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAttendence, setEditingAttendence] = useState<any>();
-  const [initialLoading, setInitialLoading] = useState(true); // New state for initial loading
+  const [initialLoading, setInitialLoading] = useState(true);
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -34,12 +33,12 @@ export default function AttendanceList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchParams] = useSearchParams();
   const dateParam = searchParams.get('date');
-  console.log(dateParam);
 
   const fetchData = async (page, entriesPerPage, searchTerm = '') => {
     try {
       if (initialLoading) setInitialLoading(true);
-      
+
+      // Fetch attendance data
       const response = await axiosInstance.get(`/hr/attendance`, {
         params: {
           page,
@@ -47,45 +46,75 @@ export default function AttendanceList() {
           ...(searchTerm ? { searchTerm } : {})
         }
       });
-  
+
       let fetchedData = response.data.data.result;
-  
+
       fetchedData = fetchedData.filter(
         (item) => item.approvalStatus !== 'pending'
       );
-  
+
       // If a date is provided, filter by that day
       if (dateParam) {
         fetchedData = fetchedData.filter((item) =>
           moment(item.clockIn).isSame(dateParam, 'day')
         );
       }
-  
+
       setAttendance(fetchedData);
-      setTotalPages(response.data.data.meta.totalPage); 
+      setTotalPages(response.data.data.meta.totalPage);
+
+      // Fetch employee rates data
+      const ratesResponse = await axiosInstance.get('/hr/employeeRate');
+      setEmployeeRates(ratesResponse.data?.data?.result);
     } catch (error) {
-      console.error('Error fetching Attendance:', error);
+      console.error('Error fetching data:', error);
+      toast({
+        title: 'Failed to load data',
+        className: 'bg-red-500 border-none text-white'
+      });
     } finally {
       setInitialLoading(false);
     }
+  };
+
+  // Helper function to get shift name for a user
+  const getShiftName = (userId) => {
+    const employeeRate = employeeRates.find(
+      (rate) => rate.employeeId === userId
+    );
+
+    if (!employeeRate || !Array.isArray(employeeRate.shiftId)) {
+      return 'Not assigned';
+    }
+
+    const shiftDescriptions = employeeRate.shiftId
+      .map((shift) => {
+        if (shift?.name && shift?.startTime && shift?.endTime) {
+          return `${shift.name} (${shift.startTime} - ${shift.endTime})`;
+        } else if (shift?.name) {
+          return shift.name;
+        }
+        return null;
+      })
+      .filter(Boolean); // remove null/undefined
+
+    return shiftDescriptions.length > 0
+      ? shiftDescriptions.join(', ')
+      : 'Not assigned';
   };
 
   const handleSubmit = async (data) => {
     try {
       let response;
       if (editingAttendence) {
-        // Update institution
         response = await axiosInstance.patch(
           `/hr/attendance/${editingAttendence?._id}`,
           data
         );
       } else {
-        // Create new institution
-
         response = await axiosInstance.post(`/hr/attendance/clock-in`, data);
       }
 
-      // Check if the API response indicates success
       if (response.data && response.data.success === true) {
         toast({
           title: response.data.message || 'Record Updated successfully',
@@ -103,9 +132,8 @@ export default function AttendanceList() {
         });
       }
 
-      // Refresh data
       fetchData(currentPage, entriesPerPage);
-      setEditingAttendence(undefined); // Reset editing state
+      setEditingAttendence(undefined);
     } catch (error) {
       toast({
         title: 'An error occurred. Please try again.',
@@ -114,22 +142,6 @@ export default function AttendanceList() {
     }
   };
 
-  // const handleStatusChange = async (id, status) => {
-  //   try {
-  //     const updatedStatus = status ? 'active' : 'inactive';
-  //     await axiosInstance.patch(`/hr/attendence/${id}`, {
-  //       status: updatedStatus
-  //     });
-  //     toast({
-  //       title: 'Record updated successfully',
-  //       className: 'bg-supperagent border-none text-white'
-  //     });
-  //     fetchData(currentPage, entriesPerPage);
-  //   } catch (error) {
-  //     console.error('Error updating status:', error);
-  //   }
-  // };
-
   const handleEdit = (notice) => {
     setEditingAttendence(notice);
     setDialogOpen(true);
@@ -137,7 +149,7 @@ export default function AttendanceList() {
 
   useEffect(() => {
     fetchData(currentPage, entriesPerPage);
-  }, [currentPage, entriesPerPage]);
+  }, [currentPage, entriesPerPage, initialLoading]);
 
   const handleSearch = () => {
     fetchData(currentPage, entriesPerPage, searchTerm);
@@ -193,11 +205,9 @@ export default function AttendanceList() {
             <TableHeader>
               <TableRow>
                 <TableHead>Employee Name</TableHead>
-                {/* <TableHead>Shift</TableHead> */}
-                <TableHead>Punch</TableHead>
-                {/* <TableHead>Clock Out</TableHead> */}
-                {/* <TableHead></TableHead> */}
-                {/* <TableHead className="w-32 text-center">Status</TableHead> */}
+                <TableHead>Shift</TableHead>
+                <TableHead>Punch Time</TableHead>
+                <TableHead>Duration</TableHead>
                 <TableHead className="w-32 text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -207,13 +217,14 @@ export default function AttendanceList() {
                   <TableCell>
                     {attendence?.userId?.title} {attendence?.userId?.firstName}
                   </TableCell>
-                  {/* <TableCell>{attendence?.userId}</TableCell>                   */}
-                  <TableCell className="flex flex-row items-center ">
-                    {moment(attendence?.clockIn).format('hh:mm')} -
-                    {attendence?.clockOut
-                      ? moment(attendence.clockOut).format('hh:mm')
-                      : '00:00'}
-                    {'  '}
+                  <TableCell>{getShiftName(attendence?.userId?._id)}</TableCell>
+                  <TableCell>
+                    {moment(attendence?.clockIn).format('HH:mm')}
+                    {attendence?.clockOut &&
+                      ` - ${moment(attendence.clockOut).format('HH:mm')}`}
+                  </TableCell>
+
+                  <TableCell>
                     {attendence?.clockIn && attendence?.clockOut
                       ? (() => {
                           const duration = moment.duration(
@@ -221,32 +232,18 @@ export default function AttendanceList() {
                               moment(attendence.clockIn)
                             )
                           );
-                          return `(${duration.hours()}h ${duration.minutes()}m)`;
+                          return `${duration.hours()}h ${duration.minutes()}m`;
                         })()
-                      : ''}
+                      : 'In progress'}
                   </TableCell>
-
-                  {/* <TableCell>
-                  {attendence?.clockOut? moment(attendence.clockOut).format(' hh:mm') : '-'}
-                  </TableCell> */}
-
-                  {/* <TableCell className="text-center">
-                    <Switch
-                      checked={attendence.status == 'active'}
-                      onCheckedChange={(checked) =>
-                        handleStatusChange(attendence._id, checked)
-                      }
-                      className="mx-auto"
-                    />
-                  </TableCell> */}
                   <TableCell className="text-center">
                     <Button
                       variant="ghost"
                       className="border-none bg-supperagent text-white hover:bg-supperagent/90"
                       size="icon"
-                      // onClick={() => handleEdit(attendence)}
+                      onClick={() => handleEdit(attendence)}
                     >
-                      <Save className="h-4 w-4" />
+                      <Pen className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>

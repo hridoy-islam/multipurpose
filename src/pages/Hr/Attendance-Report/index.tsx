@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,21 +39,24 @@ import {
   generatePDF,
   generateUserPDF
 } from './components/actions';
+import moment from 'moment';
 
-// Types based on your Mongoose schemas
+// Updated Types
 interface AttendanceUser {
   _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  position: string;
-  departmentId?: {
-    name: string;
+  userId: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    position: string;
+    departmentId?: {
+      departmentName: string;
+    };
   };
   attendanceCount: number;
   totalHours: number;
   lateCount: number;
-  absentCount: number;
 }
 
 interface AttendanceRecord {
@@ -62,7 +65,6 @@ interface AttendanceRecord {
   clockIn: string;
   clockOut: string;
   duration: string;
-  status: 'present' | 'late' | 'absent' | 'half-day';
   location?: {
     address: string;
   };
@@ -81,6 +83,43 @@ export default function AttendanceReport() {
   const [userHistory, setUserHistory] = useState<AttendanceRecord[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
+  const calculateDuration = (clockIn: string, clockOut: string): number => {
+    if (!clockIn || !clockOut) return 0;
+
+    // Parse the time strings (assuming format like "HH:mm:ss" or ISO string)
+    const start = moment(clockIn, 'HH:mm:ss');
+    const end = moment(clockOut, 'HH:mm:ss');
+
+    // If parsing fails, try ISO format (e.g., from MongoDB)
+    if (!start.isValid() || !end.isValid()) {
+      const startISO = moment(clockIn);
+      const endISO = moment(clockOut);
+
+      if (!startISO.isValid() || !endISO.isValid()) {
+        console.error('Invalid time format:', { clockIn, clockOut });
+        return 0;
+      }
+      return moment.duration(endISO.diff(startISO)).asHours();
+    }
+
+    // Handle overnight shifts (if clockOut is earlier than clockIn)
+    if (end.isBefore(start)) {
+      end.add(1, 'day');
+    }
+
+    const durationHours = moment.duration(end.diff(start)).asHours();
+    return durationHours > 0 ? durationHours : 0;
+  };
+
+
+  useEffect(() => {
+    console.log('User history records:', userHistory.map(record => ({
+      clockIn: record.clockIn,
+      clockOut: record.clockOut,
+      isValid: moment(record.clockIn).isValid() && moment(record.clockOut).isValid()
+    })));
+  }, [userHistory]);
+  
   // Generate the attendance report
   const generateReport = async () => {
     if (!fromDate || !toDate) return;
@@ -88,7 +127,39 @@ export default function AttendanceReport() {
     setIsLoading(true);
     try {
       const data = await getAttendanceReport(fromDate, toDate);
-      setReportData(data);
+
+      // Process the data to aggregate by user
+      const userMap = new Map<string, AttendanceUser>();
+
+      data.forEach((record: any) => {
+        if (!userMap.has(record.userId._id)) {
+          userMap.set(record.userId._id, {
+            _id: record.userId._id,
+            userId: record.userId,
+            attendanceCount: 0,
+            totalHours: 0,
+            lateCount: 0
+          });
+        }
+
+        const user = userMap.get(record.userId._id)!;
+
+        // Count as present if there's a clock-in and clock-out
+        if (record.clockIn && record.clockOut) {
+          user.attendanceCount += 1;
+          const hours = calculateDuration(record.clockIn, record.clockOut);
+          user.totalHours += hours;
+
+          // You can implement your late detection logic here
+          // For example, if clockIn is after 9:30 AM
+          const clockInTime = moment(record.clockIn, 'HH:mm:ss');
+          if (clockInTime.isAfter(moment('09:30:00', 'HH:mm:ss'))) {
+            user.lateCount += 1;
+          }
+        }
+      });
+
+      setReportData(Array.from(userMap.values()));
     } catch (error) {
       console.error('Failed to generate report:', error);
     } finally {
@@ -103,11 +174,33 @@ export default function AttendanceReport() {
 
     try {
       const history = await getUserAttendanceHistory(
-        user._id,
+        user.userId._id,
         fromDate,
         toDate
       );
-      setUserHistory(history);
+
+      // Calculate duration for each record if not already present
+      const processedHistory = history.map((record) => ({
+        
+        ...record,
+        duration:
+          record.duration ||
+          (record.clockIn && record.clockOut
+            ? moment
+                .utc(
+                  moment
+                    .duration(
+                      calculateDuration(record.clockIn, record.clockOut),
+                      'hours'
+                    )
+                    .asMilliseconds()
+                )
+                .format('HH:mm:ss')
+            : '-')
+      }));
+
+      setUserHistory(processedHistory);
+      console.log('User History:', processedHistory);
       setIsHistoryOpen(true);
     } catch (error) {
       console.error('Failed to fetch user history:', error);
@@ -137,8 +230,8 @@ export default function AttendanceReport() {
     setIsPdfLoading(true);
     try {
       await generateUserPDF(
-        selectedUser._id,
-        selectedUser.firstName + ' ' + selectedUser.lastName,
+        selectedUser.userId._id,
+        selectedUser.userId.firstName + ' ' + selectedUser.userId.lastName,
         fromDate,
         toDate,
         userHistory
@@ -149,9 +242,9 @@ export default function AttendanceReport() {
       setIsPdfLoading(false);
     }
   };
-console.log(reportData)
+
   return (
-    <div className=" mx-auto ">
+    <div className="mx-auto">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-semibold">
@@ -255,9 +348,6 @@ console.log(reportData)
                       <TableHead className="text-center">
                         Days Present
                       </TableHead>
-                      <TableHead className="text-center">Late Days</TableHead>
-                      <TableHead className="text-center">Absent Days</TableHead>
-                      <TableHead className="text-center">Total Hours</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -268,20 +358,13 @@ console.log(reportData)
                           {user.userId.firstName} {user.userId.lastName}
                         </TableCell>
                         <TableCell>
-                          {user.userId.departmentId?.departmentName || user.position || 'N/A'}
+                          {user.userId.departmentId?.departmentName || 'N/A'}
                         </TableCell>
                         <TableCell className="text-center">
                           {user.attendanceCount}
                         </TableCell>
-                        <TableCell className="text-center">
-                          {user.lateCount}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {user.absentCount}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {user.totalHours?.toFixed(2)}
-                        </TableCell>
+
+                        
                         <TableCell className="text-right">
                           <Button
                             variant="outline"
@@ -308,8 +391,8 @@ console.log(reportData)
           <DialogHeader>
             <DialogTitle className="flex items-center">
               <User className="mr-2 h-5 w-5" />
-              {selectedUser?.firstName} {selectedUser?.lastName} - Attendance
-              History
+              {selectedUser?.userId.firstName} {selectedUser?.userId.lastName} -
+              Attendance History
             </DialogTitle>
           </DialogHeader>
 
@@ -345,50 +428,30 @@ console.log(reportData)
                     <TableHead>Date</TableHead>
                     <TableHead>Clock In</TableHead>
                     <TableHead>Clock Out</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Location</TableHead>
+                    <TableHead>Duration(Hour)</TableHead>
                     <TableHead>Method</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {userHistory.map((record) => (
                     <TableRow key={record._id}>
-                      <TableCell>{record.date}</TableCell>
+                      <TableCell>{record?.createdAt}</TableCell>
                       <TableCell>
                         <div className="flex items-center">
                           <Clock className="mr-1 h-3 w-3 text-gray-500" />
-                          {record.clockIn}
+                          {record.clockIn || '-'}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center">
                           <Clock className="mr-1 h-3 w-3 text-gray-500" />
-                          {record.clockOut}
+                          {record.clockOut || '-'}
                         </div>
                       </TableCell>
-                      <TableCell>{record.duration}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs font-medium ${
-                            record.status === 'present'
-                              ? 'bg-green-100 text-green-800'
-                              : record.status === 'late'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : record.status === 'absent'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-blue-100 text-blue-800'
-                          }`}
-                        >
-                          {record.status.charAt(0).toUpperCase() +
-                            record.status.slice(1)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {record.location?.address || 'N/A'}
-                      </TableCell>
+                      <TableCell>{record.duration || '-'}</TableCell>
+
                       <TableCell className="text-xs capitalize">
-                        {record.clockType || 'N/A'}
+                        {record?.source || 'N/A'}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -401,33 +464,26 @@ console.log(reportData)
                 <h3 className="mb-2 text-sm font-medium">Summary</h3>
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div className="rounded-md bg-white p-3 shadow-sm">
-                    <div className="text-xs text-gray-500">Present Days</div>
+                    <div className="text-xs text-gray-500">Total Days</div>
                     <div className="text-lg font-semibold">
-                      {userHistory.filter((r) => r.status === 'present').length}
+                      {
+                        userHistory.filter((r) => r.clockIn && r.clockOut)
+                          .length
+                      }
                     </div>
                   </div>
-                  <div className="rounded-md bg-white p-3 shadow-sm">
-                    <div className="text-xs text-gray-500">Late Days</div>
-                    <div className="text-lg font-semibold">
-                      {userHistory.filter((r) => r.status === 'late').length}
-                    </div>
-                  </div>
-                  <div className="rounded-md bg-white p-3 shadow-sm">
-                    <div className="text-xs text-gray-500">Absent Days</div>
-                    <div className="text-lg font-semibold">
-                      {userHistory.filter((r) => r.status === 'absent').length}
-                    </div>
-                  </div>
+                
                   <div className="rounded-md bg-white p-3 shadow-sm">
                     <div className="text-xs text-gray-500">Total Hours</div>
                     <div className="text-lg font-semibold">
                       {userHistory
                         .reduce((total, record) => {
-                          if (record.duration && record.duration !== '-') {
-                            const [hours, minutes] = record.duration
-                              .split(':')
-                              .map(Number);
-                            return total + hours + minutes / 60;
+                          if (record.clockIn && record.clockOut) {
+                            const hours = calculateDuration(
+                              record.clockIn,
+                              record.clockOut
+                            );
+                            return total + (isNaN(hours) ? 0 : hours);
                           }
                           return total;
                         }, 0)

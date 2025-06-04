@@ -43,7 +43,7 @@ export async function getAttendanceReport(fromDate: string, toDate: string) {
 export async function getUserAttendanceHistory(userId: string, fromDate: string, toDate: string) {
   try {
     // Fetch user attendance history from API endpoint
-    const response = await axiosInstance.get(`/hr/attendance/user/${userId}`, {
+    const response = await axiosInstance.get(`/hr/attendance?userId=${userId}`, {
       params: {
         fromDate,
         toDate,
@@ -51,7 +51,7 @@ export async function getUserAttendanceHistory(userId: string, fromDate: string,
     })
 
     // Process the response data
-    const attendanceRecords = response.data.result || []
+    const attendanceRecords = response.data.data.result || []
 
     // Format the records if needed
     return attendanceRecords.map((record: any) => ({
@@ -65,6 +65,8 @@ export async function getUserAttendanceHistory(userId: string, fromDate: string,
       clockType: record.clockType,
       approvalStatus: record.approvalStatus,
       notes: record.notes,
+      createdAt: moment(record.createdAt).format("MM-DD-YYYY"),
+      source: record.source,
     }))
   } catch (error) {
     console.error("Error fetching user attendance history:", error)

@@ -104,8 +104,8 @@ const RecruitApplicantForm = () => {
 
       };
     
-console.log(cleanApplicant)
-      // const res = await axiosInstance.post(`/auth/signup`, data);
+// console.log(cleanApplicant)
+      const res = await axiosInstance.post(`/auth/signup`, data);
 
       toast({
         title: 'Application Submitted',
@@ -113,9 +113,9 @@ console.log(cleanApplicant)
         variant: 'default'
       });
 
-      // navigate('/admin/hr/recruit-applicant/employee', {
-      //   state: { user: res.data.data }
-      // });
+      navigate('/admin/hr/recruit-applicant/employee', {
+        state: { user: res.data.data }
+      });
       setFormSubmitted(true);
     } catch (error: any) {
       console.error('Error during submission:', error);

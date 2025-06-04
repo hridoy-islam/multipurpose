@@ -70,7 +70,8 @@ export default function CreateVacancy() {
   };
 
   const rawNegotiable = watch('salaryRange.negotiable');
-  const negotiable = rawNegotiable === 'true';
+  const negotiable = rawNegotiable === true;
+
   const handleBack = () => {
     navigate(-1);
   };
@@ -180,11 +181,16 @@ export default function CreateVacancy() {
               <Controller
                 name="salaryRange.negotiable"
                 control={control}
-                rules={{ required: 'Please select an option' }}
+                rules={{
+                  validate: (value) =>
+                    value === true ||
+                    value === false ||
+                    'Please select an option'
+                }}
                 render={({ field }) => (
                   <Select
                     onValueChange={(value) => field.onChange(value === 'true')}
-                    value={field.value?.toString()}
+                    value={field.value?.toString() ?? ''}
                   >
                     <SelectTrigger className="mt-1 w-full">
                       <SelectValue placeholder="Select option" />
@@ -203,7 +209,7 @@ export default function CreateVacancy() {
               )}
             </div>
 
-            {/* Conditional Min Salary */}
+            {/* Conditional Min & Max Salary */}
             {negotiable === false && (
               <>
                 <div>

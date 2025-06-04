@@ -2,13 +2,11 @@ import { useEffect, useState, useRef } from 'react';
 import {
   CalendarDays,
   CheckCircle,
-  Code,
   Info,
   MapPin,
   MoreVertical,
   MoveLeft,
   Plus,
-  PlusCircle,
   UserRoundPlus,
   UserX
 } from 'lucide-react';
@@ -62,12 +60,10 @@ export default function ViewApplicant() {
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedToReject, setSelectedToReject] = useState<string | null>(null);
-
   const rejectButtonRef = useRef<HTMLButtonElement>(null); // For focus restoration
-
   const { id } = useParams();
   const location = useLocation();
-  const vacancy = location.state?.vacancy || 'All Applicants';
+  const [vacancy, setVacancy] = useState<any>({});
   const navigate = useNavigate();
 
   const fetchData = async (
@@ -87,13 +83,11 @@ export default function ViewApplicant() {
           }
         }
       );
-
       const sorted = response.data.data.result.sort(
         (a: any, b: any) =>
           (b.status === 'shortlisted' ? 1 : 0) -
           (a.status === 'shortlisted' ? 1 : 0)
       );
-
       setApplicants(sorted);
       setTotalPages(response.data.data.meta.totalPage);
     } catch (error) {
@@ -102,6 +96,16 @@ export default function ViewApplicant() {
       setInitialLoading(false);
     }
   };
+
+  const fetchVacancyDetails = async () => { 
+    try {
+      const response = await axiosInstance.get(`/hr/vacancy/${id}`);
+      setVacancy(response?.data?.data);
+    } catch (error) {
+      console.error('Error fetching vacancy details:', error);
+      return {};
+    }
+  }
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -131,15 +135,14 @@ export default function ViewApplicant() {
     try {
       const newStatus =
         currentStatus === 'shortlisted' ? 'applied' : 'shortlisted';
-
       await axiosInstance.patch(`/hr/applicant/${applicantId}`, {
         status: newStatus
       });
-
       toast({
-        title: `Status updated to ${newStatus === 'shortlisted' ? 'Shortlisted' : 'Applied'}`
+        title: `Status updated to ${
+          newStatus === 'shortlisted' ? 'Shortlisted' : 'Applied'
+        }`
       });
-
       fetchData(currentPage, entriesPerPage, searchTerm);
     } catch (error) {
       console.error('Failed to update status:', error);
@@ -156,17 +159,17 @@ export default function ViewApplicant() {
 
   useEffect(() => {
     fetchData(currentPage, entriesPerPage);
+    fetchVacancyDetails();
   }, [currentPage, entriesPerPage]);
-
-  console.log(vacancy);
 
   return (
     <div className="space-y-3">
+      {/* Vacancy Details Card */}
       <Card className="-mt-3 w-full rounded-lg bg-white p-6 shadow-md">
         <div className="flex flex-col items-start justify-between gap-1 text-sm text-gray-700">
           <div className="flex w-full flex-row items-center justify-between gap-2">
             <h2 className="truncate text-lg font-semibold text-gray-800">
-              Vacancy Title: {vacancy.title}
+              Vacancy Title: {vacancy.title || 'N/A'}
             </h2>
             <Button
               className="h-8 bg-supperagent text-white hover:bg-supperagent/90"
@@ -176,43 +179,52 @@ export default function ViewApplicant() {
               Back
             </Button>
           </div>
-          <div className="flex w-full flex-row items-center justify-between">
-            <div className="flex min-w-[250px] flex-col items-start gap-2  ">
+
+          <div className="flex w-full flex-row flex-wrap items-center justify-between gap-4">
+            <div className="flex min-w-[250px] flex-col items-start gap-2">
               <span className="font-medium">Employment Type:</span>
-              <span>{vacancy.employmentType}</span>
+              <span>{vacancy.employmentType || 'N/A'}</span>
             </div>
 
-            <div className="flex min-w-[250px] flex-col items-start gap-2 ">
+            <div className="flex min-w-[250px] flex-col items-start gap-2">
               <span className="font-medium">Skills Required:</span>
-              <span>{vacancy.skillsRequired}</span>
+              <span>{vacancy.skillsRequired || 'N/A'}</span>
             </div>
 
-            <div className="flex min-w-[250px] flex-col items-start gap-2 ">
+            <div className="flex min-w-[250px] flex-col items-start gap-2">
               <span className="font-medium">Salary Range:</span>
-              <span>
-                {vacancy.salaryRange.min} - {vacancy.salaryRange.max}{' '}
-                {vacancy.salaryRange.negotiable ? '(Negotiable)' : ''}
-              </span>
+              {vacancy.salaryRange ? (
+                <span>
+                  {vacancy.salaryRange.min ?? 0} -{' '}
+                  {vacancy.salaryRange.max ?? 0}
+                  {vacancy.salaryRange.negotiable ? ' (Negotiable)' : ''}
+                </span>
+              ) : (
+                <span>N/A</span>
+              )}
             </div>
 
-            <div className="flex min-w-[180px] flex-col items-start gap-2 ">
+            <div className="flex min-w-[180px] flex-col items-start gap-2">
               <span className="font-medium">Location:</span>
-              <span>{vacancy.location}</span>
+              <span>{vacancy.location || 'N/A'}</span>
             </div>
 
-            <div className="flex min-w-[200px] flex-col items-start gap-2 ">
+            <div className="flex min-w-[200px] flex-col items-start gap-2">
               <span className="font-medium">Deadline:</span>
               <span>
-                {moment(vacancy.applicationDeadline).format('MMM D, YYYY')}
+                {vacancy.applicationDeadline
+                  ? moment(vacancy.applicationDeadline).format('MMM D, YYYY')
+                  : 'N/A'}
               </span>
             </div>
           </div>
         </div>
       </Card>
-      <div className="flex items-center justify-between">
-        <div className="flex flex-row items-center gap-6 ">
-          <h1 className="text-2xl font-semibold">All Applicants</h1>
 
+      {/* Search & Create Applicant Section */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-row items-center gap-6">
+          <h1 className="text-2xl font-semibold">All Applicants</h1>
           <div className="flex items-center space-x-4">
             <Input
               type="text"
@@ -232,7 +244,7 @@ export default function ViewApplicant() {
         </div>
         <Button
           onClick={() => {
-            navigate(`/admin/hr/add-applicant/${vacancy._id}`);
+            navigate(`/admin/hr/add-applicant/${id}`);
           }}
           className="h-8 bg-supperagent text-white hover:bg-supperagent/90"
         >
@@ -293,7 +305,6 @@ export default function ViewApplicant() {
                             <MoreVertical className="h-5 w-5" />
                           </Button>
                         </DropdownMenuTrigger>
-
                         <DropdownMenuContent
                           align="end"
                           className="border-gray-200 bg-white text-black"
@@ -321,7 +332,6 @@ export default function ViewApplicant() {
                             <UserRoundPlus className="mr-2 h-4 w-4" />
                             Recruit Applicant
                           </DropdownMenuItem>
-
                           <DropdownMenuItem
                             onClick={() => {
                               handleDelete(app._id);
@@ -338,7 +348,6 @@ export default function ViewApplicant() {
                 ))}
               </TableBody>
             </Table>
-
             <DynamicPagination
               pageSize={entriesPerPage}
               setPageSize={setEntriesPerPage}
@@ -350,7 +359,7 @@ export default function ViewApplicant() {
         )}
       </div>
 
-      {/* Confirmation Dialog
+      {/* Confirmation Dialog */}
       <Dialog
         open={dialogOpen}
         onOpenChange={(open) => {
@@ -364,7 +373,10 @@ export default function ViewApplicant() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Are you sure?</DialogTitle>
-            <DialogDescription>This will mark the applicant as rejected. This action cannot be undone.</DialogDescription>
+            <DialogDescription>
+              This will mark the applicant as rejected. This action cannot be
+              undone.
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
@@ -383,7 +395,7 @@ export default function ViewApplicant() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
     </div>
   );
 }

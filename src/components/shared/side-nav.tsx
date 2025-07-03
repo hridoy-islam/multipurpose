@@ -1,24 +1,10 @@
 import {
-  HomeIcon,
   UsersIcon,
-  Settings2Icon,
   FileTextIcon,
   UserIcon,
-  ClipboardListIcon,
   ChevronDown,
-  Settings2,
-  CalendarCheck,
-  RefreshCw,
-  BookOpenCheck,
-  Landmark,
+  ChevronRight,
   Users,
-  CircleUser,
-  Link2,
-  AtSign,
-  DraftingCompass,
-  ClipboardPaste,
-  PiggyBank,
-  Vault,
   UserRoundCheck,
   LayoutDashboard,
   Box,
@@ -29,55 +15,44 @@ import {
   ArrowBigUp,
   Award,
   BookText,
-  FileCheck2Icon,
   Calendar,
   CircleDollarSign,
   CircleGauge,
   DoorOpen,
-  CopyPlus,
-  ListChecks,
   ReceiptText,
   Mails,
-  CircleCheckBig
+  CircleCheckBig,
+  BetweenVerticalStart,
+  Menu,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Link, useNavigate } from 'react-router-dom';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger
-} from '../ui/dropdown-menu';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { logout } from '@/redux/features/authSlice';
+
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/hr' },
   {
     icon: UserRoundCheck,
     label: 'Profile',
-    href: 'profile',
-    // subItems: [
-    //   { icon: Users, label: 'Agents', href: 'agents' },
-    //   { icon: Link2, label: 'Course Relation', href: 'course-fee' }
-    // ]
+    href: 'profile'
   },
   {
     icon: Box,
     label: 'Holidays',
-    href: 'holiday',
-    
+    href: 'holiday'
   },
   {
     icon: PencilRuler,
     label: 'MyStuff',
-    href: 'my-stuff',
-    
+    href: 'my-stuff'
   },
-  { icon: UsersIcon, label: 'Employee', href: 'employee' ,
+  {
+    icon: UsersIcon,
+    label: 'Employee',
+    href: 'employee',
     subItems: [
       { icon: Users, label: 'Employee List', href: 'employee' },
       { icon: LayoutPanelTop, label: 'Department', href: 'department' },
@@ -86,111 +61,150 @@ const navItems = [
       { icon: BookText, label: 'Training', href: 'training' }
     ]
   },
-  { icon: FileCheck2, label: 'Attendence', href: 'attendance',
+  {
+    icon: FileCheck2,
+    label: 'Attendance',
+    href: 'attendance',
     subItems: [
       { icon: FileCheck2, label: 'Attendance List', href: 'attendance' },
-      { icon: CircleCheckBig, label: 'Attendance Approve', href: 'attendance-approve' },
-      { icon: Calendar, label: 'Attendance Report', href: 'attendance-report' },
-      
+      {
+        icon: CircleCheckBig,
+        label: 'Attendance Approve',
+        href: 'attendance-approve'
+      },
+      {
+        icon: BetweenVerticalStart,
+        label: 'Attendance Entry',
+        href: '/admin/hr/attendance/attendance-entry'
+      },
+      { icon: Calendar, label: 'Attendance Report', href: 'attendance-report' }
     ]
-   },
+  },
   { icon: CircleDollarSign, label: 'Payroll', href: 'payroll' },
-  { icon: CircleGauge, label: 'Leave', href: 'leave-manage' },
+  { icon: CircleGauge, label: 'Leave',subItems: [
+      { icon: ReceiptText, label: 'Leave Approval', href: 'leave-approve'},
+    ] },
   { icon: FileTextIcon, label: 'Notice', href: 'notice' },
   { icon: DoorOpen, label: 'Vacancy', href: 'vacancy' },
-  { icon: CopyPlus, label: 'Recruitment', href: 'recruitment',
-    subItems: [
-      { icon: ListChecks, label: 'Candidate List', href: 'candidate-list' },    
-      
-    ]
-   },
-  { icon: Settings, label: 'Settings', href: 'settings',
+  {
+    icon: Settings,
+    label: 'Settings',
+    href: 'settings',
     subItems: [
       { icon: ReceiptText, label: 'Company Details', href: 'company-details' },
-      { icon: Mails, label: 'Email Setup', href: 'email-setup' },
-      
-      
+      { icon: Mails, label: 'Email Setup', href: 'email-setup' }
     ]
-   },
-
-  // {
-  //   icon: Settings2Icon,
-  //   label: 'Settings',
-  //   href: '/settings',
-  //   subItems: [
-  //     {
-  //       icon: Settings2,
-  //       label: 'Perameters',
-  //       href: '/settings/',
-  //       subItems: [
-  //         { icon: Landmark, label: 'Institution', href: 'institution' },
-  //         { icon: BookOpenCheck, label: 'Courses', href: 'courses' },
-  //         { icon: RefreshCw, label: 'Terms', href: 'terms' },
-  //         { icon: CalendarCheck, label: 'Academic Year', href: 'academic-year' },
-  //         { icon: Vault , label: 'Bank List', href: 'bank-list' }
-  //       ]
-  //     },
-  //     { icon: CircleUser, label: 'Staffs', href: 'staff' },
-  //     { icon: AtSign, label: 'Emails', href: 'emails' },
-  //     { icon: DraftingCompass, label: 'Drafts', href: 'drafts' }
-  //   ]
-  // }
+  }
 ];
-const NavItem = ({ item, depth = 0 }) => {
-  if (!item) return null; // Ensure no invalid items render
+
+const NavItem = ({ item, isExpanded, onToggle, depth = 0 }) => {
+  const location = useLocation();
+
+  const isActiveLeaf =
+    !item.subItems && location.pathname.startsWith('/' + item.href);
+  const isActiveParent =
+    item.subItems && location.pathname === '/' + item.href;
+
+  const isActive = isActiveLeaf || isActiveParent;
+
   if (item.subItems) {
     return (
-      <DropdownMenuSub>
-        <DropdownMenuSubTrigger className="flex w-full cursor-pointer items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <item.icon className="h-4 w-4" />
-            <span>{item.label}</span>
+      <div className="space-y-1">
+        <button
+          onClick={onToggle}
+          className={cn(
+            'group flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-200 hover:bg-supperagent hover:text-white',
+            depth > 0 && 'pl-6'
+          )}
+        >
+          <div className="flex items-center space-x-3">
+            <item.icon className="h-4 w-4 text-supperagent group-hover:text-white" />
+            <span className="text-black group-hover:text-white">{item.label}</span>
           </div>
-        </DropdownMenuSubTrigger>
-        <DropdownMenuSubContent className="border-none bg-supperagent">
-          {item.subItems.map((subItem) => (
-            <NavItem key={subItem.href} item={subItem} depth={depth + 1} />
-          ))}
-        </DropdownMenuSubContent>
-      </DropdownMenuSub>
+          {isExpanded ? (
+            <ChevronDown className="h-4 w-4 text-supperagent group-hover:text-white" />
+          ) : (
+            <ChevronRight className="h-4 w-4 text-supperagent group-hover:text-white" />
+          )}
+        </button>
+
+        <div
+          className={cn(
+            'overflow-hidden transition-all duration-300 ease-in-out',
+            isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          )}
+        >
+          <div className="space-y-1 border-l-2 border-gray-300">
+            {item.subItems.map((subItem) => (
+              <NavItem key={subItem.href} item={subItem} depth={depth + 1} />
+            ))}
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <DropdownMenuItem asChild>
-      <Link
-        to={item.href}
-        className="flex w-full cursor-pointer items-center space-x-2 text-xs font-medium text-white hover:text-supperagent"
-      >
-        <item.icon className="h-4 w-4" />
-        <span>{item.label}</span>
-      </Link>
-    </DropdownMenuItem>
+    <Link
+      to={item.href}
+      className={cn(
+        'group flex w-full items-center space-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-supperagent hover:text-white',
+        isActive && 'bg-blue-50 text-supperagent shadow-sm',
+        depth > 0 && 'pl-6'
+      )}
+    >
+      <item.icon className="h-4 w-4 text-supperagent group-hover:text-white" />
+      <span className="text-black group-hover:text-white">{item.label}</span>
+    </Link>
   );
 };
+
 
 export function SideNav() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useSelector((state) => state.auth?.user) || null;
+  const [expandedItems, setExpandedItems] = useState(new Set());
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Auto logout if user is null
   useEffect(() => {
     if (!user) {
-      dispatch(logout()); // Dispatch logout action
-      navigate('/'); // Redirect to login page
+      dispatch(logout());
+      navigate('/');
     }
   }, [user, dispatch, navigate]);
 
-  if (!user) return null; // Prevent rendering if user is missing
+  // Auto-expand parent menu if current route is a submenu item
+  useEffect(() => {
+    navItems.forEach((item) => {
+      if (item.subItems) {
+        const hasActiveSubItem = item.subItems.some(
+          (subItem) =>
+            location.pathname === subItem.href ||
+            location.pathname.includes(subItem.href)
+        );
+        if (hasActiveSubItem) {
+          setExpandedItems((prev) => new Set([...prev, item.label]));
+        }
+      }
+    });
+  }, [location.pathname]);
 
-  //Filter out Management & Settings for agents
-  // const filteredNavItems =
-  //   user.role === 'agent'
-  //     ? navItems.filter(
-  //         (item) => !['Management', 'Settings', 'Invoices'].includes(item.label)
-  //       )
-  //     : navItems;
+  if (!user) return null;
+
+  const toggleExpanded = (label) => {
+    setExpandedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(label)) {
+        newSet.delete(label);
+      } else {
+        newSet.add(label);
+      }
+      return newSet;
+    });
+  };
 
   const filterForAgent = (navItems) =>
     navItems.filter(
@@ -198,7 +212,7 @@ export function SideNav() {
     );
 
   const filterForStaff = (navItems, user) => {
-    if (!user?.privileges?.management) return navItems; // If no privileges, return default nav
+    if (!user?.privileges?.management) return navItems;
 
     const management = user.privileges.management;
 
@@ -219,13 +233,14 @@ export function SideNav() {
         if (item.label === 'Settings' && item.subItems) {
           const allowedSubItems = item.subItems
             .map((subItem) => {
-              if (subItem.label === 'Perameters' && subItem.subItems) {
+              if (subItem.label === 'Parameters' && subItem.subItems) {
                 const allowedParameters = subItem.subItems.filter(
                   (param) =>
                     (param.label === 'Institution' && management.institution) ||
                     (param.label === 'Courses' && management.course) ||
                     (param.label === 'Terms' && management.term) ||
-                    (param.label === 'Academic Year' && management.academicYear)
+                    (param.label === 'Academic Year' &&
+                      management.academicYear) ||
                     (param.label === 'Bank List' && management.bank)
                 );
 
@@ -248,7 +263,7 @@ export function SideNav() {
 
         return item.label === 'Invoices' && !management.invoices ? null : item;
       })
-      .filter(Boolean); // Remove null items
+      .filter(Boolean);
   };
 
   const filteredNavItems =
@@ -258,39 +273,96 @@ export function SideNav() {
         ? filterForStaff(navItems, user)
         : navItems;
 
-  return (
-    <nav className="flex space-x-3 bg-white px-2.5  py-4 shadow-sm ">
-      {filteredNavItems.map((item) => (
-        <div key={item.href}>
-          {item.subItems ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="flex cursor-pointer items-center space-x-2 text-sm font-medium text-gray-600 hover:text-supperagent">
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                  <ChevronDown className="h-4 w-4" />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="border-none bg-supperagent">
-                {item.subItems.map((subItem) => (
-                  <NavItem key={subItem.href} item={subItem} />
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link
-              to={item.href}
-              className={cn(
-                'flex cursor-pointer items-center space-x-2 text-sm font-medium text-gray-600 hover:text-supperagent',
-                item.href === '/students' && 'text-supperagent'
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              <span>{item.label}</span>
-            </Link>
-          )}
+  const sidebarContent = (
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <div className="flex h-16 items-center justify-between   px-4">
+        <div className="flex items-center space-x-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-supperagent">
+            <span className="text-sm font-bold text-white">HR</span>
+          </div>
+          <div className="hidden lg:block">
+            <h1 className="text-lg font-semibold text-gray-900">HR System</h1>
+          </div>
         </div>
-      ))}
-    </nav>
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="lg:hidden"
+        >
+          <X className="h-6 w-6 text-gray-500" />
+        </button>
+      </div>
+
+      <div className="flex  flex-col items-center space-x-3">
+        <img
+          src={user.image || '/placeholder.jpg'}
+          alt="User avatar"
+          className="h-24 w-24 rounded-full object-cover"
+        />
+        <div className="flec flex-col items-center justify-center space-y-1">
+          <p className="text-xl font-semibold text-gray-900">
+            Welcome!
+          </p>
+          <p className="text-md font-medium text-gray-900">
+            {user.name || 'User'}
+          </p>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        {filteredNavItems.map((item) => (
+          <NavItem
+            key={item.href}
+            item={item}
+            isExpanded={expandedItems.has(item.label)}
+            onToggle={() => toggleExpanded(item.label)}
+            isActive={
+              location.pathname === item.href ||
+              location.pathname.includes(item.href)
+            }
+          />
+        ))}
+      </nav>
+
+      
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="fixed left-4 top-4 z-50 rounded-lg bg-white p-2 shadow-md lg:hidden"
+      >
+        <Menu className="h-6 w-6 text-gray-600" />
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-sm transition-transform duration-300 lg:translate-x-0',
+          isMobileMenuOpen
+            ? 'translate-x-0'
+            : '-translate-x-full lg:translate-x-0'
+        )}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-64 lg:bg-white lg:shadow-sm">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

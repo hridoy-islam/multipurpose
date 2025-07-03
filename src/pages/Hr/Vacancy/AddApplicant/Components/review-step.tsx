@@ -86,9 +86,9 @@ const ReviewStep = ({ formData, onSubmit,onBack }) => {
           <h2 className="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Disability Information</h2>
           <div className="space-y-2 text-gray-700">
             <p>Has Disability: <span className="font-medium">{demography.hasDisability ? "Yes" : "No"}</span></p>
-            <p>Details: <span className="font-medium">{demography.disabilityDetails || "N/A"}</span></p>
-            <p>Needs Adjustment: <span className="font-medium">{demography.needsAdjustment ? "Yes" : "No"}</span></p>
-            <p>Adjustment Details: <span className="font-medium">{demography.reasonableAdjustmentDetails || "N/A"}</span></p>
+            <p>Details: <span className="font-medium">{demography.disabilityDetails || ""}</span></p>
+            <p>Needs Adjustment: <span className="font-medium">{demography.needsReasonableAdjustment ? "Yes" : "No"}</span></p>
+            <p>Adjustment Details: <span className="font-medium">{demography.reasonableAdjustmentDetails || ""}</span></p>
           </div>
         </section>
 

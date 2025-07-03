@@ -44,11 +44,11 @@ const EmploymentDetailsTab: React.FC<EmploymentDetailsTabProps> = ({
   }, []);
 
   const employmentTypeOptions = [
-    { value: 'Full-time', label: 'Full-time' },
-    { value: 'Part-time', label: 'Part-time' },
-    { value: 'Contract', label: 'Contract' },
-    { value: 'Temporary', label: 'Temporary' },
-    { value: 'Internship', label: 'Internship' }
+    { value: 'full-time', label: 'Full-time' },
+    { value: 'part-time', label: 'Part-time' },
+    { value: 'contractor', label: 'Contractor' },
+    { value: 'temporary', label: 'Temporary' },
+    { value: 'intern', label: 'Intern' }
   ];
 
   const recruitmentEmploymentTypeOptions = [

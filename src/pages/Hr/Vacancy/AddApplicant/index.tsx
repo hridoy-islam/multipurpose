@@ -155,7 +155,7 @@ export default function AddApplicant() {
     flatData.status = 'applied';
     const response = await axiosInstance.post(`/hr/applicant`, flatData);
     console.log(response);
-    navigate(`/admin/hr/view-applicant/${id}`);
+    navigate(`/admin/hr/view-applicants/${id}`);
 
     // All steps are complete, proceed with submission
     console.log('Submitting form data:', formData);

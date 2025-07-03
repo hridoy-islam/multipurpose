@@ -3,12 +3,16 @@ import { Outlet } from 'react-router-dom';
 
 export default function HrLayout() {
   return (
-    <div >
-      <SideNav />
+    <div className="flex gap-4">
+      {/* Sidebar */}
+      <aside className="lg:w-64  bg-gray-100 border-r">
+        <SideNav />
+      </aside>
 
-      <div  className="px-4 mx-auto py-6">
+      {/* Main content */}
+      <main className="flex-1 py-4 mr-4">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 }

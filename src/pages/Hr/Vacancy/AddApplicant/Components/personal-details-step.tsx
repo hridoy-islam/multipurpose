@@ -13,23 +13,10 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
+import Select from 'react-select';
 
 import { CalendarIcon, Camera } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+
 import { useSelector } from 'react-redux';
 import { ImageUploader } from '@/components/shared/image-uploader';
 import { useParams } from 'react-router-dom';
@@ -119,7 +106,32 @@ export function PersonalDetailsStep({
   const handleUploadComplete = (data) => {
     setUploadOpen(false);
   };
+  const titleOptions = [
+    { value: 'Mr', label: 'Mr' },
+    { value: 'Mrs', label: 'Mrs' },
+    { value: 'Miss', label: 'Miss' },
+    { value: 'Ms', label: 'Ms' },
+    { value: 'Dr', label: 'Dr' }
+  ];
 
+  const employmentTypeOptions = [
+    { value: 'full-time', label: 'Full-time' },
+    { value: 'part-time', label: 'Part-time' },
+    { value: 'contractor', label: 'Contractor' },
+    { value: 'temporary', label: 'Temporary' },
+    { value: 'intern', label: 'Intern' }
+  ];
+
+  const sourceOptions = [
+    { value: 'Job Board', label: 'Job Board' },
+    { value: 'Company Website', label: 'Company Website' },
+    { value: 'Referral', label: 'Referral' },
+    { value: 'Recruitment Agency', label: 'Recruitment Agency' },
+    { value: 'Social Media', label: 'Social Media' },
+    { value: 'Career Fair', label: 'Career Fair' },
+    { value: 'Direct Application', label: 'Direct Application' },
+    { value: 'Other', label: 'Other' }
+  ];
 
   return (
     <>
@@ -158,23 +170,22 @@ export function PersonalDetailsStep({
                 control={form.control}
                 name="title"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="mt-2 flex flex-col">
                     <FormLabel>Title</FormLabel>
                     <FormControl>
                       <Select
-                        {...field}
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Title" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Mr">Mr</SelectItem>
-                          <SelectItem value="Mrs">Mrs</SelectItem>
-                          <SelectItem value="Miss">Miss</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        options={titleOptions}
+                        value={titleOptions.find(
+                          (opt) => opt.value === field.value
+                        )}
+                        onChange={(selectedOption) =>
+                          field.onChange(
+                            selectedOption ? selectedOption.value : ''
+                          )
+                        }
+                        placeholder="Select Title"
+                        isClearable
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -339,24 +350,22 @@ export function PersonalDetailsStep({
                 control={form.control}
                 name="employmentType"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="mt-2 flex flex-col">
                     <FormLabel>Employment Type</FormLabel>
                     <FormControl>
                       <Select
-                        {...field}
-                        {...field}
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Employment Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Full-time">Full-time</SelectItem>
-                          <SelectItem value="Part-time">Part-time</SelectItem>
-                          <SelectItem value="Temp">Temp</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        options={employmentTypeOptions}
+                        value={employmentTypeOptions.find(
+                          (opt) => opt.value === field.value
+                        )}
+                        onChange={(selectedOption) =>
+                          field.onChange(
+                            selectedOption ? selectedOption.value : ''
+                          )
+                        }
+                        placeholder="Select Employment Type"
+                        isClearable
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -384,9 +393,21 @@ export function PersonalDetailsStep({
                 name="source"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Source</FormLabel>
+                    <FormLabel>Application Source</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Select
+                        options={sourceOptions}
+                        value={sourceOptions.find(
+                          (opt) => opt.value === field.value
+                        )}
+                        onChange={(selectedOption) =>
+                          field.onChange(
+                            selectedOption ? selectedOption.value : ''
+                          )
+                        }
+                        placeholder="Select Source"
+                        isClearable
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -421,13 +442,12 @@ export function PersonalDetailsStep({
                 type="submit"
                 className=" bg-supperagent text-white hover:bg-supperagent/90"
               >
-                Save 
+                Save
               </Button>
             </div>
           </CardContent>
         </form>
       </Form>
-
 
       <ImageUploader
         open={uploadOpen}

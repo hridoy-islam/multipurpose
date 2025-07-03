@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import {
   CalendarDays,
   CheckCircle,
+  Eye,
   Info,
   MapPin,
   MoreVertical,
@@ -298,7 +299,8 @@ export default function ViewApplicant() {
                     <TableCell>{app.position}</TableCell>
                     <TableCell>{app.employmentType}</TableCell>
                     <TableCell>{app.address}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right flex flex-row items-end gap-2 justify-end">
+                      <Button size='icon' className='bg-supperagent text-white  hover:bg-supperagent/90' onClick={()=> navigate(`/admin/hr/view-applicant/${app._id}`)}><Eye size={24}/></Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">

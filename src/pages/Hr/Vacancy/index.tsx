@@ -164,7 +164,7 @@ export default function Vacancy() {
                       className=" border-none bg-supperagent  text-sm text-white hover:bg-supperagent/90"
                       size="icon"
                       onClick={() => {
-                        navigate(`/admin/hr/view-applicant/${vacancy._id}`);
+                        navigate(`/admin/hr/view-applicants/${vacancy._id}`);
                       }}
                     >
                       <Eye size={24} />

@@ -263,7 +263,7 @@ export default function CreateVacancy() {
                   theme="snow"
                   value={field.value}
                   onChange={field.onChange}
-                  className="mt-1 bg-white"
+                  className="mt-1 h-[300px] bg-white"
                 />
               )}
             />

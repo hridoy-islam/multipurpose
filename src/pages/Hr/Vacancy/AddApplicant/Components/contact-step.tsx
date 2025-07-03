@@ -12,29 +12,11 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
+import Select from 'react-select';
 import { countries } from '@/types';
 
 // Zod validation schema for the contact information form
 const contactSchema = z.object({
-  // homePhone: z.string().optional(),
-  // mobilePhone: z.string().optional(),
-  // otherPhone: z.string().optional(),
-  // email: z.string().email({ message: 'Please enter a valid email address' }),
-  // address: z.string().min(1, { message: 'Address is required' }),
-  // cityOrTown: z.string().min(1, { message: 'City or Town is required' }),
-  // stateOrProvince: z
-  //   .string()
-  //   .min(1, { message: 'State or Province is required' }),
-  // postCode: z.string().min(1, { message: 'Post Code is required' }),
-  // country: z.string().min(1, { message: 'Country is required' })
-
   homePhone: z
     .string()
     .regex(/^[\d+\-\s().]+$/, { message: 'Invalid phone number' })
@@ -93,6 +75,10 @@ export function ContactStep({
     console.log(data);
   }
 
+  const countryOptions = countries.map((country) => ({
+    value: country,
+    label: country
+  }));
   function handleSave() {
     const data = form.getValues();
     onSave(data);
@@ -101,7 +87,7 @@ export function ContactStep({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <CardContent className="pt-6">
+        <CardContent className="space-y-6 pt-6">
           <div className="space-y-10">
             {/* Contact Details */}
             <div>
@@ -226,22 +212,23 @@ export function ContactStep({
                   control={form.control}
                   name="country"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Country</FormLabel>
-                      <Select onValueChange={field.onChange} {...field}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Country" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {countries.map((country, index) => (
-                            <SelectItem key={index} value={country}>
-                              {country}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Select
+                          options={countryOptions}
+                          value={countryOptions.find(
+                            (opt) => opt.value === field.value
+                          )}
+                          onChange={(selectedOption) =>
+                            field.onChange(
+                              selectedOption ? selectedOption.value : ''
+                            )
+                          }
+                          placeholder="Select Country"
+                          isClearable
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -267,7 +254,7 @@ export function ContactStep({
             type="submit"
             className=" bg-supperagent text-white hover:bg-supperagent/90"
           >
-            Save 
+            Save
           </Button>
         </div>
       </form>

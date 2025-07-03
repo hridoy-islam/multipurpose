@@ -26,8 +26,8 @@ import Department from '@/pages/Hr/Department';
 import Shift from '@/pages/Hr/Shift';
 import Designation from '@/pages/Hr/Designation';
 import Training from '@/pages/Hr/Training';
-import AttendanceApprove from '@/pages/Hr/Attendance-Approve';
-import AttendanceReport from '@/pages/Hr/Attendance-Report';
+import AttendanceApprove from '@/pages/Hr/Attendance/Attendance-Approve';
+import AttendanceReport from '@/pages/Hr/Attendance/Attendance-Report';
 import CandidateList from '@/pages/Hr/Candidate-List';
 import CompanyDetails from '@/pages/Hr/Company-Details';
 import EmailSetup from '@/pages/Hr/Email-Setup';
@@ -46,8 +46,11 @@ import CreateShift from '@/pages/Hr/Shift/CreateShift';
 import EditShift from '@/pages/Hr/Shift/EditShift';
 import EmployeeRate from '@/pages/Hr/Employee/employeeRate';
 import AttendanceList from '@/pages/Hr/Attendance/attendaceList';
-import AttendanceApprovalPage from '@/pages/Hr/Attendance-Approve';
-import AttendanceApproveList from '@/pages/Hr/Attendance-Approve/attendance-list';
+import AttendanceApprovalPage from '@/pages/Hr/Attendance/Attendance-Approve';
+import AttendanceApproveList from '@/pages/Hr/Attendance/Attendance-Approve/attendance-list';
+import EntryAttendance from '@/pages/Hr/Attendance/entry-attendance';
+import ApplicantDetailPage from '@/pages/Hr/Vacancy/viewApplicant';
+import LeaveApprovalPage from '@/pages/Hr/LeaveManagement/LeaveApproval';
 
 
 
@@ -156,6 +159,10 @@ export default function AppRouter() {
               element: <AttendanceList />
             },
             {
+              path: 'attendance/attendance-entry',
+              element: <EntryAttendance />
+            },
+            {
               path: 'attendance-approve',
               element: <AttendanceApprovalPage />
             },
@@ -172,9 +179,10 @@ export default function AppRouter() {
               element: <PayRoll />
             },
             {
-              path: 'leave-manage',
-              element: <LeaveManagement />
+              path: 'leave-approve',
+              element: <LeaveApprovalPage />
             },
+           
             {
               path: 'notice',
               element: <NoticeBoard />
@@ -193,8 +201,12 @@ export default function AppRouter() {
               element: <AddApplicant/>
             },     
             {
-              path: 'view-applicant/:id',
+              path: 'view-applicants/:id',
               element: <ViewApplicant/>
+            },     
+            {
+              path: 'view-applicant/:id',
+              element: <ApplicantDetailPage/>
             },     
             {
               path: 'recruit-applicant/:id',

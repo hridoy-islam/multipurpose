@@ -10,35 +10,50 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-// import { InstitutionDialog } from './components/institution-dialog';
 import axiosInstance from '@/lib/axios';
 import { useToast } from '@/components/ui/use-toast';
 import { BlinkingDots } from '@/components/shared/blinking-dots';
-// import { DataTablePagination } from '../students/view/components/data-table-pagination';
-import { Input } from '@/components/ui/input';
 import moment from 'moment';
 import { DynamicPagination } from '@/components/shared/DynamicPagination';
 import { NoticeDialog } from './Components/noticeDialog';
+import { DateRangePicker } from 'react-date-range';
+import 'react-date-range/dist/styles.css'; // main style file
+import 'react-date-range/dist/theme/default.css'; // theme css file
+import { Popover } from '@/components/ui/popover';
 
-export default function NoticeBoard() {
+export default function PNoticeBoard() {
   const [notice, setNotice] = useState<any>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingNotice, setEditingNotice] = useState<any>();
-  const [initialLoading, setInitialLoading] = useState(true); // New state for initial loading
+  const [initialLoading, setInitialLoading] = useState(true);
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [showCalendar, setShowCalendar] = useState(false);
 
-  const fetchData = async (page, entriesPerPage, searchTerm = '') => {
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: null,
+      endDate: null,
+      key: 'selection'
+    }
+  ]);
+
+  const fetchData = async (
+    page: number,
+    entriesPerPage: number,
+    startDate?: string | null,
+    endDate?: string | null
+  ) => {
     try {
-      if (initialLoading) setInitialLoading(true);
+      setInitialLoading(true);
       const response = await axiosInstance.get(`/hr/notice`, {
         params: {
           page,
           limit: entriesPerPage,
-          ...(searchTerm ? { searchTerm } : {})
+          ...(startDate && { startDate }),
+          ...(endDate && { endDate })
         }
       });
       setNotice(response.data.data.result);
@@ -50,26 +65,22 @@ export default function NoticeBoard() {
     }
   };
 
-  const handleSubmit = async (data) => {
+  const handleSubmit = async (data: any) => {
     try {
       let response;
       if (editingNotice) {
-        // Update institution
         response = await axiosInstance.patch(
           `/hr/notice/${editingNotice?._id}`,
           data
         );
       } else {
-        // Create new institution
-
         response = await axiosInstance.post(`/hr/notice`, data);
       }
 
-      // Check if the API response indicates success
       if (response.data && response.data.success === true) {
         toast({
           title: response.data.message || 'Record Updated successfully',
-          className: 'bg-supperagent border-none text-white'
+          className: 'bg-green-500 border-none text-white'
         });
       } else if (response.data && response.data.success === false) {
         toast({
@@ -83,9 +94,8 @@ export default function NoticeBoard() {
         });
       }
 
-      // Refresh data
       fetchData(currentPage, entriesPerPage);
-      setEditingNotice(undefined); // Reset editing state
+      setEditingNotice(undefined);
     } catch (error) {
       toast({
         title: 'An error occurred. Please try again.',
@@ -94,33 +104,45 @@ export default function NoticeBoard() {
     }
   };
 
-    const handleStatusChange = async (id, status) => {
-      try {
-        const updatedStatus = status ? 'active' : 'inactive';
-        await axiosInstance.patch(`/hr/notice/${id}`, {
-          status: updatedStatus
-        });
-        toast({
-          title: 'Record updated successfully',
-          className: 'bg-supperagent border-none text-white'
-        });
-        fetchData(currentPage, entriesPerPage);
-      } catch (error) {
-        console.error('Error updating status:', error);
-      }
-    };
+  const handleStatusChange = async (id: string, status: boolean) => {
+    try {
+      const updatedStatus = status ? 'active' : 'inactive';
+      await axiosInstance.patch(`/hr/notice/${id}`, {
+        status: updatedStatus
+      });
+      toast({
+        title: 'Record updated successfully',
+        className: 'bg-green-500 border-none text-white'
+      });
+      fetchData(currentPage, entriesPerPage);
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
 
-  const handleEdit = (notice) => {
+  const handleEdit = (notice: any) => {
     setEditingNotice(notice);
     setDialogOpen(true);
   };
 
   useEffect(() => {
-    fetchData(currentPage, entriesPerPage);
+    const { startDate, endDate } = dateRange[0];
+    fetchData(
+      currentPage,
+      entriesPerPage,
+      startDate ? moment(startDate).format('YYYY-MM-DD') : undefined,
+      endDate ? moment(endDate).format('YYYY-MM-DD') : undefined
+    );
   }, [currentPage, entriesPerPage]);
 
   const handleSearch = () => {
-    fetchData(currentPage, entriesPerPage, searchTerm);
+    const { startDate, endDate } = dateRange[0];
+    fetchData(
+      currentPage,
+      entriesPerPage,
+      startDate ? moment(startDate).format('YYYY-MM-DD') : undefined,
+      endDate ? moment(endDate).format('YYYY-MM-DD') : undefined
+    );
   };
 
   return (
@@ -137,22 +159,83 @@ export default function NoticeBoard() {
         </Button>
       </div>
 
-      <div className="flex items-center space-x-4">
-        <Input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search by Notice Type"
-          className="h-8 max-w-[400px]"
+
+<div className="flex flex-row items-center justify-start gap-4 relative">
+  <label className="text-sm font-medium">FIlter By Date</label>
+  <div className="relative">
+    <div
+      onClick={() => setShowCalendar((prev) => !prev)}
+      className="mt-1 relative w-full sm:w-[300px] cursor-pointer flex items-center justify-between rounded-md border border-gray-300 px-4 py-2 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-supperagent focus:ring-offset-2"
+    >
+      <span className="text-sm text-gray-700">
+        {dateRange[0].startDate && dateRange[0].endDate
+          ? `${moment(dateRange[0].startDate).format('MMM D, YYYY')} – ${moment(
+              dateRange[0].endDate
+            ).format('MMM D, YYYY')}`
+          : 'Select date range'}
+      </span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-5 w-5 text-gray-500"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
         />
-        <Button
-          onClick={handleSearch}
-          size="sm"
-          className="min-w-[100px] border-none bg-supperagent text-white hover:bg-supperagent/90"
-        >
-          Search
-        </Button>
+      </svg>
+    </div>
+    {showCalendar && (
+      <div className="absolute z-10 mt-2">
+        <div className="rounded-lg bg-white p-4 shadow-xl ring-1 ring-black ring-opacity-5">
+          <DateRangePicker
+            ranges={dateRange}
+            onChange={(ranges) => setDateRange([ranges.selection])}
+            showSelectionPreview={true}
+            moveRangeOnFirstSelection={false}
+            months={2}
+            direction="horizontal"
+            rangeColors={['#3B82F6']}
+          />
+
+          <div className="mt-4 flex justify-end space-x-2">
+           
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShowCalendar(false);
+                setDateRange([
+                  {
+                    startDate: null,
+                    endDate: null,
+                    key: 'selection',
+                  },
+                ]);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setShowCalendar(false);
+                handleSearch();
+              }}
+              className="bg-supperagent text-white hover:bg-supperagent/90"
+            >
+              Apply
+            </Button>
+          </div>
+        </div>
       </div>
+    )}
+  </div>
+</div>
 
       <div className="rounded-md bg-white p-4 shadow-2xl">
         {initialLoading ? (
@@ -171,12 +254,15 @@ export default function NoticeBoard() {
                 <TableHead>Notice Description</TableHead>
                 <TableHead>Notice Date</TableHead>
                 <TableHead>Notice By</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>Designation</TableHead>
+                <TableHead>Users</TableHead>
                 <TableHead className="w-32 text-center">Status</TableHead>
                 <TableHead className="w-32 text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {notice.map((notice) => (
+              {notice.map((notice: any) => (
                 <TableRow key={notice._id}>
                   <TableCell>{notice.noticeType}</TableCell>
                   <TableCell>{notice.noticeDescription}</TableCell>
@@ -184,9 +270,20 @@ export default function NoticeBoard() {
                     {moment(notice.noticeDate).format('MMMM Do YYYY')}
                   </TableCell>
                   <TableCell>{notice.noticeBy}</TableCell>
+                  <TableCell>
+                    {notice.department?.map((d: any) => d.label).join(', ') ||
+                      '-'}
+                  </TableCell>
+                  <TableCell>
+                    {notice.designation?.map((d: any) => d.label).join(', ') ||
+                      '-'}
+                  </TableCell>
+                  <TableCell>
+                    {notice.users?.map((u: any) => u.label).join(', ') || '-'}
+                  </TableCell>
                   <TableCell className="text-center">
                     <Switch
-                      checked={notice.status == 'active'}
+                      checked={notice.status === 'active'}
                       onCheckedChange={(checked) =>
                         handleStatusChange(notice._id, checked)
                       }

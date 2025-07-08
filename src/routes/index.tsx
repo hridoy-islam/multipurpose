@@ -11,7 +11,6 @@ import ErrorPage from '@/pages/ErrorPage/';
 import NewPassword from '@/pages/auth/NewPassword';
 import HrPage from '@/pages/Hr';
 import NoticeBoard from '@/pages/Hr/NoticeBoard';
-import LeaveManagement from '@/pages/Hr/LeaveManagement';
 import Vacancy from '@/pages/Hr/Vacancy';
 import Profile from '@/pages/Hr/Profile';
 import Holiday from '@/pages/Hr/Holidays';
@@ -26,9 +25,7 @@ import Department from '@/pages/Hr/Department';
 import Shift from '@/pages/Hr/Shift';
 import Designation from '@/pages/Hr/Designation';
 import Training from '@/pages/Hr/Training';
-import AttendanceApprove from '@/pages/Hr/Attendance/Attendance-Approve';
 import AttendanceReport from '@/pages/Hr/Attendance/Attendance-Report';
-import CandidateList from '@/pages/Hr/Candidate-List';
 import CompanyDetails from '@/pages/Hr/Company-Details';
 import EmailSetup from '@/pages/Hr/Email-Setup';
 import CreateVacancy from '@/pages/Hr/Vacancy/CreateVacancy';
@@ -51,6 +48,16 @@ import AttendanceApproveList from '@/pages/Hr/Attendance/Attendance-Approve/atte
 import EntryAttendance from '@/pages/Hr/Attendance/entry-attendance';
 import ApplicantDetailPage from '@/pages/Hr/Vacancy/viewApplicant';
 import LeaveApprovalPage from '@/pages/Hr/LeaveManagement/LeaveApproval';
+import PeoplePlannerPage from '@/pages/PeoplePlanner';
+
+import PeoplePlannerLayout from '@/components/layout/peoplePlanner-layout';
+import CreateServiceUserPage from '@/pages/PeoplePlanner/ServiceUser/create';
+import PServiceUserList from '@/pages/PeoplePlanner/ServiceUser';
+import PServiceuserDetailPage from '@/pages/PeoplePlanner/ServiceUser/view-serviceUser';
+import ServiceFunderList from '@/pages/PeoplePlanner/ServiceUser/serviceFunder';
+import CreateServiceFunderPage from '@/pages/PeoplePlanner/ServiceUser/serviceFunder/create-funder';
+import ServiceFunderDetailPage from '@/pages/PeoplePlanner/ServiceUser/view-serviceUser';
+import PlannerPage from '@/pages/PeoplePlanner/Planner';
 
 
 
@@ -240,6 +247,45 @@ export default function AppRouter() {
             {
               path: 'email-setup',
               element: <EmailSetup />
+            }
+          ]
+        },
+        {
+          path: 'people-planner',
+          element: <PeoplePlannerLayout />,
+          children: [
+            {
+              element: <PeoplePlannerPage />,
+              index: true
+            },
+        
+            {
+              path: 'service-user',
+              element: <PServiceUserList />
+            },
+            {
+              path: 'service-user/new',
+              element: <CreateServiceUserPage />
+            },
+            {
+              path: 'service-user/:id',
+              element: <PServiceuserDetailPage />
+            },
+            {
+              path: 'service-funder',
+              element: <ServiceFunderList />
+            },
+            {
+              path: 'service-funder/new',
+              element: <CreateServiceFunderPage />
+            },
+            {
+              path: 'service-funder/:id',
+              element: <ServiceFunderDetailPage />
+            },
+            {
+              path: 'planner',
+              element: <PlannerPage />
             }
           ]
         }

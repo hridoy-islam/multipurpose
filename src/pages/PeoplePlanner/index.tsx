@@ -64,7 +64,7 @@ const deviceData = [
   }
 ];
 
-const HrPage = () => {
+const PeoplePlannerPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -314,4 +314,4 @@ const HrPage = () => {
   );
 };
 
-export default HrPage;
+export default PeoplePlannerPage;

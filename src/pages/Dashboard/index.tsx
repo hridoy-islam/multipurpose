@@ -42,7 +42,7 @@ export const DashboardPage = () => {
     {
       title: 'People Planner',
       icon: <CalendarDays size={48} />,
-      path: '/admin/planner',
+      path: '/admin/people-planner',
     },
   ];
 

@@ -56,8 +56,9 @@ import PServiceUserList from '@/pages/PeoplePlanner/ServiceUser';
 import PServiceuserDetailPage from '@/pages/PeoplePlanner/ServiceUser/view-serviceUser';
 import ServiceFunderList from '@/pages/PeoplePlanner/ServiceUser/serviceFunder';
 import CreateServiceFunderPage from '@/pages/PeoplePlanner/ServiceUser/serviceFunder/create-funder';
-import ServiceFunderDetailPage from '@/pages/PeoplePlanner/ServiceUser/view-serviceUser';
 import PlannerPage from '@/pages/PeoplePlanner/Planner';
+import ServiceuserDetailPage from '@/pages/PeoplePlanner/ServiceUser/view-serviceUser';
+import ServiceFunderDetailPage from '@/pages/PeoplePlanner/ServiceUser/serviceFunder/view-funder';
 
 
 
@@ -269,7 +270,7 @@ export default function AppRouter() {
             },
             {
               path: 'service-user/:id',
-              element: <PServiceuserDetailPage />
+              element: <ServiceuserDetailPage />
             },
             {
               path: 'service-funder',

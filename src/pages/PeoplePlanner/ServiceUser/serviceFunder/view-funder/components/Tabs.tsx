@@ -58,8 +58,8 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, validatio
 
   return (
     <div className="mb-8">
-      <div className="mb-6 border-b border-gray-200 bg-white rounded-t-lg">
-        <div className="flex flex-wrap -mb-px overflow-x-auto px-6">
+      {/* <div className="mb-6 border-b border-gray-200 bg-white rounded-t-lg">
+        <div className="flex flex-wrap -mb-px overflow-x-auto ">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -77,7 +77,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, validatio
             </button>
           ))}
         </div>
-      </div>
+      </div> */}
       <div className="tab-content">
         {tabs.find((tab) => tab.id === activeTab)?.component}
       </div>

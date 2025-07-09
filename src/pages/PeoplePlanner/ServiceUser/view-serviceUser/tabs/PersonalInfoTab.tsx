@@ -9,6 +9,7 @@ interface PersonalInfoTabProps {
   onDateChange: (field: string, value: string) => void;
   onSelectChange: (field: string, value: string) => void;
   isFieldSaving: Record<string, boolean>;
+  getMissingFields: (tab: any, formData: Record<string, any>) => string[];
 }
 
 const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
@@ -16,7 +17,8 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
   onUpdate,
   onDateChange,
   onSelectChange,
-  isFieldSaving
+  isFieldSaving,
+  getMissingFields
 }) => {
   const titleOptions = [
     { value: 'Mr', label: 'Mr' },
@@ -47,26 +49,32 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
     value: country,
     label: country
   }));
-  
-   const statusOptions = [
-      { value: 'active', label: 'Active' },
-      { value: 'inactive', label: 'Inactive' },
-      { value: 'pending', label: 'Pending' },
-      { value: 'suspended', label: 'Suspended' },
-      { value: 'terminated', label: 'Terminated' }
-    ];
-  
-    const servicePriorityOptions = [
-      { value: 'high', label: 'High' },
-      { value: 'medium', label: 'Medium' },
-      { value: 'low', label: 'Low' }
-    ];
-  
+
+  const statusOptions = [
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'suspended', label: 'Suspended' },
+    { value: 'terminated', label: 'Terminated' }
+  ];
+
+  const servicePriorityOptions = [
+    { value: 'high', label: 'High' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'low', label: 'Low' }
+  ];
+
   const typeOptions = [
     { value: 'individual', label: 'Individual' },
     { value: 'organization', label: 'Organization' },
     { value: 'individual-with-medication', label: 'Individual With Medication' }
   ];
+
+  const missingFields = getMissingFields('general', formData);
+
+  const isFieldMissing = (fieldKey: string) => {
+    return missingFields.includes(fieldKey);
+  };
   return (
     <div className="space-y-8">
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -84,6 +92,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             onUpdate={(value) => onSelectChange('type', value)}
             isSaving={isFieldSaving.type}
             required
+            isMissing={isFieldMissing('type')}
           />
           <EditableField
             id="title"
@@ -94,6 +103,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             onUpdate={(value) => onSelectChange('title', value)}
             isSaving={isFieldSaving.title}
             required
+            isMissing={isFieldMissing('title')}
           />
 
           <EditableField
@@ -104,6 +114,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             isSaving={isFieldSaving.firstName}
             required
             placeholder="Enter first name"
+            isMissing={isFieldMissing('firstName')}
           />
 
           <EditableField
@@ -113,7 +124,6 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             onUpdate={(value) => onUpdate('initial', value)}
             isSaving={isFieldSaving.initial}
             placeholder="Enter middle initial"
-            maxLength={1}
           />
 
           <EditableField
@@ -124,6 +134,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             isSaving={isFieldSaving.lastName}
             required
             placeholder="Enter last name"
+            isMissing={isFieldMissing('lastName')}
           />
 
           <EditableField
@@ -138,18 +149,9 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             onUpdate={(value) => onDateChange('dateOfBirth', value)}
             isSaving={isFieldSaving.dateOfBirth}
             required
+            isMissing={isFieldMissing('dateOfBirth')}
           />
 
-          <EditableField
-            id="gender"
-            label="Gender"
-            value={formData.gender}
-            type="select"
-            options={genderOptions}
-            onUpdate={(value) => onSelectChange('gender', value)}
-            isSaving={isFieldSaving.gender}
-            required
-          />
 
           <EditableField
             id="maritalStatus"
@@ -160,6 +162,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             onUpdate={(value) => onSelectChange('maritalStatus', value)}
             isSaving={isFieldSaving.maritalStatus}
             required
+            isMissing={isFieldMissing('maritalStatus')}
           />
 
           <EditableField
@@ -179,9 +182,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             placeholder="Enter religion"
           />
 
-
-
-             <EditableField
+          <EditableField
             id="startDate"
             label="Start Date"
             value={formData.startDate ? formData.startDate : ''}
@@ -189,6 +190,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             onUpdate={(value) => onDateChange('startDate', value)}
             isSaving={isFieldSaving.startDate}
             required
+            isMissing={isFieldMissing('startDate')}
           />
           <EditableField
             id="lastDutyDate"
@@ -198,6 +200,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             onUpdate={(value) => onDateChange('lastDutyDate', value)}
             isSaving={isFieldSaving.lastDutyDate}
             required
+            isMissing={isFieldMissing('lastDutyDate')}
           />
 
           <EditableField
@@ -209,6 +212,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             onUpdate={(value) => onSelectChange('status', value)}
             isSaving={isFieldSaving.status}
             required
+            isMissing={isFieldMissing('status')}
           />
 
           <EditableField
@@ -220,61 +224,66 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
             onUpdate={(value) => onSelectChange('servicePriority', value)}
             isSaving={isFieldSaving.servicePriority}
             required
+            isMissing={isFieldMissing('servicePriority')}
           />
         </div>
       </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
-            Address Information
-          </h3>
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
+          Address Information
+        </h3>
 
-          <div className="space-y-6">
+        <div className="space-y-6">
+          <EditableField
+            id="address"
+            label="Full Address"
+            value={formData.address}
+            type="textarea"
+            onUpdate={(value) => onUpdate('address', value)}
+            isSaving={isFieldSaving.address}
+            required
+            placeholder="Enter full street address"
+            rows={3}
+            isMissing={isFieldMissing('address')}
+          />
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <EditableField
-              id="address"
-              label="Full Address"
-              value={formData.address}
-              type="textarea"
-              onUpdate={(value) => onUpdate('address', value)}
-              isSaving={isFieldSaving.address}
+              id="cityOrTown"
+              label="City/Town"
+              value={formData.cityOrTown}
+              onUpdate={(value) => onUpdate('cityOrTown', value)}
+              isSaving={isFieldSaving.cityOrTown}
               required
-              placeholder="Enter full street address"
-              rows={3}
+              placeholder="Enter city or town"
+              isMissing={isFieldMissing('cityOrTown')}
             />
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <EditableField
-                id="cityOrTown"
-                label="City/Town"
-                value={formData.cityOrTown}
-                onUpdate={(value) => onUpdate('cityOrTown', value)}
-                isSaving={isFieldSaving.cityOrTown}
-                required
-                placeholder="Enter city or town"
-              />
+            <EditableField
+              id="postCode"
+              label="Postal Code"
+              value={formData.postCode}
+              onUpdate={(value) => onUpdate('postCode', value)}
+              isSaving={isFieldSaving.postCode}
+              required
+              placeholder="Enter postal code"
+              isMissing={isFieldMissing('postCode')}
+            />
 
-              <EditableField
-                id="postCode"
-                label="Postal Code"
-                value={formData.postCode}
-                onUpdate={(value) => onUpdate('postCode', value)}
-                isSaving={isFieldSaving.postCode}
-                required
-                placeholder="Enter postal code"
-              />
-
-              <EditableField
-                id="country"
-                label="Country"
-                value={formData.country}
-                type="select"
-                options={countryOptions}
-                onUpdate={(value) => onSelectChange('country', value)}
-                isSaving={isFieldSaving.country}
-                required
-              />
-            </div>
+            <EditableField
+              id="country"
+              label="Country"
+              value={formData.country}
+              type="select"
+              options={countryOptions}
+              onUpdate={(value) => onSelectChange('country', value)}
+              isSaving={isFieldSaving.country}
+              required
+              isMissing={isFieldMissing('country')}
+            />
           </div>
         </div>
+      </div>
     </div>
   );
 };

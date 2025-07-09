@@ -37,7 +37,10 @@ export function RightSidebar({
           selected={selectedDate}
           onChange={(date: Date | null) => setSelectedDate(date || undefined)}
           inline
-          dateFormat="dd/MM/yyyy"
+          dateFormat="YYYY-MM-DD"
+          showMonthDropdown
+          showYearDropdown
+          dropdownMode="select"
           className="text-xs " // Smaller text
           dayClassName={() => '!text-xs'} // Smaller day text
         />
@@ -45,7 +48,7 @@ export function RightSidebar({
 
       {/* Stats Table */}
      
-        <div className="mb-4">
+        <div className="mb-4 min-w-[250px]">
           <h3 className="mb-2  font-medium text-gray-700">
             Daily Statistics
           </h3>

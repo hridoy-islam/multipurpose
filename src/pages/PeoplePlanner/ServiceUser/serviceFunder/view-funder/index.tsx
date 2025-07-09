@@ -2,15 +2,22 @@ import React, { useState } from 'react';
 import { MoveLeft, AlertCircle } from 'lucide-react';
 import { Tabs } from './components/Tabs';
 import PersonalInfoTab from './tabs/PersonalInfoTab';
-import AddressTab from './tabs/AddressTab';
+import AddressTab from './tabs/ContactTab';
 import MiscellaneousTab from './tabs/MiscellaneousTab';
 import EqualityTab from './tabs/EqualityTab';
 import { ValidationNotification } from './components/ValidationNotification';
 import { useEditApplicant } from './hooks/useEditApplicant';
 import { Button } from '@/components/ui/button';
 import EmergencyContactTab from './tabs/EmergencyContacTab';
+import ContactTab from './tabs/ContactTab';
+import TravelTab from './tabs/TravelTab';
+import InvoiceTab from './tabs/InvoiceTab';
+import InvoiceContactTab from './tabs/InvoiceContactTab';
+import PurchaseOrderTab from './tabs/PurchaseOrderTab';
+import TravelRateDetailTab from './tabs/TravelDetailsTab';
+import AdhocInvoiceTab from './tabs/AdhocInvoiceTab';
 
-const PServiceuserDetailPage = () => {
+const ServiceFunderDetailPage = () => {
   const [showNotification, setShowNotification] = useState(true);
   
   const { 
@@ -55,9 +62,9 @@ const PServiceuserDetailPage = () => {
     },
     { 
       id: 'contact', 
-      label: 'Contact', 
+      label: 'Communication', 
       component: (
-        <AddressTab 
+        <ContactTab 
           formData={formData} 
           onUpdate={handleFieldUpdate} 
           onSelectChange={handleSelectChange} 
@@ -66,10 +73,10 @@ const PServiceuserDetailPage = () => {
       )
     },
     { 
-      id: 'equality', 
-      label: 'Equality', 
+      id: 'travel', 
+      label: 'Travel Information', 
       component: (
-        <EqualityTab 
+        <TravelTab 
           formData={formData} 
           onUpdate={handleFieldUpdate} 
           onSelectChange={handleSelectChange} 
@@ -78,10 +85,10 @@ const PServiceuserDetailPage = () => {
       )
     },
     { 
-      id: 'other', 
-      label: 'Other', 
+      id: 'invoice', 
+      label: 'Invoice', 
       component: (
-        <MiscellaneousTab 
+        <InvoiceTab 
           formData={formData} 
           onUpdate={handleFieldUpdate} 
           onDateChange={handleDateChange} 
@@ -91,10 +98,49 @@ const PServiceuserDetailPage = () => {
       )
     },
     { 
-      id: 'emergency', 
-      label: 'Emergency Contact', 
+      id: 'invoiceContact', 
+      label: 'Invoice Contact', 
       component: (
-        <EmergencyContactTab 
+        <InvoiceContactTab 
+          formData={formData} 
+          onUpdate={handleFieldUpdate} 
+          onDateChange={handleDateChange} 
+          onSelectChange={handleSelectChange} 
+          isFieldSaving={isFieldSaving} 
+        />
+      )
+    },
+    { 
+      id: 'po', 
+      label: 'PO', 
+      component: (
+        <PurchaseOrderTab 
+          formData={formData} 
+          onUpdate={handleFieldUpdate} 
+          onDateChange={handleDateChange} 
+          onSelectChange={handleSelectChange} 
+          isFieldSaving={isFieldSaving} 
+        />
+      )
+    },
+    { 
+      id: 'travelrate', 
+      label: 'Travel Details', 
+      component: (
+        <TravelRateDetailTab 
+          formData={formData} 
+          onUpdate={handleFieldUpdate} 
+          onDateChange={handleDateChange} 
+          onSelectChange={handleSelectChange} 
+          isFieldSaving={isFieldSaving} 
+        />
+      )
+    },
+    { 
+      id: 'adhocInvoice', 
+      label: 'Adhoc Invoice', 
+      component: (
+        <AdhocInvoiceTab 
           formData={formData} 
           onUpdate={handleFieldUpdate} 
           onDateChange={handleDateChange} 
@@ -113,20 +159,12 @@ const PServiceuserDetailPage = () => {
   const incompleteTabsCount = Object.values(tabValidation).filter(validation => !validation.isValid).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto py-8 px-4 sm:px-2 lg:px-2">
-        <div className="mb-8 flex items-center justify-between">
+ <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto px-4 py-8 sm:px-2 lg:px-2">
+        <div className="-mt-8 mb-4 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">Service User</h1>
-              {incompleteTabsCount > 0 && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>{incompleteTabsCount} incomplete {incompleteTabsCount === 1 ? 'tab' : 'tabs'}</span>
-                </div>
-              )}
-            </div>
-            <p className="mt-2 text-gray-600">
+           
+            <p className="mt-2 font-semibold text-3xl text-gray-600">
               {formData.firstName && formData.lastName 
                 ? `${formData.title || ''} ${formData.firstName} ${formData.lastName}`.trim()
                 : 'Manage applicant information'
@@ -167,4 +205,4 @@ const PServiceuserDetailPage = () => {
   );
 };
 
-export default PServiceuserDetailPage;
+export default ServiceFunderDetailPage;

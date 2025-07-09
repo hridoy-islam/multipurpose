@@ -2,14 +2,14 @@ import React from 'react';
 import { EditableField } from '../components/EditableField';
 import { countries } from '@/types';
 
-interface AddressTabProps {
+interface ContactTabProps {
   formData: any;
   onUpdate: (field: string, value: any) => void;
   onSelectChange: (field: string, value: string) => void;
   isFieldSaving: Record<string, boolean>;
 }
 
-const AddressTab: React.FC<AddressTabProps> = ({
+const ContactTab: React.FC<ContactTabProps> = ({
   formData,
   onUpdate,
   onSelectChange,
@@ -91,4 +91,4 @@ const AddressTab: React.FC<AddressTabProps> = ({
   );
 };
 
-export default AddressTab;
+export default ContactTab;

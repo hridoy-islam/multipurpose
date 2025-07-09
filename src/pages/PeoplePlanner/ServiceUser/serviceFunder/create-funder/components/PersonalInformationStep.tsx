@@ -11,14 +11,14 @@ import { countries } from '@/types';
 const typeOptions = [
   { value: 'private', label: 'Private Client' },
   { value: 'otherOrganization', label: 'Other Organization' },
-  { value: 'socialServices', label: 'Social Services' },
+  { value: 'socialServices', label: 'Social Services' }
 ];
 const titleOptions = [
   { value: 'Mr', label: 'Mr' },
   { value: 'Mrs', label: 'Mrs' },
   { value: 'Miss', label: 'Miss' },
   { value: 'Ms', label: 'Ms' },
-  { value: 'Dr', label: 'Dr' },
+  { value: 'Dr', label: 'Dr' }
 ];
 
 const statusOptions = [
@@ -26,26 +26,26 @@ const statusOptions = [
   { value: 'inactive', label: 'Inactive' },
   { value: 'pending', label: 'Pending' },
   { value: 'suspended', label: 'Suspended' },
-  { value: 'terminated', label: 'Terminated' },
+  { value: 'terminated', label: 'Terminated' }
 ];
 
 const servicePriorityOptions = [
   { value: 'high', label: 'High' },
   { value: 'medium', label: 'Medium' },
-  { value: 'low', label: 'Low' },
+  { value: 'low', label: 'Low' }
 ];
 
 const branchOptions = [
   { value: 'north', label: 'North Branch' },
   { value: 'south', label: 'South Branch' },
   { value: 'east', label: 'East Branch' },
-  { value: 'west', label: 'West Branch' },
+  { value: 'west', label: 'West Branch' }
 ];
 
 const areaOptions = [
   { value: 'zone1', label: 'Zone 1' },
   { value: 'zone2', label: 'Zone 2' },
-  { value: 'zone3', label: 'Zone 3' },
+  { value: 'zone3', label: 'Zone 3' }
 ];
 
 export const PersonalInformationStep: React.FC = () => {
@@ -53,7 +53,7 @@ export const PersonalInformationStep: React.FC = () => {
     register,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors }
   } = useFormContext<ServiceFunderFormData>();
 
   const watchedTitle = watch('title');
@@ -66,7 +66,7 @@ export const PersonalInformationStep: React.FC = () => {
 
   const countryOptions = countries.map((country) => ({
     value: country,
-    label: country,
+    label: country
   }));
 
   // Initialize nullable select fields to null if undefined on mount
@@ -84,7 +84,7 @@ export const PersonalInformationStep: React.FC = () => {
     watchedServicePriority,
     watchedBranch,
     watchedArea,
-    setValue,
+    setValue
   ]);
 
   return (
@@ -114,7 +114,11 @@ export const PersonalInformationStep: React.FC = () => {
           />
         </FormField>
 
-        <FormField label="First Name" required error={errors.firstName?.message}>
+        <FormField
+          label="First Name"
+          required
+          error={errors.firstName?.message}
+        >
           <Input {...register('firstName')} placeholder="Enter first name" />
         </FormField>
 
@@ -141,8 +145,9 @@ export const PersonalInformationStep: React.FC = () => {
         <FormField label="Country" required error={errors.country?.message}>
           <Select
             value={
-              countryOptions.find((option) => option.value === watchedCountry) ||
-              null
+              countryOptions.find(
+                (option) => option.value === watchedCountry
+              ) || null
             }
             onChange={(option) => setValue('country', option?.value || '')}
             options={countryOptions}
@@ -160,17 +165,25 @@ export const PersonalInformationStep: React.FC = () => {
             className="uppercase"
           />
         </FormField>
-        <FormField label="Description" required error={errors.description?.message}>
+        <FormField
+          label="Description"
+          required
+          error={errors.description?.message}
+        >
           <Textarea
             {...register('description')}
             placeholder="Enter description"
-            className='resize-none h-24 border border-gray-300 rounded-md px-3 py-2 text-sm focus-visible:outline-none '
+            className="h-24 resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus-visible:outline-none "
           />
         </FormField>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <FormField label="Start Date" required error={errors.startDate?.message}>
+        <FormField
+          label="Start Date"
+          required
+          error={errors.startDate?.message}
+        >
           <Input {...register('startDate')} type="date" />
         </FormField>
 

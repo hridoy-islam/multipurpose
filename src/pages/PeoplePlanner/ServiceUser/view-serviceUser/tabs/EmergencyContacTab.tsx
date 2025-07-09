@@ -23,12 +23,14 @@ interface EmergencyContactTabProps {
   onSelectChange?: (field: string, value: any) => void;
   onDateChange?: (field: string, value: string) => void;
   isFieldSaving: Record<string, boolean>;
+  getMissingFields: (tab: any, formData: Record<string, any>) => string[];
 }
 
 const EmergencyContactTab: React.FC<EmergencyContactTabProps> = ({
   formData,
   onUpdate,
-  isFieldSaving
+  isFieldSaving,
+  getMissingFields
 }) => {
   const contacts: EmergencyContact[] = formData.emergencyContacts || [];
 
@@ -83,25 +85,33 @@ const EmergencyContactTab: React.FC<EmergencyContactTabProps> = ({
     onUpdate('emergencyContacts', updated);
   };
 
+  const getMissingEmergencyFields = (contact: EmergencyContact) => {
+    const requiredFields = ['emergencyContactName', 'relationship']; // Add more if needed
+    return requiredFields.filter(
+      (field) =>
+        contact[field as keyof EmergencyContact] === '' ||
+        contact[field as keyof EmergencyContact] === undefined
+    );
+  };
+
+  const isFieldMissing = (index: number, field: keyof EmergencyContact) => {
+    const contact = contacts[index];
+    const missing = getMissingEmergencyFields(contact);
+    return missing.includes(field);
+  };
+
   return (
     <div className="space-y-8">
       {contacts.map((contact, index) => (
-        <div key={index} className="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+        <div
+          key={index}
+          className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm"
+        >
+          <h3 className="mb-4 text-lg font-semibold text-gray-900">
             Emergency Contact #{index + 1}
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <EditableField
-              id={`emergencyContactName-${index}`}
-              label="Name"
-              value={contact.emergencyContactName}
-              type="text"
-              onUpdate={(val) => updateContactField(index, 'emergencyContactName', val)}
-              required
-              isSaving={isFieldSaving['emergencyContactName']}
-            />
-
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <EditableField
               id={`relationship-${index}`}
               label="Relationship"
@@ -110,6 +120,19 @@ const EmergencyContactTab: React.FC<EmergencyContactTabProps> = ({
               options={relationshipOptions}
               onUpdate={(val) => updateContactField(index, 'relationship', val)}
               isSaving={isFieldSaving['relationship']}
+              isMissing={isFieldMissing(index, 'relationship')}
+            />
+            <EditableField
+              id={`emergencyContactName-${index}`}
+              label="Name"
+              value={contact.emergencyContactName}
+              type="text"
+              onUpdate={(val) =>
+                updateContactField(index, 'emergencyContactName', val)
+              }
+              required
+              isSaving={isFieldSaving['emergencyContactName']}
+              isMissing={isFieldMissing(index,'emergencyContactName')}
             />
 
             <EditableField
@@ -211,7 +234,7 @@ const EmergencyContactTab: React.FC<EmergencyContactTabProps> = ({
       <div className="flex justify-end">
         <button
           onClick={addNewContact}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
           Add More
         </button>

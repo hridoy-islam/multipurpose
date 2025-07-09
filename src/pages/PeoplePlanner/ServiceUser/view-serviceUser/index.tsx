@@ -2,15 +2,21 @@ import React, { useState } from 'react';
 import { MoveLeft, AlertCircle } from 'lucide-react';
 import { Tabs } from './components/Tabs';
 import PersonalInfoTab from './tabs/PersonalInfoTab';
-import AddressTab from './tabs/AddressTab';
+import AddressTab from './tabs/ContactTab';
 import MiscellaneousTab from './tabs/MiscellaneousTab';
 import EqualityTab from './tabs/EqualityTab';
 import { ValidationNotification } from './components/ValidationNotification';
 import { useEditApplicant } from './hooks/useEditApplicant';
 import { Button } from '@/components/ui/button';
 import EmergencyContactTab from './tabs/EmergencyContacTab';
+import CriticalInfoTab from './tabs/CriticalInformation';
+import EquipmentTab from './tabs/EquipmentTab';
 
-const ServiceFunderDetailPage = () => {
+import NoteTab from './tabs/NoteTab';
+import PrimaryBranchTab from './tabs/PrimaryBranchTab';
+import ContactTab from './tabs/ContactTab';
+
+const ServiceuserDetailPage = () => {
   const {
     loading,
     activeTab,
@@ -21,6 +27,7 @@ const ServiceFunderDetailPage = () => {
     handleSelectChange,
     handleCheckboxChange,
     isFieldSaving,
+    getMissingFields,
     getTabValidation
   } = useEditApplicant();
 
@@ -50,6 +57,7 @@ const ServiceFunderDetailPage = () => {
           onDateChange={handleDateChange}
           onSelectChange={handleSelectChange}
           isFieldSaving={isFieldSaving}
+          getMissingFields={getMissingFields}
         />
       )
     },
@@ -57,11 +65,12 @@ const ServiceFunderDetailPage = () => {
       id: 'contact',
       label: 'Contact',
       component: (
-        <AddressTab
+        <ContactTab
           formData={formData}
           onUpdate={handleFieldUpdate}
           onSelectChange={handleSelectChange}
           isFieldSaving={isFieldSaving}
+          getMissingFields={getMissingFields}
         />
       )
     },
@@ -74,6 +83,7 @@ const ServiceFunderDetailPage = () => {
           onUpdate={handleFieldUpdate}
           onSelectChange={handleSelectChange}
           isFieldSaving={isFieldSaving}
+          getMissingFields={getMissingFields}
         />
       )
     },
@@ -87,6 +97,7 @@ const ServiceFunderDetailPage = () => {
           onDateChange={handleDateChange}
           onSelectChange={handleSelectChange}
           isFieldSaving={isFieldSaving}
+          getMissingFields={getMissingFields}
         />
       )
     },
@@ -100,6 +111,61 @@ const ServiceFunderDetailPage = () => {
           onDateChange={handleDateChange}
           onSelectChange={handleSelectChange}
           isFieldSaving={isFieldSaving}
+          getMissingFields={getMissingFields}
+        />
+      )
+    },
+    {
+      id: 'criticalInfo',
+      label: 'Critical Information',
+      component: (
+        <CriticalInfoTab
+          formData={formData}
+          onUpdate={handleFieldUpdate}
+          onDateChange={handleDateChange}
+          onSelectChange={handleSelectChange}
+          isFieldSaving={isFieldSaving}
+        />
+      )
+    },
+    {
+      id: 'equipment',
+      label: 'Required Equipment',
+      component: (
+        <EquipmentTab
+          formData={formData}
+          onUpdate={handleFieldUpdate}
+          onSelectChange={handleSelectChange}
+          isFieldSaving={isFieldSaving}
+          getMissingFields={getMissingFields}
+        />
+      )
+    },
+    {
+      id: 'primaryBranch',
+      label: 'Branch & Area',
+      component: (
+        <PrimaryBranchTab
+          formData={formData}
+          onDateChange={handleDateChange}
+          onUpdate={handleFieldUpdate}
+          onSelectChange={handleSelectChange}
+          isFieldSaving={isFieldSaving}
+          getMissingFields={getMissingFields}
+        />
+      )
+    },
+    {
+      id: 'note',
+      label: 'Note',
+      component: (
+        <NoteTab
+          formData={formData}
+          onDateChange={handleDateChange}
+          onUpdate={handleFieldUpdate}
+          onSelectChange={handleSelectChange}
+          isFieldSaving={isFieldSaving}
+          getMissingFields={getMissingFields}
         />
       )
     }
@@ -116,26 +182,13 @@ const ServiceFunderDetailPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto px-4 py-8 sm:px-2 lg:px-2">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">Service User</h1>
-              {incompleteTabsCount > 0 && (
-                <div className="flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-sm text-red-800">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>
-                    {incompleteTabsCount} incomplete{' '}
-                    {incompleteTabsCount === 1 ? 'tab' : 'tabs'}
-                  </span>
-                </div>
-              )}
-            </div>
-            <p className="mt-2 text-gray-600">
-              {formData.firstName && formData.lastName
-                ? `${formData.title || ''} ${formData.firstName} ${formData.lastName}`.trim()
-                : 'Manage applicant information'}
-            </p>
-          </div>
+        <div className="-mt-8 mb-4 flex items-center justify-between">
+          <p className="mt-2 text-3xl font-semibold text-gray-600">
+            {formData.firstName && formData.lastName
+              ? `${formData.title || ''} ${formData.firstName} ${formData.lastName}`.trim()
+              : 'Service User'}
+          </p>
+
           <Button
             variant="outline"
             className="border-none bg-supperagent text-white  hover:bg-supperagent/90"
@@ -146,7 +199,7 @@ const ServiceFunderDetailPage = () => {
           </Button>
         </div>
 
-        <div className="flex gap-2 items-start">
+        <div className="flex items-start gap-2">
           <div className="flex-1">
             <Tabs
               tabs={tabs}
@@ -170,4 +223,4 @@ const ServiceFunderDetailPage = () => {
   );
 };
 
-export default ServiceFunderDetailPage;
+export default ServiceuserDetailPage;

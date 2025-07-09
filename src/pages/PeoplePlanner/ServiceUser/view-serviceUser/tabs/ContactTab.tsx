@@ -2,31 +2,35 @@ import React from 'react';
 import { EditableField } from '../components/EditableField';
 import { countries } from '@/types';
 
-interface AddressTabProps {
+interface ContactTabProps {
   formData: any;
   onUpdate: (field: string, value: any) => void;
   onSelectChange: (field: string, value: string) => void;
   isFieldSaving: Record<string, boolean>;
+  getMissingFields: (tab: any, formData: Record<string, any>) => string[];
 }
 
-const AddressTab: React.FC<AddressTabProps> = ({
+const ContactTab: React.FC<ContactTabProps> = ({
   formData,
   onUpdate,
   onSelectChange,
   isFieldSaving,
+  getMissingFields
 }) => {
+  const missingFields = getMissingFields('contact', formData);
 
+  const isFieldMissing = (fieldKey: string) => {
+    return missingFields.includes(fieldKey);
+  };
 
   return (
     <div className="space-y-8">
-   
-
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-3">
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
           Contact Information
         </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <EditableField
             id="phone"
             label="Phone Number"
@@ -36,6 +40,7 @@ const AddressTab: React.FC<AddressTabProps> = ({
             isSaving={isFieldSaving.phone}
             required
             placeholder="Enter phone number"
+            isMissing={isFieldMissing('phone')}
           />
 
           <EditableField
@@ -54,7 +59,9 @@ const AddressTab: React.FC<AddressTabProps> = ({
             type="email"
             onUpdate={(value) => onUpdate('email', value)}
             isSaving={isFieldSaving.email}
-            placeholder="Enter the email address"
+            placeholder="Enter the email Contact"
+            required
+            isMissing={isFieldMissing('email')}
           />
 
           <EditableField
@@ -65,6 +72,8 @@ const AddressTab: React.FC<AddressTabProps> = ({
             onUpdate={(value) => onUpdate('mobilePhone', value)}
             isSaving={isFieldSaving.mobilePhone}
             placeholder="Enter Mobile phone number"
+            required
+            isMissing={isFieldMissing('mobilePhone')}
           />
 
           <EditableField
@@ -91,4 +100,4 @@ const AddressTab: React.FC<AddressTabProps> = ({
   );
 };
 
-export default AddressTab;
+export default ContactTab;

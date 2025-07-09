@@ -32,15 +32,6 @@ export const serviceFunderSchema = z.object({
 
   description: z.string().min(1, 'Description is required'),
 
-  gender: z
-    .object({
-      value: z.string(),
-      label: z.string()
-    })
-    .nullable()
-    .refine((val) => val !== null && val !== undefined, {
-      message: 'Gender is required'
-    }),
 
   area: z
     .object({

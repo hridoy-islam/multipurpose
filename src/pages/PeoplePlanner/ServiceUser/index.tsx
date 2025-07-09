@@ -107,7 +107,7 @@ export default function ServiceUserList() {
 
   // Handle view action
   const handleView = (id: string) => {
-   navigate(`/admin/people-planner/service-funder/${id}`);
+   navigate(`/admin/people-planner/service-user/${id}`);
   };
 
   // Filtering logic

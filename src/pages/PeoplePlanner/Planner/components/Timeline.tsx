@@ -25,6 +25,7 @@ interface TimelineProps {
   filterBy: string;
   tasks: Task[];
   zoomLevel: number;
+  selectedDate: string;
   contentRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -33,10 +34,13 @@ export function Timeline({
   filterBy,
   tasks,
   zoomLevel,
-  contentRef
+  contentRef,
+  selectedDate
 }: TimelineProps) {
-  const [selectedUser, setSelectedUser] = useState<ServiceUser | Employee | null>(null);
-  
+  const [selectedUser, setSelectedUser] = useState<
+    ServiceUser | Employee | null
+  >(null);
+
   const SLOT_WIDTH = zoomLevel * 2;
   const userListRef = useRef<HTMLDivElement>(null);
   const isUserScroll = useRef(false);
@@ -136,28 +140,35 @@ export function Timeline({
     if (selectedUser) {
       // Filter tasks for selected user in the past 7 days
       const sevenDaysAgo = moment().subtract(7, 'days').startOf('day');
-      baseTasks = tasks.filter(task => {
-        const taskDate = moment(task.date || moment().format('YYYY-MM-DD'), 'YYYY-MM-DD');
-        return task.assigneeId === selectedUser.id && taskDate.isSameOrAfter(sevenDaysAgo);
+      baseTasks = tasks.filter((task) => {
+        const taskDate = moment(
+          task.date || moment().format('YYYY-MM-DD'),
+          'YYYY-MM-DD'
+        );
+        return (
+          task.assigneeId === selectedUser.id &&
+          taskDate.isSameOrAfter(sevenDaysAgo)
+        );
       });
     } else {
-      // Filter for current day only
-      const today = moment().format('YYYY-MM-DD');
-      baseTasks = tasks.filter(task => {
-        const taskDate = task.date || today;
-        return taskDate === today;
+      // Filter for selected date only (changed from today)
+      baseTasks = tasks.filter((task) => {
+        const taskDate = task.date || selectedDate;
+        return taskDate === selectedDate;
       });
     }
 
     // Apply additional filters
     if (filterBy !== 'All') {
-      baseTasks = baseTasks.filter(task => 
-        task.type === (filterBy === 'Service User' ? 'service-user' : 'employee')
+      baseTasks = baseTasks.filter(
+        (task) =>
+          task.type ===
+          (filterBy === 'Service User' ? 'service-user' : 'employee')
       );
     }
 
     return baseTasks;
-  }, [tasks, selectedUser, filterBy]);
+  }, [tasks, selectedUser, filterBy, selectedDate]);
 
   const today = useMemo(() => moment().format('dddd DD/MM/YYYY'), []);
 
@@ -207,7 +218,7 @@ export function Timeline({
                 variant="ghost"
                 size="sm"
                 onClick={handleBackToMain}
-                className="flex items-center gap-1 text-xs"
+                className="flex items-center gap-1 text-xs  hover:text-white hover:bg-supperagent/90"
               >
                 <ArrowLeft className="h-3 w-3" />
                 Back to All Users
@@ -228,9 +239,9 @@ export function Timeline({
             </div>
           </div>
           <div className="text-xs text-gray-600">
-            Total: {formatDuration(totalMinutes)} | 
-            Unallocated: {formatDuration(unallocatedMinutes)} | 
-            Allocated: {formatDuration(allocatedMinutes)}
+            Total: {formatDuration(totalMinutes)} | Unallocated:{' '}
+            {formatDuration(unallocatedMinutes)} | Allocated:{' '}
+            {formatDuration(allocatedMinutes)}
           </div>
         </div>
       </div>
@@ -239,109 +250,111 @@ export function Timeline({
       <div className="flex flex-1 overflow-hidden">
         {/* Fixed User/Date Column */}
         <div className="flex w-20 flex-shrink-0 flex-col border-r border-gray-200 bg-white sm:w-48">
-          <div className="h-8 flex-shrink-0 border-b border-gray-200 bg-gray-50 flex items-center justify-center">
+          <div className="flex h-8 flex-shrink-0 items-center justify-center border-b border-gray-200 bg-gray-50">
             <span className="text-xs font-medium text-gray-600">
               {!selectedUser ? 'Users' : 'Days'}
             </span>
           </div>
 
-          <div
-            ref={userListRef}
-            className="overflow-y-auto"
-          >
-            {!selectedUser ? (
-              // User list view
-              currentData.map((item, index) => {
-                const isServiceUser = 'type' in item;
-                const taskCount = filteredTasks.filter(task => task.assigneeId === item.id).length;
+          <div ref={userListRef} className="overflow-y-auto">
+            {!selectedUser
+              ? // User list view
+                currentData.map((item, index) => {
+                  const isServiceUser = 'type' in item;
+                  const taskCount = filteredTasks.filter(
+                    (task) => task.assigneeId === item.id
+                  ).length;
 
-                return (
-                  <div
-                    key={item.id}
-                    className={`flex h-10 items-center gap-2 p-1 sm:h-12 ${
-                      index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                    } rounded-md transition-colors hover:bg-gray-100 cursor-pointer`}
-                    onClick={() => handleUserClick(item)}
-                  >
-                    {/* Avatar */}
-                    <div className="flex-shrink-0">
-                      <div
-                        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                          isServiceUser
-                            ? 'bg-teal-100 text-teal-700'
-                            : 'bg-blue-100 text-blue-700'
-                        }`}
-                      >
-                        {item.initials}
+                  return (
+                    <div
+                      key={item.id}
+                      className={`flex h-10 items-center gap-2 p-1 sm:h-12 ${
+                        index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                      } cursor-pointer rounded-md transition-colors hover:bg-gray-100`}
+                      onClick={() => handleUserClick(item)}
+                    >
+                      {/* Avatar */}
+                      <div className="flex-shrink-0">
+                        <div
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                            isServiceUser
+                              ? 'bg-teal-100 text-teal-700'
+                              : 'bg-blue-100 text-blue-700'
+                          }`}
+                        >
+                          {item.initials}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-900">
-                        {item.name}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs text-gray-500">
-                          {isServiceUser ? item.type : (item as Employee).role}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-gray-900">
+                          {item.name}
                         </p>
-                        {taskCount > 0 && (
-                          <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
-                            {taskCount}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-gray-500">
+                            {isServiceUser
+                              ? item.type
+                              : (item as Employee).role}
+                          </p>
+                          {/* {taskCount > 0 && (
+                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+                              {taskCount}
+                            </span>
+                          )} */}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })
-            ) : (
-              // Days list view for selected user
-              past7Days.map((day, index) => {
-                const dayTasks = filteredTasks.filter(task => 
-                  (task.date || moment().format('YYYY-MM-DD')) === day.date
-                );
+                  );
+                })
+              : // Days list view for selected user
+                past7Days.map((day, index) => {
+                  const dayTasks = filteredTasks.filter(
+                    (task) =>
+                      (task.date || moment().format('YYYY-MM-DD')) === day.date
+                  );
 
-                return (
-                  <div
-                    key={day.date}
-                    className={`flex h-10 items-center gap-2 p-1 sm:h-12 ${
-                      index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                    } ${day.isToday ? 'ring-1 ring-blue-200 bg-blue-50' : ''} rounded-md`}
-                  >
-                    {/* Date indicator */}
-                    <div className="flex-shrink-0">
-                      <div
-                        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                          day.isToday
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {moment(day.date).format('DD')}
+                  return (
+                    <div
+                      key={day.date}
+                      className={`flex h-10 items-center gap-2 p-1 sm:h-12 ${
+                        index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                      } ${day.isToday ? 'bg-blue-50 ring-1 ring-blue-200' : ''} rounded-md`}
+                    >
+                      {/* Date indicator */}
+                      <div className="flex-shrink-0">
+                        <div
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                            day.isToday
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {moment(day.date).format('DD')}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="min-w-0 flex-1">
-                      <p className={`truncate text-sm font-medium ${
-                        day.isToday ? 'text-blue-900' : 'text-gray-900'
-                      }`}>
-                        {day.displayDate}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs text-gray-500">
-                          {day.isToday ? 'Today' : moment(day.date).fromNow()}
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={`truncate text-sm font-medium ${
+                            day.isToday ? 'text-blue-900' : 'text-gray-900'
+                          }`}
+                        >
+                          {day.displayDate}
                         </p>
-                        {dayTasks.length > 0 && (
-                          <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                            {dayTasks.length}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-gray-500">
+                            {day.isToday ? 'Today' : moment(day.date).fromNow()}
+                          </p>
+                          {dayTasks.length > 0 && (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                              {dayTasks.length}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })
-            )}
+                  );
+                })}
           </div>
         </div>
 
@@ -356,7 +369,10 @@ export function Timeline({
             className="sticky top-0 z-50 border-b border-gray-200 bg-white"
             style={{ width: `${timeSlots.length * SLOT_WIDTH}rem` }}
           >
-            <div className="flex" style={{ width: `${timeSlots.length * SLOT_WIDTH}rem` }}>
+            <div
+              className="flex"
+              style={{ width: `${timeSlots.length * SLOT_WIDTH}rem` }}
+            >
               {timeSlots.map((time, index) => (
                 <div
                   key={index}
@@ -374,186 +390,276 @@ export function Timeline({
             className="divide-y divide-gray-200"
             style={{ width: `${timeSlots.length * SLOT_WIDTH}rem` }}
           >
-            {!selectedUser ? (
-              // User rows view
-              currentData.map((item, index) => (
-                <div
-                  key={item.id}
-                  className={`relative h-10 sm:h-12 ${
-                    index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                  }`}
-                >
-                  {/* Grid Lines */}
-                  <div className="pointer-events-none absolute inset-0 flex">
-                    {timeSlots.map((time, timeIndex) => (
-                      <div
-                        key={timeIndex}
-                        className="h-full border-l border-gray-200"
-                        style={{ width: `${SLOT_WIDTH}rem` }}
-                      />
-                    ))}
-                  </div>
+            {!selectedUser
+              ? // User rows view
+                currentData.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className={`relative h-10 sm:h-12 ${
+                      index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                    }`}
+                  >
+                    {/* Grid Lines */}
+                    <div className="pointer-events-none absolute inset-0 flex">
+                      {timeSlots.map((time, timeIndex) => (
+                        <div
+                          key={timeIndex}
+                          className="h-full border-l border-gray-200"
+                          style={{ width: `${SLOT_WIDTH}rem` }}
+                        />
+                      ))}
+                    </div>
 
-                  {/* Tasks */}
-                  {filteredTasks
-                    .filter(task => task.assigneeId === item.id)
-                    .map((task) => {
-                      const position = getTaskPosition(task.startTime, task.endTime);
-                      
-                      return (
-                        <ContextMenu key={task.id}>
-                          <ContextMenuTrigger asChild>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div
-                                  className={`absolute top-1 h-6 shadow-lg sm:h-10 ${task.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
-                                  style={position}
-                                >
-                                  <div className="truncate text-xs font-medium">
-                                    {task.startTime}-{task.endTime}
-                                  </div>
-                                  <div className="truncate text-xs">{task.title}</div>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent className="z-50 shadow-lg">
-                                <div className="space-y-1 p-1">
-                                  <p className="text-xs font-medium">{task.title}</p>
-                                  <p className="text-xs">
-                                    {task.startTime} - {task.endTime} ({task.duration})
-                                  </p>
-                                  <p className="text-xs">{task.serviceType}</p>
-                                  <p className="text-xs">
-                                    Status: {task.status === 'allocated' ? 'Allocated' : 'Unallocated'}
-                                  </p>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </ContextMenuTrigger>
+                    {/* Tasks */}
+                    {filteredTasks
+                      .filter((task) => task.assigneeId === item.id)
+                      .map((task) => {
+                        const position = getTaskPosition(
+                          task.startTime,
+                          task.endTime
+                        );
 
-                          <ContextMenuContent className="w-36">
-                            <ContextMenuSub>
-                              <ContextMenuSubTrigger className="text-xs">
-                                Allocate
-                              </ContextMenuSubTrigger>
-                              <ContextMenuSubContent className="w-48">
-                                {employees.map((employee) => (
-                                  <ContextMenuItem
-                                    key={employee.id}
-                                    className="text-xs"
+                        return (
+                          <Tooltip>
+                            <ContextMenu>
+                              <ContextMenuTrigger asChild>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    className={`absolute top-1 h-6 shadow-lg sm:h-10 ${task.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
+                                    style={position}
                                   >
-                                    {employee.name}
-                                  </ContextMenuItem>
-                                ))}
-                              </ContextMenuSubContent>
-                            </ContextMenuSub>
-                            <ContextMenuItem className="text-xs">
-                              Copy
-                            </ContextMenuItem>
-                            <ContextMenuItem className="text-xs">
-                              Cancel
-                            </ContextMenuItem>
-                            <ContextMenuItem className="text-xs">
-                              Delete
-                            </ContextMenuItem>
-                          </ContextMenuContent>
-                        </ContextMenu>
-                      );
-                    })}
-                </div>
-              ))
-            ) : (
-              // Day rows view for selected user
-              past7Days.map((day, index) => (
-                <div
-                  key={day.date}
-                  className={`relative h-10 sm:h-12 ${
-                    index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                  } ${day.isToday ? 'bg-blue-50' : ''}`}
-                >
-                  {/* Grid Lines */}
-                  <div className="pointer-events-none absolute inset-0 flex">
-                    {timeSlots.map((time, timeIndex) => (
-                      <div
-                        key={timeIndex}
-                        className={`h-full border-l ${
-                          day.isToday ? 'border-blue-200' : 'border-gray-200'
-                        }`}
-                        style={{ width: `${SLOT_WIDTH}rem` }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Tasks for this day */}
-                  {filteredTasks
-                    .filter(task => (task.date || moment().format('YYYY-MM-DD')) === day.date)
-                    .map((task) => {
-                      const position = getTaskPosition(task.startTime, task.endTime);
-                      
-                      return (
-                        <ContextMenu key={task.id}>
-                          <ContextMenuTrigger asChild>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div
-                                  className={`absolute top-1 h-6 shadow-lg sm:h-10 ${task.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
-                                  style={position}
-                                >
-                                  <div className="truncate text-xs font-medium">
-                                    {task.startTime}-{task.endTime}
+                                    <div className="truncate text-xs font-medium">
+                                      {task.startTime}-{task.endTime}
+                                    </div>
+                                    <div className="truncate text-xs">
+                                      {task.title}
+                                    </div>
                                   </div>
-                                  <div className="truncate text-xs">{task.title}</div>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent className="z-50 shadow-lg">
-                                <div className="space-y-1 p-1">
-                                  <p className="text-xs font-medium">{task.title}</p>
-                                  <p className="text-xs">
-                                    {day.fullDate}
-                                  </p>
-                                  <p className="text-xs">
-                                    {task.startTime} - {task.endTime} ({task.duration})
-                                  </p>
-                                  <p className="text-xs">{task.serviceType}</p>
-                                  <p className="text-xs">
-                                    Status: {task.status === 'allocated' ? 'Allocated' : 'Unallocated'}
-                                  </p>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </ContextMenuTrigger>
+                                </TooltipTrigger>
+                              </ContextMenuTrigger>
 
-                          <ContextMenuContent className="w-36">
-                            <ContextMenuSub>
-                              <ContextMenuSubTrigger className="text-xs">
-                                Allocate
-                              </ContextMenuSubTrigger>
-                              <ContextMenuSubContent className="w-48">
-                                {employees.map((employee) => (
-                                  <ContextMenuItem
-                                    key={employee.id}
-                                    className="text-xs"
-                                  >
-                                    {employee.name}
-                                  </ContextMenuItem>
-                                ))}
-                              </ContextMenuSubContent>
-                            </ContextMenuSub>
-                            <ContextMenuItem className="text-xs">
-                              Copy
-                            </ContextMenuItem>
-                            <ContextMenuItem className="text-xs">
-                              Cancel
-                            </ContextMenuItem>
-                            <ContextMenuItem className="text-xs">
-                              Delete
-                            </ContextMenuItem>
-                          </ContextMenuContent>
-                        </ContextMenu>
-                      );
-                    })}
-                </div>
-              ))
-            )}
+                              <ContextMenuContent className="z-[9999] w-36 border-none bg-white text-black shadow-lg">
+                                <ContextMenuSub>
+                                  <ContextMenuSubTrigger className="text-xs">
+                                    Allocate
+                                  </ContextMenuSubTrigger>
+                                  <ContextMenuSubContent className="w-48 border-none bg-white text-black shadow-lg">
+                                    {employees.map((employee) => (
+                                      <ContextMenuSub key={employee.id}>
+                                        <ContextMenuSubTrigger className="text-xs">
+                                          {employee.name}
+                                        </ContextMenuSubTrigger>
+                                        <ContextMenuSubContent className="w-48 space-y-1 border-none bg-white text-black shadow-lg">
+                                          <ContextMenuItem className="text-xs">
+                                            Maintenance
+                                          </ContextMenuItem>
+
+                                          <ContextMenuSub>
+                                            <ContextMenuSubTrigger className="text-xs">
+                                              Show Routes
+                                            </ContextMenuSubTrigger>
+                                            <ContextMenuSubContent className="w-48 border-none bg-white text-black shadow-lg">
+                                              <ContextMenuItem className="text-xs">
+                                                Send Email
+                                              </ContextMenuItem>
+                                              <ContextMenuItem className="text-xs">
+                                                Send Message
+                                              </ContextMenuItem>
+                                            </ContextMenuSubContent>
+                                          </ContextMenuSub>
+
+                                          <ContextMenuSub>
+                                            <ContextMenuSubTrigger className="text-xs">
+                                              Allocate
+                                            </ContextMenuSubTrigger>
+                                            <ContextMenuSubContent className="w-48 border-none bg-white text-black shadow-lg">
+                                              <ContextMenuItem className="text-xs">
+                                                Single
+                                              </ContextMenuItem>
+                                              <ContextMenuItem className="text-xs">
+                                                Batch
+                                              </ContextMenuItem>
+                                            </ContextMenuSubContent>
+                                          </ContextMenuSub>
+                                        </ContextMenuSubContent>
+                                      </ContextMenuSub>
+                                    ))}
+                                  </ContextMenuSubContent>
+                                </ContextMenuSub>
+
+                                <ContextMenuItem className="text-xs">
+                                  Copy
+                                </ContextMenuItem>
+                                <ContextMenuItem className="text-xs">
+                                  Cancel
+                                </ContextMenuItem>
+                                <ContextMenuItem className="text-xs">
+                                  Delete
+                                </ContextMenuItem>
+                              </ContextMenuContent>
+                            </ContextMenu>
+                            <TooltipContent className="z-50 shadow-lg">
+                              <div className="space-y-1 p-1">
+                                <p className="text-xs font-medium">
+                                  {task.title}
+                                </p>
+                                <p className="text-xs">
+                                  {task.startTime} - {task.endTime}
+                                </p>
+                                <p className="text-xs">{task.serviceType}</p>
+                                <p className="text-xs">
+                                  Status:{' '}
+                                  {task.status === 'allocated'
+                                    ? 'Allocated'
+                                    : 'Unallocated'}
+                                </p>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                  </div>
+                ))
+              : // Day rows view for selected user
+                past7Days.map((day, index) => (
+                  <div
+                    key={day.date}
+                    className={`relative h-10 sm:h-12 ${
+                      index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                    } ${day.isToday ? 'bg-blue-50' : ''}`}
+                  >
+                    {/* Grid Lines */}
+                    <div className="pointer-events-none absolute inset-0 flex">
+                      {timeSlots.map((time, timeIndex) => (
+                        <div
+                          key={timeIndex}
+                          className={`h-full border-l ${
+                            day.isToday ? 'border-blue-200' : 'border-gray-200'
+                          }`}
+                          style={{ width: `${SLOT_WIDTH}rem` }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Tasks for this day */}
+                    {filteredTasks
+                      .filter(
+                        (task) =>
+                          (task.date || moment().format('YYYY-MM-DD')) ===
+                          day.date
+                      )
+                      .map((task) => {
+                        const position = getTaskPosition(
+                          task.startTime,
+                          task.endTime
+                        );
+
+                        return (
+                          <ContextMenu key={task.id}>
+                            <ContextMenuTrigger asChild>
+                              <div
+                                onContextMenu={(e) => e.stopPropagation()} // optional safeguard
+                                className={`absolute top-1 h-6 shadow-lg sm:h-10 ${task.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
+                                style={position}
+                              >
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div>
+                                      <div className="truncate text-xs font-medium">
+                                        {task.startTime}-{task.endTime}
+                                      </div>
+                                      <div className="truncate text-xs">
+                                        {task.title}
+                                      </div>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="z-50 shadow-lg">
+                                    <div className="space-y-1 p-1">
+                                      <p className="text-xs font-medium">
+                                        {task.title}
+                                      </p>
+                                      <p className="text-xs">
+                                        {task.startTime} - {task.endTime}
+                                      </p>
+                                      <p className="text-xs">
+                                        {task.serviceType}
+                                      </p>
+                                      <p className="text-xs">
+                                        Status:{' '}
+                                        {task.status === 'allocated'
+                                          ? 'Allocated'
+                                          : 'Unallocated'}
+                                      </p>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </ContextMenuTrigger>
+
+                            <ContextMenuContent className="z-[9999] w-36 border-none bg-white text-black shadow-lg">
+                              <ContextMenuSub>
+                                <ContextMenuSubTrigger className="text-xs">
+                                  Allocate
+                                </ContextMenuSubTrigger>
+                                <ContextMenuSubContent className="w-48 border-none bg-white text-black shadow-lg">
+                                  {employees.map((employee) => (
+                                    <ContextMenuSub key={employee.id}>
+                                      <ContextMenuSubTrigger className="text-xs">
+                                        {employee.name}
+                                      </ContextMenuSubTrigger>
+                                      <ContextMenuSubContent className="w-48 space-y-1 border-none bg-white text-black shadow-lg">
+                                        <ContextMenuItem className="text-xs">
+                                          Maintenance
+                                        </ContextMenuItem>
+
+                                        <ContextMenuSub>
+                                          <ContextMenuSubTrigger className="text-xs">
+                                            Show Routes
+                                          </ContextMenuSubTrigger>
+                                          <ContextMenuSubContent className="w-48 border-none bg-white text-black shadow-lg">
+                                            <ContextMenuItem className="text-xs">
+                                              Send Email
+                                            </ContextMenuItem>
+                                            <ContextMenuItem className="text-xs">
+                                              Send Message
+                                            </ContextMenuItem>
+                                          </ContextMenuSubContent>
+                                        </ContextMenuSub>
+
+                                        <ContextMenuSub>
+                                          <ContextMenuSubTrigger className="text-xs">
+                                            Allocate
+                                          </ContextMenuSubTrigger>
+                                          <ContextMenuSubContent className="w-48 border-none bg-white text-black shadow-lg">
+                                            <ContextMenuItem className="text-xs">
+                                              Single
+                                            </ContextMenuItem>
+                                            <ContextMenuItem className="text-xs">
+                                              Batch
+                                            </ContextMenuItem>
+                                          </ContextMenuSubContent>
+                                        </ContextMenuSub>
+                                      </ContextMenuSubContent>
+                                    </ContextMenuSub>
+                                  ))}
+                                </ContextMenuSubContent>
+                              </ContextMenuSub>
+
+                              <ContextMenuItem className="text-xs">
+                                Copy
+                              </ContextMenuItem>
+                              <ContextMenuItem className="text-xs">
+                                Cancel
+                              </ContextMenuItem>
+                              <ContextMenuItem className="text-xs">
+                                Delete
+                              </ContextMenuItem>
+                            </ContextMenuContent>
+                          </ContextMenu>
+                        );
+                      })}
+                  </div>
+                ))}
           </div>
         </div>
       </div>

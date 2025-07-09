@@ -7,6 +7,7 @@ import { TopControls } from './components/TopControls';
 import { Timeline } from './components/Timeline';
 import { serviceUsers, employees, tasks, dayStats } from '@/data/plannerData';
 import type { SidebarState } from '@/types/planner';
+import moment from 'moment';
 
 export default function PlannerPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -20,44 +21,43 @@ export default function PlannerPage() {
     left: true,
     right: true
   });
-
   const contentRef = React.useRef<HTMLDivElement>(null);
-
+  
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 1, 8));
   const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 1, 2));
   const handleSearch = () => {}; // Already handled in the filtering
-
+  
   // Filter tasks based on status
   const filteredTasks = useMemo(() => {
     if (status === 'all') return tasks;
     return tasks.filter(task => task.status === status);
   }, [status]);
-
+  
   // Filter users based on all criteria
   const currentData = useMemo(() => {
     let result = [...serviceUsers, ...employees];
-
+    
     // Apply filterBy
     if (filterBy === 'Service User') {
       result = serviceUsers;
     } else if (filterBy === 'Employee') {
       result = employees;
     }
-
+    
     // Apply designation filter
     if (designation !== 'All') {
       result = result.filter(user => 
         'role' in user ? user.role === designation : false
       );
     }
-
+    
     // Apply department filter (assuming department is a property)
     if (department !== 'All') {
       result = result.filter(user => 
         'department' in user ? user.department === department : false
       );
     }
-
+    
     // Apply search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -66,10 +66,13 @@ export default function PlannerPage() {
         ('email' in user && user.email.toLowerCase().includes(term))
       );
     }
-
+    
     return result.sort((a, b) => a.name.localeCompare(b.name));
   }, [filterBy, designation, department, searchTerm]);
-
+  
+  const selectedDateString = useMemo(() => {
+    return moment(selectedDate).format('YYYY-MM-DD');
+  }, [selectedDate]);
   return (
     <div className="h-full">
       <div className="py-1">
@@ -100,6 +103,7 @@ export default function PlannerPage() {
               filterBy={filterBy}
               tasks={filteredTasks}
               zoomLevel={zoomLevel}
+              selectedDate={selectedDateString}
               contentRef={contentRef}
             />
           </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, ChevronRight } from 'lucide-react';
+import { AlertTriangle, ChevronRight, CheckCircle } from 'lucide-react';
 
 interface ValidationNotificationProps {
   validation: { [key: string]: { isValid: boolean; missingFields: string[] } };
@@ -12,42 +12,33 @@ const tabLabels: { [key: string]: string } = {
   equality: 'Equality',
   other: 'Other',
   emergency: 'Emergency Contact',
+  criticalInfo: 'Critical Information',
+  equipment: 'Required Equipment',
+  primaryBranch: 'Branch & Area',
+  note: 'Note',
 };
 
 export const ValidationNotification: React.FC<ValidationNotificationProps> = ({
   validation,
   onTabClick,
 }) => {
-  const incompleteTabs = Object.entries(validation).filter(
-    ([_, tabValidation]) => !tabValidation.isValid
-  );
+  const allTabs = Object.entries(validation);
 
-  if (incompleteTabs.length === 0) return null;
-
-  const totalMissingFields = incompleteTabs.reduce(
-    (total, [_, tabValidation]) => total + tabValidation.missingFields.length,
-    0
-  );
+  if (allTabs.length === 0) return null;
 
   return (
     <div className="w-72 bg-white border border-gray-200 rounded-lg shadow-lg self-center">
-      <div className="p-2">
-        <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
-          <h3 className="text-sm font-semibold text-black">
-            Incomplete Required Fields
-          </h3>
-        </div>
+      <div className="p-2 space-y-2">
+        {allTabs.map(([tabId, tabValidation]) => {
+          const isInvalid = !tabValidation.isValid;
+          const missingCount = tabValidation.missingFields.length;
 
-        <p className="text-sm text-red-700 mb-4">
-          {totalMissingFields} required {totalMissingFields === 1 ? 'field' : 'fields'} missing across {incompleteTabs.length} {incompleteTabs.length === 1 ? 'tab' : 'tabs'}
-        </p>
-
-        <div className="space-y-2">
-          {incompleteTabs.map(([tabId, tabValidation]) => (
+          return (
             <div
               key={tabId}
-              className="group cursor-pointer p-3 rounded-md border border-gray-300 transition-all duration-200 hover:border-red-400"
+              className={`group cursor-pointer p-3 rounded-md border transition-all duration-200 hover:border-supperagent ${
+                isInvalid ? 'border-red-300' : 'border-gray-300'
+              }`}
               onClick={() => onTabClick(tabId)}
             >
               <div className="flex items-center justify-between">
@@ -55,28 +46,20 @@ export const ValidationNotification: React.FC<ValidationNotificationProps> = ({
                   <span className="text-sm font-medium text-black">
                     {tabLabels[tabId] || tabId}
                   </span>
-                  <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
-                    {tabValidation.missingFields.length}
-                  </span>
+
+                  {isInvalid ? (
+                    <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                      {missingCount}
+                    </span>
+                  ) : (
+                    <CheckCircle className="text-green-500 w-4 h-4" />
+                  )}
                 </div>
-                <ChevronRight className="h-4 w-4 text-red-500 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <div className="mt-1">
-                <p className="text-xs text-black">
-                  Missing: {tabValidation.missingFields.slice(0, 2).join(', ')}
-                  {tabValidation.missingFields.length > 2 &&
-                    ` +${tabValidation.missingFields.length - 2} more`}
-                </p>
+                <ChevronRight className="h-4 w-4 text-supperagent group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
-          ))}
-        </div>
-
-        <div className="mt-4">
-          <p className="text-xs text-black">
-            Click on any tab above to complete the missing fields
-          </p>
-        </div>
+          );
+        })}
       </div>
     </div>
   );

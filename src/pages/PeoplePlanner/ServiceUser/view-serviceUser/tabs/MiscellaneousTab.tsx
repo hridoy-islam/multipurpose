@@ -7,6 +7,7 @@ interface MiscellaneousTabProps {
   onDateChange: (field: string, value: string) => void;
   onSelectChange: (field: string, value: any) => void;
   isFieldSaving: Record<string, boolean>;
+  getMissingFields: (tab: any, formData: Record<string, any>) => string[];
 }
 
 const MiscellaneousTab: React.FC<MiscellaneousTabProps> = ({
@@ -15,20 +16,27 @@ const MiscellaneousTab: React.FC<MiscellaneousTabProps> = ({
   onDateChange,
   onSelectChange,
   isFieldSaving,
+  getMissingFields
 }) => {
   const booleanOptions = [
     { value: true, label: 'Yes' },
-    { value: false, label: 'No' },
+    { value: false, label: 'No' }
   ];
+
+  const missingFields = getMissingFields('other', formData);
+
+  const isFieldMissing = (fieldKey: string) => {
+    return missingFields.includes(fieldKey);
+  };
 
   return (
     <div className="space-y-8">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-3">
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
           Employment and Service Details
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <EditableField
             id="serviceLocationExId"
             label="Service Location Ex ID"
@@ -37,6 +45,7 @@ const MiscellaneousTab: React.FC<MiscellaneousTabProps> = ({
             onUpdate={(value) => onUpdate('serviceLocationExId', value)}
             isSaving={isFieldSaving.serviceLocationExId}
             required
+            isMissing={isFieldMissing('serviceLocationExId')}
           />
 
           <EditableField
@@ -48,11 +57,12 @@ const MiscellaneousTab: React.FC<MiscellaneousTabProps> = ({
             onUpdate={(value) => onSelectChange('timesheetSignature', value)}
             isSaving={isFieldSaving.timesheetSignature}
             required
+            isMissing={isFieldMissing('timesheetSignature')}
           />
         </div>
 
         {formData.timesheetSignature === true && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
             <EditableField
               id="timesheetSignatureNote"
               label="Timesheet Signature Not Required Note"
@@ -61,6 +71,7 @@ const MiscellaneousTab: React.FC<MiscellaneousTabProps> = ({
               onUpdate={(value) => onUpdate('timesheetSignatureNote', value)}
               isSaving={isFieldSaving.timesheetSignatureNote}
               required
+              isMissing={isFieldMissing('timesheetSignatureNote')}
             />
           </div>
         )}

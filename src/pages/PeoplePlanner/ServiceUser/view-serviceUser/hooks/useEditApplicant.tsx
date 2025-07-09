@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 
 interface FormData {
   // Personal Information
-  type: string  | null;
-  title: string  | null;
+  type: string | null;
+  title: string | null;
   image?: any;
   firstName: string;
   middleInitial?: string;
@@ -51,7 +51,6 @@ interface FormData {
   [key: string]: any;
 }
 
-
 interface ValidationResult {
   isValid: boolean;
   missingFields: string[];
@@ -64,35 +63,37 @@ interface TabValidation {
 export const useEditApplicant = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
-  const [isFieldSaving, setIsFieldSaving] = useState<Record<string, boolean>>({});
+  const [isFieldSaving, setIsFieldSaving] = useState<Record<string, boolean>>(
+    {}
+  );
   const [formData, setFormData] = useState<FormData>({
-    type: 'individual',
-    title: 'Mr',
-    firstName: 'John',
+    type: '',
+    title: '',
+    firstName: '',
     middleInitial: '',
-    lastName: 'Doe',
+    lastName: '',
     preferredName: '',
-    dateOfBirth: '1990-01-01',
-    gender: 'Male',
-    maritalStatus: 'Single',
+    dateOfBirth: '',
+    gender: '',
+    maritalStatus: '',
     ethnicOrigin: '',
-    religion: 'Islam',
+    religion: '',
     address: '',
     city: '',
     postCode: '',
-    country: 'United Kingdom',
+    country: '',
     phone: '',
     fax: '',
     mobile: '',
     other: '',
     email: '',
     website: '',
-    startDate: '1990-01-01',
-    lastDutyDate: '1990-01-01',
-    status: 'active',
-    servicePriority: 'medium',
+    startDate: '',
+    lastDutyDate: '',
+    status: '',
+    servicePriority: '',
     serviceLocationExId: '',
-    timesheetSignature: false,
+    timesheetSignature: undefined,
     timesheetSignatureNote: '',
     phoneNumber: '',
     emergencyContact: '',
@@ -102,21 +103,31 @@ export const useEditApplicant = () => {
     nationality: '',
     preferredLanguage: '',
     emergencyContacts: [
+      {
+        emergencyContactName: '',
+        relationship: '',
+        address: '',
+        cityOrTown: '',
+        country: '',
+        postCode: '',
+        note: '',
+        phone: '',
+        mobile: '',
+        email: '',
+        emailRota: undefined,
+        sendInvoice: undefined
+      }
+    ],
+    criticalInfo: [
+    { date: '', type: null, details: '' } 
+  ],
+   primaryBranch: [
     {
-      emergencyContactName: '',
-      relationship: '',
-      address: '',
-      cityOrTown: '',
-      country: '',
-      postCode: '',
-      note: '',
-      phone: '',
-      mobile: '',
-      email: '',
-      emailRota: false,
-      sendInvoice: false
-    }
-  ]
+      fromDate: '',
+      branch: '',
+      area:'',
+      note: ''
+    },]
   });
 
   // Define required fields for each tab
@@ -127,7 +138,6 @@ export const useEditApplicant = () => {
       { field: 'firstName', label: 'First Name' },
       { field: 'lastName', label: 'Last Name' },
       { field: 'dateOfBirth', label: 'Date of Birth' },
-      { field: 'gender', label: 'Gender' },
       { field: 'maritalStatus', label: 'Marital Status' },
       { field: 'startDate', label: 'Start Date' },
       { field: 'lastDutyDate', label: 'Last Duty Date' },
@@ -136,86 +146,190 @@ export const useEditApplicant = () => {
       { field: 'address', label: 'Full Address' },
       { field: 'cityOrTown', label: 'City/Town' },
       { field: 'postCode', label: 'Postal Code' },
-      { field: 'country', label: 'Country' },
+      { field: 'country', label: 'Country' }
     ],
     contact: [
-      { field: 'phoneNumber', label: 'Phone Number' },
-      { field: 'email', label: 'Email Address' }
+      { field: 'phone', label: 'Phone Number' },
+      { field: 'mobilePhone', label: 'Mobile Phone' },
+      { field: 'email', label: 'Email' }
     ],
     equality: [
-      { field: 'ethnicity', label: 'Ethnicity' },
-      { field: 'nationality', label: 'Nationality' },
-      { field: 'preferredLanguage', label: 'Preferred Language' }
+      { field: 'gender', label: 'Gender' },
+      { field: 'maritalStatus', label: 'Marital Status' }
     ],
     other: [
-      { field: 'serviceLocationExId', label: 'Service Location Ex Id' },
-      
-    ]
+      { field: 'serviceLocationExId', label: 'Service Location Ex ID' },
+      { field: 'timesheetSignature', label: 'Timesheet Signature Required' },
+      {
+        field: 'timesheetSignatureNote',
+        label: 'Timesheet Signature Not Required Note'
+      }
+    ],
+    emergency: [
+      { field: 'emergencyContactName', label: 'Name' },
+      { field: 'relationship', label: 'Relationship' }
+    ],
+    criticalInfo: [
+      { field: 'date', label: 'Date' },
+      { field: 'type', label: 'Type' },
+      { field: 'details', label: 'Details' }
+    ],
+    equipment: [],
+    primaryBranch: [
+       { field: 'fromDate', label: 'From Date' },
+      { field: 'branch', label: 'Branch' },
+      { field: 'area', label: 'Area' }
+    ],
+    note: []
   };
 
-  const validateTab = (tabId: string): ValidationResult => {
-    const requiredFields = requiredFieldsByTab[tabId as keyof typeof requiredFieldsByTab] || [];
-    const missingFields: string[] = [];
+  const getMissingFields = (
+    tab: keyof typeof requiredFieldsByTab,
+    formData: Record<string, any>
+  ) => {
+    return requiredFieldsByTab[tab]
+      .filter(({ field }) => !formData[field]?.toString().trim())
+      .map(({ field }) => field); // Return field names instead of labels
+  };
 
-    requiredFields.forEach(({ field, label }) => {
-      const value = formData[field];
-      if (!value || (typeof value === 'string' && value.trim() === '')) {
-        missingFields.push(label);
-      }
+const validateTab = (tabId: string): ValidationResult => {
+  const missingFields: string[] = [];
+
+  if (tabId === 'emergency') {
+    formData.emergencyContacts?.forEach((contact: any, index: number) => {
+      requiredFieldsByTab.emergency.forEach(({ field }) => {
+        if (!contact[field] || contact[field].toString().trim() === '') {
+          missingFields.push(`${field}[${index}]`);
+        }
+      });
     });
 
     return {
       isValid: missingFields.length === 0,
       missingFields
     };
+  }
+
+  if (tabId === 'primaryBranch') {
+  formData.primaryBranch?.forEach((item: any, index: number) => {
+    requiredFieldsByTab.primaryBranch.forEach(({ field }) => {
+      const value = item[field];
+
+      const isEmpty =
+        value === null ||
+        value === undefined ||
+        (typeof value === 'string' && value.trim() === '') ||
+        (typeof value === 'object' && !value.value); // for select fields
+
+      if (isEmpty) {
+        missingFields.push(`${field}[${index}]`);
+      }
+    });
+  });
+
+  return {
+    isValid: missingFields.length === 0,
+    missingFields
   };
+}
+
+
+  if (tabId === 'criticalInfo') {
+    formData.criticalInfo?.forEach((info: any, index: number) => {
+      requiredFieldsByTab.criticalInfo.forEach(({ field }) => {
+        const value = info[field];
+        const isEmpty =
+          value === null ||
+          value === undefined ||
+          (typeof value === 'string' && value.trim() === '') ||
+          (typeof value === 'object' && !value.value); // for { label, value } objects like `type`
+
+        if (isEmpty) {
+          missingFields.push(`${field}[${index}]`);
+        }
+      });
+    });
+
+    
+
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
+  }
+
+  // All other tabs
+  const requiredFields =
+    requiredFieldsByTab[tabId as keyof typeof requiredFieldsByTab] || [];
+
+  requiredFields.forEach(({ field }) => {
+    // Conditionally require timesheetSignatureNote
+    if (
+      field === 'timesheetSignatureNote' &&
+      formData['timesheetSignature'] !== false
+    ) {
+      return;
+    }
+
+    const value = formData[field];
+    if (!value || (typeof value === 'string' && value.trim() === '')) {
+      missingFields.push(field);
+    }
+  });
+
+  return {
+    isValid: missingFields.length === 0,
+    missingFields
+  };
+};
+
 
   const getTabValidation = (): TabValidation => {
     const validation: TabValidation = {};
-    Object.keys(requiredFieldsByTab).forEach(tabId => {
+    Object.keys(requiredFieldsByTab).forEach((tabId) => {
       validation[tabId] = validateTab(tabId);
     });
     return validation;
   };
 
   const handleFieldUpdate = async (field: string, value: any) => {
-    setIsFieldSaving(prev => ({ ...prev, [field]: true }));
-    
+    setIsFieldSaving((prev) => ({ ...prev, [field]: true }));
+
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setIsFieldSaving(prev => ({ ...prev, [field]: false }));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setIsFieldSaving((prev) => ({ ...prev, [field]: false }));
   };
 
   const handleDateChange = async (field: string, value: string) => {
-    setIsFieldSaving(prev => ({ ...prev, [field]: true }));
-    
+    setIsFieldSaving((prev) => ({ ...prev, [field]: true }));
+
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setIsFieldSaving(prev => ({ ...prev, [field]: false }));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setIsFieldSaving((prev) => ({ ...prev, [field]: false }));
   };
 
   const handleSelectChange = async (field: string, value: string) => {
-    setIsFieldSaving(prev => ({ ...prev, [field]: true }));
-    
+    setIsFieldSaving((prev) => ({ ...prev, [field]: true }));
+
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setIsFieldSaving(prev => ({ ...prev, [field]: false }));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setIsFieldSaving((prev) => ({ ...prev, [field]: false }));
   };
 
   const handleCheckboxChange = async (field: string, value: boolean) => {
-    setIsFieldSaving(prev => ({ ...prev, [field]: true }));
-    
+    setIsFieldSaving((prev) => ({ ...prev, [field]: true }));
+
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setIsFieldSaving(prev => ({ ...prev, [field]: false }));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setIsFieldSaving((prev) => ({ ...prev, [field]: false }));
   };
 
   return {
@@ -230,6 +344,7 @@ export const useEditApplicant = () => {
     isFieldSaving,
     getTabValidation,
     validateTab,
-    requiredFieldsByTab
+    requiredFieldsByTab,
+    getMissingFields
   };
 };

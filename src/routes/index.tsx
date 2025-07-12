@@ -54,11 +54,22 @@ import PeoplePlannerLayout from '@/components/layout/peoplePlanner-layout';
 import CreateServiceUserPage from '@/pages/PeoplePlanner/ServiceUser/create';
 import PServiceUserList from '@/pages/PeoplePlanner/ServiceUser';
 import PServiceuserDetailPage from '@/pages/PeoplePlanner/ServiceUser/view-serviceUser';
-import ServiceFunderList from '@/pages/PeoplePlanner/ServiceUser/serviceFunder';
-import CreateServiceFunderPage from '@/pages/PeoplePlanner/ServiceUser/serviceFunder/create-funder';
+import ServiceFunderList from '@/pages/PeoplePlanner/ServiceFunder';
+import CreateServiceFunderPage from '@/pages/PeoplePlanner/ServiceFunder/create-funder';
 import PlannerPage from '@/pages/PeoplePlanner/Planner';
 import ServiceuserDetailPage from '@/pages/PeoplePlanner/ServiceUser/view-serviceUser';
-import ServiceFunderDetailPage from '@/pages/PeoplePlanner/ServiceUser/serviceFunder/view-funder';
+import ServiceFunderDetailPage from '@/pages/PeoplePlanner/ServiceFunder/view-funder';
+import JobPage from '@/pages/PeoplePlanner/Jobs';
+import ServiceUserFunder from '@/pages/PeoplePlanner/ServiceUser/funder';
+import CreateServiceUserFunderPage from '@/pages/PeoplePlanner/ServiceUser/funder/create-funder';
+import { ReportPage } from '@/pages/PeoplePlanner/reports';
+import ProfilePage from '@/pages/PeoplePlanner/profilePage';
+import { NoticeBoardPage } from '@/pages/PeoplePlanner/NoticePage';
+import { TrainingPage } from '@/pages/PeoplePlanner/trainingPage';
+import SchedulePage from '@/pages/PeoplePlanner/Schedule';
+import { PayslipsPage } from '@/pages/PeoplePlanner/payslips';
+import DocumentRequestPage from '@/pages/PeoplePlanner/RequestDocument';
+import InvoicePage from '@/pages/PeoplePlanner/Invoice';
 
 
 
@@ -285,8 +296,52 @@ export default function AppRouter() {
               element: <ServiceFunderDetailPage />
             },
             {
+              path: 'service-user/:id/funder',
+              element: <ServiceUserFunder />
+            },
+            {
+              path: 'service-user/:id/funder/create',
+              element: <CreateServiceUserFunderPage />
+            },
+            {
               path: 'planner',
               element: <PlannerPage />
+            },
+            {
+              path: 'jobs',
+              element: <JobPage />
+            },
+            {
+              path: 'report',
+              element: <ReportPage />
+            },
+            {
+              path: 'profile',
+              element: <ProfilePage />
+            },
+            {
+              path: 'notice',
+              element: <NoticeBoardPage />
+            },
+            {
+              path: 'training',
+              element: <TrainingPage />
+            },
+            {
+              path: 'schedule',
+              element: <SchedulePage />
+            },
+            {
+              path: 'payslip',
+              element: <PayslipsPage />
+            },
+            {
+              path: 'request/document',
+              element: <DocumentRequestPage />
+            },
+            {
+              path: 'invoice',
+              element: <InvoicePage />
             }
           ]
         }

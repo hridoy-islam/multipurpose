@@ -8,7 +8,16 @@ import {
   LucideUserPlus,
   UserSquare2Icon,
   LucideUserSquare2,
-  Calendar
+  Calendar,
+  BriefcaseIcon,
+  File,
+  User,
+  Newspaper,
+  Layers,
+  Clock,
+  FileBadge,
+  FolderPlus,
+  Wallet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -18,6 +27,14 @@ import { logout } from '@/redux/features/authSlice';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/people-planner' },
+  { icon: Newspaper , label: 'Notice', href: 'notice' },
+  { icon: BriefcaseIcon, label: 'Jobs', href: 'jobs' },
+  { icon: File, label: 'Report', href: 'report' },
+  { icon: User, label: 'Profile', href: 'profile' },
+  { icon: Layers  , label: 'Training', href: 'training' },
+  { icon: Clock  , label: 'Schedule', href: 'schedule' },
+  { icon: FileBadge  , label: 'Payslip', href: 'payslip' },
+  { icon: Wallet    , label: 'Invoice', href: 'invoice' },
 
   {
     icon: UserCog2,
@@ -29,6 +46,14 @@ const navItems = [
         label: 'Service user List',
         href: 'service-user'
       }
+    ]
+  },
+  {
+    icon: FolderPlus ,
+    label: 'Requests',
+    subItems: [
+      { icon: LucideUserPlus, label: 'Document Requests', href: 'request/document' },
+     
     ]
   },
   {

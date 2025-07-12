@@ -1,9 +1,11 @@
 import React from 'react';
-import { AlertTriangle, ChevronRight, CheckCircle } from 'lucide-react';
+import { ChevronRight, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ValidationNotificationProps {
   validation: { [key: string]: { isValid: boolean; missingFields: string[] } };
   onTabClick: (tabId: string) => void;
+  userId
 }
 
 const tabLabels: { [key: string]: string } = {
@@ -15,20 +17,21 @@ const tabLabels: { [key: string]: string } = {
   criticalInfo: 'Critical Information',
   equipment: 'Required Equipment',
   primaryBranch: 'Branch & Area',
-  note: 'Note',
+  note: 'Note'
 };
 
 export const ValidationNotification: React.FC<ValidationNotificationProps> = ({
   validation,
   onTabClick,
+  userId
 }) => {
   const allTabs = Object.entries(validation);
-
+const navigate = useNavigate()
   if (allTabs.length === 0) return null;
 
   return (
-    <div className="w-72 bg-white border border-gray-200 rounded-lg shadow-lg self-center">
-      <div className="p-2 space-y-2">
+    <div className="w-72 self-center rounded-lg border border-gray-200 bg-white shadow-lg">
+      <div className="space-y-2 p-2">
         {allTabs.map(([tabId, tabValidation]) => {
           const isInvalid = !tabValidation.isValid;
           const missingCount = tabValidation.missingFields.length;
@@ -36,7 +39,7 @@ export const ValidationNotification: React.FC<ValidationNotificationProps> = ({
           return (
             <div
               key={tabId}
-              className={`group cursor-pointer p-3 rounded-md border transition-all duration-200 hover:border-supperagent ${
+              className={`group cursor-pointer rounded-md border p-3 transition-all duration-200 hover:border-supperagent ${
                 isInvalid ? 'border-red-300' : 'border-gray-300'
               }`}
               onClick={() => onTabClick(tabId)}
@@ -46,20 +49,30 @@ export const ValidationNotification: React.FC<ValidationNotificationProps> = ({
                   <span className="text-sm font-medium text-black">
                     {tabLabels[tabId] || tabId}
                   </span>
-
                   {isInvalid ? (
-                    <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                       {missingCount}
                     </span>
                   ) : (
-                    <CheckCircle className="text-green-500 w-4 h-4" />
+                    <CheckCircle className="h-4 w-4 text-green-500" />
                   )}
                 </div>
-                <ChevronRight className="h-4 w-4 text-supperagent group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
               </div>
             </div>
           );
         })}
+
+        {/* ✅ Static clickable "Funder" block */}
+        <div
+          className="group cursor-pointer rounded-md border border-gray-300 p-3 transition-all duration-200 hover:border-supperagent"
+          onClick={() => navigate(`/admin/people-planner/service-user/${userId}/funder`)}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-black">Funder</span>
+            <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
+          </div>
+        </div>
       </div>
     </div>
   );

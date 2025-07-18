@@ -70,6 +70,9 @@ import SchedulePage from '@/pages/PeoplePlanner/Schedule';
 import { PayslipsPage } from '@/pages/PeoplePlanner/payslips';
 import DocumentRequestPage from '@/pages/PeoplePlanner/RequestDocument';
 import InvoicePage from '@/pages/PeoplePlanner/Invoice';
+import ServiceUserPlannerPage from '@/pages/PeoplePlanner/ServiceUser/planner';
+import ServiceUserTask from '@/pages/PeoplePlanner/ServiceUser/task';
+import ViewTaskPage from '@/pages/PeoplePlanner/ServiceUser/task/view-task';
 
 
 
@@ -282,6 +285,18 @@ export default function AppRouter() {
             {
               path: 'service-user/:id',
               element: <ServiceuserDetailPage />
+            },
+            {
+              path: 'service-user/:id/planner',
+              element: <ServiceUserPlannerPage />
+            },
+            {
+              path: 'service-user/:id/tasks',
+              element: <ServiceUserTask />
+            },
+            {
+              path: 'service-user/:id/tasks/:taskId',
+              element: <ViewTaskPage />
             },
             {
               path: 'service-funder',

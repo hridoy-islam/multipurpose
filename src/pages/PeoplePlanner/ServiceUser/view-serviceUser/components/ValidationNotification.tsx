@@ -39,7 +39,7 @@ const navigate = useNavigate()
           return (
             <div
               key={tabId}
-              className={`group cursor-pointer rounded-md border p-3 transition-all duration-200 hover:border-supperagent ${
+              className={`group cursor-pointer rounded-md border px-2 py-1 transition-all duration-200 hover:border-supperagent ${
                 isInvalid ? 'border-red-300' : 'border-gray-300'
               }`}
               onClick={() => onTabClick(tabId)}
@@ -65,11 +65,29 @@ const navigate = useNavigate()
 
         {/* ✅ Static clickable "Funder" block */}
         <div
-          className="group cursor-pointer rounded-md border border-gray-300 p-3 transition-all duration-200 hover:border-supperagent"
+          className="group cursor-pointer rounded-md border border-gray-300 px-2 py-1 transition-all duration-200 hover:border-supperagent"
+          onClick={() => navigate(`/admin/people-planner/service-user/${userId}/tasks`)}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-black">Task</span>
+            <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
+          </div>
+        </div>
+        <div
+          className="group cursor-pointer rounded-md border border-gray-300 px-2 py-1 transition-all duration-200 hover:border-supperagent"
           onClick={() => navigate(`/admin/people-planner/service-user/${userId}/funder`)}
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-black">Funder</span>
+            <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
+          </div>
+        </div>
+        <div
+          className="group cursor-pointer rounded-md border border-gray-300 px-2 py-1 transition-all duration-200 hover:border-supperagent"
+          onClick={() => navigate(`/admin/people-planner/service-user/${userId}/planner`)}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-black">Planning</span>
             <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
           </div>
         </div>

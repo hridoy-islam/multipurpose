@@ -28,7 +28,7 @@ import { logout } from '@/redux/features/authSlice';
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/people-planner' },
   { icon: Newspaper , label: 'Notice', href: 'notice' },
-  { icon: BriefcaseIcon, label: 'Jobs', href: 'jobs' },
+  { icon: BriefcaseIcon, label: 'Tasks', href: 'jobs' },
   { icon: File, label: 'Report', href: 'report' },
   { icon: User, label: 'Profile', href: 'profile' },
   { icon: Layers  , label: 'Training', href: 'training' },

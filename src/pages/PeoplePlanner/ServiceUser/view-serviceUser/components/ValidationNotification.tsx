@@ -69,7 +69,7 @@ const navigate = useNavigate()
           onClick={() => navigate(`/admin/people-planner/service-user/${userId}/tasks`)}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-black">Task</span>
+            <span className="text-sm font-medium text-black">Schedule</span>
             <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
           </div>
         </div>

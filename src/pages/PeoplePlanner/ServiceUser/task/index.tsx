@@ -1,320 +1,731 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { format, subDays, addDays } from 'date-fns';
-import Select from 'react-select';
-import { Calendar as CalendarIcon, Search, Loader2, EyeIcon } from 'lucide-react';
+'use client';
 
+import { useState } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from '@/components/ui/popover';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/components/ui/tooltip';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  User,
-  MapPin,
-  Briefcase,
-  FileText,
-  CalendarDays,
-  Clock,
-  BadgeCheck
+  Plus,
+  Trash2,
+  Edit,
+  Calendar,
+  DollarSign,
+  AlertCircle,
+  CheckCircle,
+  Settings
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
+import { TimePicker24 } from '@/components/shared/TimePicker';
 
-type Job = {
+interface Visit {
   id: string;
-  title: string;
-  description: string;
-  startTime: Date;
-  endTime: Date;
-  status: 'pending' | 'allocated' | 'completed' | 'cancelled';
-};
+  startTime: string;
+  endTime: string;
+  carerName: string;
+}
 
-type Employee = {
+interface DayConfig {
+  visits: Visit[];
+  price: number | null;
+}
+
+interface GeneratedVisit {
   id: string;
-  name: string;
-  position: string;
-  skills: string[];
-};
+  date: string;
+  dayName: string;
+  visits: Visit[];
+  price: number;
+}
 
-type ServiceUser = {
-  id: string;
-  name: string;
-  address: string;
-  carePlan: string;
-};
+const WEEKDAYS = [
+  { key: 'monday', label: 'Monday', short: 'Mon' },
+  { key: 'tuesday', label: 'Tuesday', short: 'Tue' },
+  { key: 'wednesday', label: 'Wednesday', short: 'Wed' },
+  { key: 'thursday', label: 'Thursday', short: 'Thu' },
+  { key: 'friday', label: 'Friday', short: 'Fri' },
+  { key: 'saturday', label: 'Saturday', short: 'Sat' },
+  { key: 'sunday', label: 'Sunday', short: 'Sun' }
+];
 
-const fetchServiceUser = async (userId: string): Promise<ServiceUser> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  
-  return {
-    id: userId,
-    name: 'John Smith',
-    address: '123 Main St, London, UK',
-    carePlan: 'Requires assistance with morning and evening routines. Medication management needed twice daily.'
+const CARER_OPTIONS = [
+  { value: 'hasan', label: 'Hasan' },
+  { value: 'sarah', label: 'Sarah' },
+  { value: 'ahmed', label: 'Ahmed' },
+  { value: 'fatima', label: 'Fatima' },
+  { value: 'omar', label: 'Omar' },
+  { value: 'aisha', label: 'Aisha' },
+  { value: 'ali', label: 'Ali' },
+  { value: 'zara', label: 'Zara' }
+];
+
+export default function ServiceUserTask() {
+  const [dayConfigs, setDayConfigs] = useState<Record<string, DayConfig>>({
+    monday: {
+      visits: [
+        { id: '1', startTime: '10:00', endTime: '12:00', carerName: 'Hasan' }
+      ],
+      price: null
+    },
+    tuesday: { visits: [], price: null },
+    wednesday: { visits: [], price: null },
+    thursday: { visits: [], price: null },
+    friday: {
+      visits: [{ id: '2', startTime: '14:00', endTime: '16:00', carerName: 'Sarah' }],
+      price: null
+    },
+    saturday: { visits: [], price: null },
+    sunday: { visits: [], price: null }
+  });
+  const [generatedPlan, setGeneratedPlan] = useState<GeneratedVisit[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isEditVisitOpen, setIsEditVisitOpen] = useState(false);
+  const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
+  const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
+  const [isBulkDateRangeOpen, setIsBulkDateRangeOpen] = useState(false);
+  const [editingVisit, setEditingVisit] = useState<{
+    dayKey: string;
+    visit: Visit | null;
+  }>({ dayKey: '', visit: null });
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  const [bulkDateRange, setBulkDateRange] = useState({ from: '', to: '' });
+  const [bulkSchedules, setBulkSchedules] = useState<GeneratedVisit[]>([]);
+  const [bulkEditData, setBulkEditData] = useState({
+    startTime: '',
+    endTime: '',
+    carerName: ''
+  });
+
+  const addVisit = (dayKey: string) => {
+    setEditingVisit({ dayKey, visit: null });
+    setIsEditVisitOpen(true);
   };
-};
 
-const fetchJobs = async (
-  userId: string,
-  dateRange: { from: Date; to: Date }
-): Promise<Job[]> => {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const editVisit = (dayKey: string, visit: Visit) => {
+    setEditingVisit({ dayKey, visit });
+    setIsEditVisitOpen(true);
+  };
 
-  // Mock data for the specific service user
-  const mockJobs: Job[] = [
-    {
-      id: '1',
-      title: 'Morning Visit',
-      description: 'Assist with morning routine and medication',
-      startTime: addDays(new Date(), 1),
-      endTime: addDays(new Date(), 1),
-      status: 'pending'
-    },
-    {
-      id: '2',
-      title: 'Afternoon Care',
-      description: 'Prepare lunch and provide companionship',
-      startTime: addDays(new Date(), 2),
-      endTime: addDays(new Date(), 2),
-      status: 'pending'
-    },
-    {
-      id: '3',
-      title: 'Evening Support',
-      description: 'Assist with dinner and bedtime routine',
-      startTime: addDays(new Date(), 3),
-      endTime: addDays(new Date(), 3),
-      status: 'allocated'
-    },
-    {
-      id: '4',
-      title: 'Weekly Check-in',
-      description: 'Full assessment and care plan review',
-      startTime: addDays(new Date(), 7),
-      endTime: addDays(new Date(), 7),
-      status: 'pending'
+  const saveVisit = (startTime: string, endTime: string, carerName: string) => {
+    const { dayKey, visit } = editingVisit;
+
+    setDayConfigs((prev) => ({
+      ...prev,
+      [dayKey]: {
+        ...prev[dayKey],
+        visits: visit
+          ? prev[dayKey].visits.map((v) =>
+              v.id === visit.id ? { ...v, startTime, endTime, carerName } : v
+            )
+          : [
+              ...prev[dayKey].visits,
+              { id: Date.now().toString(), startTime, endTime, carerName }
+            ]
+      }
+    }));
+
+    setIsEditVisitOpen(false);
+    setEditingVisit({ dayKey: '', visit: null });
+  };
+
+  const deleteVisit = (dayKey: string, visitId: string) => {
+    setDayConfigs((prev) => ({
+      ...prev,
+      [dayKey]: {
+        ...prev[dayKey],
+        visits: prev[dayKey].visits.filter((v) => v.id !== visitId)
+      }
+    }));
+  };
+
+  const updatePrice = (dayKey: string, price: number) => {
+    setDayConfigs((prev) => ({
+      ...prev,
+      [dayKey]: { ...prev[dayKey], price }
+    }));
+  };
+
+  const validatePlan = () => {
+    const errors: string[] = [];
+
+    WEEKDAYS.forEach((weekday) => {
+      const config = dayConfigs[weekday.key];
+      if (config.visits.length > 0 && (config.price === null || config.price <= 0)) {
+        errors.push(`Price is missing for ${weekday.label}. Cannot generate plan.`);
+      }
+    });
+
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
+
+  const openDateRangePicker = () => {
+    if (!validatePlan()) return;
+    setIsDateRangeOpen(true);
+  };
+
+  const generatePlan = () => {
+    if (!dateRange.from || !dateRange.to) return;
+
+    const startDate = new Date(dateRange.from);
+    const endDate = new Date(dateRange.to);
+    const plan: GeneratedVisit[] = [];
+
+    for (
+      let date = new Date(startDate);
+      date <= endDate;
+      date.setDate(date.getDate() + 1)
+    ) {
+      const dayOfWeek = date.getDay();
+      const weekdayKey = WEEKDAYS[(dayOfWeek + 6) % 7].key; // Adjust for Monday = 0
+
+      const config = dayConfigs[weekdayKey];
+      if (config.visits.length > 0 && config.price !== null) {
+        plan.push({
+          id: `${date.toISOString().split('T')[0]}-${weekdayKey}`,
+          date: date.toLocaleDateString(),
+          dayName: WEEKDAYS.find((w) => w.key === weekdayKey)?.label || '',
+          visits: config.visits,
+          price: config.price
+        });
+      }
     }
-  ];
 
-  // Filter by date range
-  return mockJobs.filter((job) => {
-    return job.startTime >= dateRange.from && job.startTime <= dateRange.to;
-  });
-};
+    setGeneratedPlan(plan);
+    setIsDateRangeOpen(false);
+  };
 
-const fetchEmployees = async (): Promise<Employee[]> => {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Mock data
-  return [
-    {
-      id: '1',
-      name: 'Sarah Williams',
-      position: 'Care Assistant',
-      skills: ['Dementia', 'Mobility']
-    },
-    {
-      id: 'e2',
-      name: 'David Miller',
-      position: 'Senior Carer',
-      skills: ['Palliative', 'Diabetes']
-    },
-    {
-      id: 'e3',
-      name: 'Emma Davis',
-      position: 'Support Worker',
-      skills: ['Autism', 'Epilepsy']
+  const openBulkEdit = () => {
+    if (generatedPlan.length === 0) {
+      setValidationErrors(['Please generate a plan first before bulk editing.']);
+      return;
     }
-  ];
-};
-
-export default function ServiceUserTasks({ userId }: { userId: string }) {
-  const navigate= useNavigate()
-    const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: subDays(new Date(), 7),
-    to: addDays(new Date(), 14)
-  });
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-
-  // Fetch service user details
-  const { data: serviceUser } = useQuery({
-    queryKey: ['serviceUser', userId],
-    queryFn: () => fetchServiceUser(userId)
-  });
-
-  // Fetch jobs for this service user
-  const { data: jobs, isLoading } = useQuery({
-    queryKey: ['jobs', userId, dateRange],
-    queryFn: () => fetchJobs(userId, dateRange),
-    keepPreviousData: true
-  });
-
-  const { data: employees } = useQuery({
-    queryKey: ['employees'],
-    queryFn: fetchEmployees,
-    enabled: isDialogOpen
-  });
-
-  const handleAllocate = (job: Job) => {
-    setSelectedJob(job);
-    setIsDialogOpen(true);
+    setIsBulkDateRangeOpen(true);
   };
 
-  const handleConfirmAllocation = () => {
-    // Here you would typically make an API call to save the allocation
-    console.log(
-      `Allocating job ${selectedJob?.id} to employee ${selectedEmployee?.id}`
-    );
-    setIsDialogOpen(false);
-    setSelectedEmployee(null);
+  const loadBulkSchedules = () => {
+    if (!bulkDateRange.from || !bulkDateRange.to) return;
+
+    const startDate = new Date(bulkDateRange.from);
+    const endDate = new Date(bulkDateRange.to);
+    
+    const filteredSchedules = generatedPlan.filter((schedule) => {
+      const scheduleDate = new Date(schedule.date);
+      return scheduleDate >= startDate && scheduleDate <= endDate;
+    });
+
+    setBulkSchedules(filteredSchedules);
+    setIsBulkDateRangeOpen(false);
+    setIsBulkEditOpen(true);
   };
 
-  const getStatusBadge = (status: Job['status']) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
-      case 'allocated':
-        return (
-          <Badge className="bg-blue-500 text-white hover:bg-blue-600">
-            Allocated
-          </Badge>
-        );
-      case 'completed':
-        return (
-          <Badge className="bg-green-500 text-white hover:bg-green-600">
-            Completed
-          </Badge>
-        );
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelled</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
+  const applyBulkEdit = () => {
+    if (!bulkEditData.startTime && !bulkEditData.endTime && !bulkEditData.carerName) {
+      return;
     }
+
+    const updatedPlan = generatedPlan.map((schedule) => {
+      const isInBulkRange = bulkSchedules.some((bulk) => bulk.id === schedule.id);
+      
+      if (isInBulkRange) {
+        const updatedVisits = schedule.visits.map((visit) => ({
+          ...visit,
+          startTime: bulkEditData.startTime || visit.startTime,
+          endTime: bulkEditData.endTime || visit.endTime,
+          carerName: bulkEditData.carerName || visit.carerName
+        }));
+        
+        return { ...schedule, visits: updatedVisits };
+      }
+      
+      return schedule;
+    });
+
+    setGeneratedPlan(updatedPlan);
+    setBulkEditData({ startTime: '', endTime: '', carerName: '' });
+    setIsBulkEditOpen(false);
+    setBulkSchedules([]);
   };
-
-  if (!serviceUser) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-
-
- 
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-6 w-6" />
-            <span>{serviceUser.name}'s Care Schedule</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          
-          
+    <div className="">
+      {/* Header */}
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="mb-2 text-3xl font-bold">Mahi's Visit Schedule</h1>
+        </div>
+        <div className="flex gap-3">
+          <Button
+            onClick={openBulkEdit}
+            size="sm"
+            variant="outline"
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Bulk Edit
+          </Button>
+          <Button
+            onClick={openDateRangePicker}
+            size="sm"
+            className="bg-supperagent text-white hover:bg-supperagent/90"
+          >
+            <Calendar className="mr-2 h-4 w-4" />
+            Generate Plan
+          </Button>
+        </div>
+      </div>
 
-          {isLoading ? (
-            <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <div >
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Task</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Date & Time</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {jobs?.length ? (
-                    jobs.map((job) => (
-                      <TableRow key={job.id}>
-                        <TableCell className="font-medium">{job.title}</TableCell>
-                        <TableCell>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="line-clamp-1 cursor-help hover:underline">
-                                  {job.description}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-[300px]">
-                                <p>{job.description}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableCell>
-                        <TableCell>
-                          {format(job.startTime, 'MMM dd, yyyy')}
-                          <br />
-                          {format(job.startTime, 'hh:mm a')} -{' '}
-                          {format(job.endTime, 'hh:mm a')}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(job.status)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                           onClick={()=> navigate(`${job._id}`)}
-                           
-                          >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
+      {/* Validation Errors */}
+      {validationErrors.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {validationErrors.map((error, index) => (
+            <Alert key={index} variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ))}
+        </div>
+      )}
+
+      <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {WEEKDAYS.map((weekday) => {
+          const config = dayConfigs[weekday.key];
+
+          return (
+            <Card key={weekday.key} className="relative">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-lg">
+                  {weekday.label}
+                  {config.visits.length > 0 ? (
+                    config.price !== null && config.price > 0 ? (
+                      <Badge
+                        variant="secondary"
+                        className="bg-green-100 text-green-800"
+                      >
+                        <CheckCircle className="mr-1 h-3 w-3" />${config.price}
+                      </Badge>
+                    ) : (
+                      <Badge variant="destructive">
+                        <AlertCircle className="mr-1 h-3 w-3" />
+                        No Price
+                      </Badge>
+                    )
                   ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="h-24 text-center">
-                        No tasks scheduled for this period
-                      </TableCell>
-                    </TableRow>
+                    <Badge variant="outline" className="text-gray-500">
+                      No Visits
+                    </Badge>
                   )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </CardTitle>
+                <CardDescription>
+                  {config.visits.length} visit
+                  {config.visits.length !== 1 ? 's' : ''}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Visits */}
+                {config.visits.map((visit) => (
+                  <div
+                    key={visit.id}
+                    className="flex items-center justify-between rounded-lg border border-gray-300 p-3"
+                  >
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">{visit.startTime} - {visit.endTime}</p>
+                      <p className="text-sm">Carer: {visit.carerName}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => editVisit(weekday.key, visit)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteVisit(weekday.key, visit.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
 
-     
+                {/* Add Visit Button */}
+                <Button
+                  variant="default"
+                  className="w-full border-none bg-supperagent text-white hover:bg-supperagent/90"
+                  onClick={() => addVisit(weekday.key)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Visit
+                </Button>
+
+                {/* Only show price input if there are visits */}
+                {config.visits.length > 0 && (
+                  <div>
+                    <Label
+                      htmlFor={`price-${weekday.key}`}
+                      className="text-sm font-medium"
+                    >
+                      Daily Price ($)
+                    </Label>
+                    <Input
+                      id={`price-${weekday.key}`}
+                      type="number"
+                      placeholder="150"
+                      value={config.price || ''}
+                      onChange={(e) =>
+                        updatePrice(
+                          weekday.key,
+                          Number.parseFloat(e.target.value) || 0
+                        )
+                      }
+                      className="mt-1"
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Generated Plan Summary */}
+      {generatedPlan.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Generated Schedule Summary
+            </CardTitle>
+            <CardDescription>
+              {generatedPlan.length} scheduled visits generated
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div>Total Days: {generatedPlan.length}</div>
+              <div>
+                Total Cost: $
+                {generatedPlan.reduce((sum, item) => sum + item.price, 0)}
+              </div>
+              <div>
+                Date Range: {generatedPlan[0]?.date} - {generatedPlan[generatedPlan.length - 1]?.date}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Date Range Picker Dialog */}
+      <Dialog open={isDateRangeOpen} onOpenChange={setIsDateRangeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select Date Range</DialogTitle>
+            <DialogDescription>
+              Choose the start and end dates for your visit plan
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="from-date">From Date</Label>
+              <Input
+                id="from-date"
+                type="date"
+                value={dateRange.from}
+                onChange={(e) =>
+                  setDateRange((prev) => ({ ...prev, from: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="to-date">To Date</Label>
+              <Input
+                id="to-date"
+                type="date"
+                value={dateRange.to}
+                onChange={(e) =>
+                  setDateRange((prev) => ({ ...prev, to: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDateRangeOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={generatePlan}
+              disabled={!dateRange.from || !dateRange.to}
+            >
+              Generate Schedule
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Edit Date Range Dialog */}
+      <Dialog open={isBulkDateRangeOpen} onOpenChange={setIsBulkDateRangeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select Date Range for Bulk Edit</DialogTitle>
+            <DialogDescription>
+              Choose the date range to bulk edit schedules
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="bulk-from-date">From Date</Label>
+              <Input
+                id="bulk-from-date"
+                type="date"
+                value={bulkDateRange.from}
+                onChange={(e) =>
+                  setBulkDateRange((prev) => ({ ...prev, from: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="bulk-to-date">To Date</Label>
+              <Input
+                id="bulk-to-date"
+                type="date"
+                value={bulkDateRange.to}
+                onChange={(e) =>
+                  setBulkDateRange((prev) => ({ ...prev, to: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsBulkDateRangeOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={loadBulkSchedules}
+              disabled={!bulkDateRange.from || !bulkDateRange.to}
+            >
+              Load Schedules
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Edit Dialog */}
+      <Dialog open={isBulkEditOpen} onOpenChange={setIsBulkEditOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Bulk Edit Schedules</DialogTitle>
+            <DialogDescription>
+              Editing {bulkSchedules.length} schedules from {bulkDateRange.from} to {bulkDateRange.to}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Bulk Edit Controls */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Apply Changes to All Selected Schedules</CardTitle>
+                <CardDescription>
+                  Leave fields empty to keep existing values
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="bulk-start-time">Start Time</Label>
+                    <Input
+                      id="bulk-start-time"
+                      type="time"
+                      value={bulkEditData.startTime}
+                      onChange={(e) =>
+                        setBulkEditData((prev) => ({ ...prev, startTime: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="bulk-end-time">End Time</Label>
+                    <Input
+                      id="bulk-end-time"
+                      type="time"
+                      value={bulkEditData.endTime}
+                      onChange={(e) =>
+                        setBulkEditData((prev) => ({ ...prev, endTime: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Carer</Label>
+                    <Select
+                      value={
+                        CARER_OPTIONS.find(
+                          (option) => option.label === bulkEditData.carerName
+                        ) || null
+                      }
+                      onChange={(selected) =>
+                        setBulkEditData((prev) => ({ ...prev, carerName: selected?.label || '' }))
+                      }
+                      options={CARER_OPTIONS}
+                      placeholder="Select carer..."
+                      isClearable
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Preview of affected schedules */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Schedules to be Updated</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {bulkSchedules.map((schedule) => (
+                    <div key={schedule.id} className="flex items-center justify-between border rounded p-3">
+                      <div>
+                        <div className="font-medium">{schedule.date} - {schedule.dayName}</div>
+                        <div className="text-sm text-gray-600">
+                          {schedule.visits.map((visit, index) => (
+                            <div key={index}>
+                              {visit.startTime} - {visit.endTime} ({visit.carerName})
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <Badge variant="secondary">${schedule.price}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsBulkEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={applyBulkEdit}
+              disabled={!bulkEditData.startTime && !bulkEditData.endTime && !bulkEditData.carerName}
+            >
+              Apply Changes to {bulkSchedules.length} Schedules
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Visit Dialog */}
+      <Dialog open={isEditVisitOpen} onOpenChange={setIsEditVisitOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingVisit.visit ? 'Edit Visit' : 'Add New Visit'}
+            </DialogTitle>
+            <DialogDescription>
+              Configure the visit details for{' '}
+              {WEEKDAYS.find((w) => w.key === editingVisit.dayKey)?.label}
+            </DialogDescription>
+          </DialogHeader>
+          <VisitForm
+            initialVisit={editingVisit.visit}
+            onSave={saveVisit}
+            onCancel={() => setIsEditVisitOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function VisitForm({
+  initialVisit,
+  onSave,
+  onCancel
+}: {
+  initialVisit: Visit | null;
+  onSave: (startTime: string, endTime: string, carerName: string) => void;
+  onCancel: () => void;
+}) {
+  const [startTime, setStartTime] = useState(initialVisit?.startTime || '10:00');
+  const [endTime, setEndTime] = useState(initialVisit?.endTime || '12:00');
+  const [selectedCarer, setSelectedCarer] = useState(
+    CARER_OPTIONS.find((option) => option.label === initialVisit?.carerName) ||
+      null
+  );
+
+  const handleSave = () => {
+    if (startTime && endTime && selectedCarer) {
+      // Ensure times are properly formatted as HH:MM
+      const formattedStart = formatTimeTo24Hour(startTime);
+      const formattedEnd = formatTimeTo24Hour(endTime);
+      onSave(formattedStart, formattedEnd, selectedCarer.label);
+    }
+  };
+
+  // Helper function to ensure time is in HH:MM format
+  const formatTimeTo24Hour = (time: string) => {
+    if (!time.includes(':')) return '00:00';
+    
+    let [hours, minutes] = time.split(':');
+    hours = hours.padStart(2, '0');
+    minutes = minutes.padStart(2, '0').substring(0, 2); // Ensure only 2 digits
+    
+    return `${hours}:${minutes}`;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <TimePicker24 
+          value={startTime}
+          onChange={setStartTime}
+          label="Start Time"
+        />
+        <TimePicker24 
+          value={endTime}
+          onChange={setEndTime}
+          label="End Time"
+        />
+      </div>
+      <div>
+        <Label>Carer Name</Label>
+        <Select
+          value={selectedCarer}
+          onChange={setSelectedCarer}
+          options={CARER_OPTIONS}
+          placeholder="Select a carer..."
+          className="mt-1"
+        />
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={!startTime || !endTime || !selectedCarer}
+          className="bg-supperagent text-white hover:bg-supperagent/90"
+        >
+          {initialVisit ? 'Update Visit' : 'Add Visit'}
+        </Button>
+      </DialogFooter>
     </div>
   );
 }

@@ -19,7 +19,6 @@ import { NoticeDialog } from './Components/noticeDialog';
 import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css'; // main style file
 import 'react-date-range/dist/theme/default.css'; // theme css file
-import { Popover } from '@/components/ui/popover';
 
 export default function PNoticeBoard() {
   const [notice, setNotice] = useState<any>([]);
@@ -159,85 +158,83 @@ export default function PNoticeBoard() {
         </Button>
       </div>
 
-
-<div className="flex flex-row items-center justify-start gap-4 relative">
-  <label className="text-sm font-medium">FIlter By Date</label>
-  <div className="relative">
-    <div
-      onClick={() => setShowCalendar((prev) => !prev)}
-      className="mt-1 relative w-full sm:w-[300px] cursor-pointer flex items-center justify-between rounded-md border border-gray-300 px-4 py-2 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-supperagent focus:ring-offset-2"
-    >
-      <span className="text-sm text-gray-700">
-        {dateRange[0].startDate && dateRange[0].endDate
-          ? `${moment(dateRange[0].startDate).format('MMM D, YYYY')} – ${moment(
-              dateRange[0].endDate
-            ).format('MMM D, YYYY')}`
-          : 'Select date range'}
-      </span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5 text-gray-500"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-        />
-      </svg>
-    </div>
-    {showCalendar && (
-      <div className="absolute z-10 mt-2">
-        <div className="rounded-lg bg-white p-4 shadow-xl ring-1 ring-black ring-opacity-5">
-          <DateRangePicker
-            ranges={dateRange}
-            onChange={(ranges) => setDateRange([ranges.selection])}
-            showSelectionPreview={true}
-            moveRangeOnFirstSelection={false}
-            months={2}
-            direction="horizontal"
-            rangeColors={['#3B82F6']}
-          />
-
-          <div className="mt-4 flex justify-end space-x-2">
-           
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setShowCalendar(false);
-                setDateRange([
-                  {
-                    startDate: null,
-                    endDate: null,
-                    key: 'selection',
-                  },
-                ]);
-              }}
+      <div className="relative flex flex-row items-center justify-start gap-4">
+        <label className="text-sm font-medium">FIlter By Date</label>
+        <div className="relative">
+          <div
+            onClick={() => setShowCalendar((prev) => !prev)}
+            className="relative mt-1 flex w-full cursor-pointer items-center justify-between rounded-md border border-gray-300 px-4 py-2 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-supperagent focus:ring-offset-2 sm:w-[300px]"
+          >
+            <span className="text-sm text-gray-700">
+              {dateRange[0].startDate && dateRange[0].endDate
+                ? `${moment(dateRange[0].startDate).format('MMM D, YYYY')} – ${moment(
+                    dateRange[0].endDate
+                  ).format('MMM D, YYYY')}`
+                : 'Select date range'}
+            </span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-gray-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                setShowCalendar(false);
-                handleSearch();
-              }}
-              className="bg-supperagent text-white hover:bg-supperagent/90"
-            >
-              Apply
-            </Button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
           </div>
+          {showCalendar && (
+            <div className="absolute z-10 mt-2">
+              <div className="rounded-lg bg-white p-4 shadow-xl ring-1 ring-black ring-opacity-5">
+                <DateRangePicker
+                  ranges={dateRange}
+                  onChange={(ranges) => setDateRange([ranges.selection])}
+                  showSelectionPreview={true}
+                  moveRangeOnFirstSelection={false}
+                  months={2}
+                  direction="horizontal"
+                  rangeColors={['#3B82F6']}
+                />
+
+                <div className="mt-4 flex justify-end space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowCalendar(false);
+                      setDateRange([
+                        {
+                          startDate: null,
+                          endDate: null,
+                          key: 'selection'
+                        }
+                      ]);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setShowCalendar(false);
+                      handleSearch();
+                    }}
+                    className="bg-supperagent text-white hover:bg-supperagent/90"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    )}
-  </div>
-</div>
 
-      <div className="rounded-md bg-white p-4 shadow-2xl">
+      <div className="rounded-md bg-white p-4 shadow-lg ">
         {initialLoading ? (
           <div className="flex justify-center py-6">
             <BlinkingDots size="large" color="bg-supperagent" />
@@ -247,7 +244,7 @@ export default function PNoticeBoard() {
             No records found.
           </div>
         ) : (
-          <Table>
+          <Table >
             <TableHeader>
               <TableRow>
                 <TableHead>Notice Type</TableHead>
@@ -305,13 +302,15 @@ export default function PNoticeBoard() {
             </TableBody>
           </Table>
         )}
-        <DynamicPagination
-          pageSize={entriesPerPage}
-          setPageSize={setEntriesPerPage}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+        {notice.length > 9 && (
+          <DynamicPagination
+            pageSize={entriesPerPage}
+            setPageSize={setEntriesPerPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
       <NoticeDialog
         open={dialogOpen}

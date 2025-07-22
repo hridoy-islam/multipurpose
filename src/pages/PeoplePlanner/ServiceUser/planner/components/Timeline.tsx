@@ -15,10 +15,19 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Calendar,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  User,
+  X
+} from 'lucide-react';
 import { employees } from '@/data/plannerData';
 import moment from 'moment';
-
+import { Badge } from '@/components/ui/badge';
 
 // Mock Service User
 export const serviceUser = {
@@ -144,18 +153,16 @@ export const tasks = [
 export const dayStats = Array.from({ length: 7 }, (_, i) => {
   const date = moment().subtract(i, 'days');
   const formattedDate = date.format('YYYY-MM-DD');
-  const dayTasks = tasks.filter(task => task.date === formattedDate);
+  const dayTasks = tasks.filter((task) => task.date === formattedDate);
 
   return {
     date: date.format('DD/MM'),
     day: date.format('ddd'),
-    allocated: dayTasks.filter(t => t.status === 'allocated').length,
-    unallocated: dayTasks.filter(t => t.status === 'unallocated').length,
+    allocated: dayTasks.filter((t) => t.status === 'allocated').length,
+    unallocated: dayTasks.filter((t) => t.status === 'unallocated').length,
     total: dayTasks.length
   };
 }).reverse(); // optional: keep order from oldest to newest
-
-
 
 export function Timeline({
   selectedUser,
@@ -168,6 +175,8 @@ export function Timeline({
   const userListRef = useRef<HTMLDivElement>(null);
   const isUserScroll = useRef(false);
   const isContentScroll = useRef(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Generate time slots (always 24 hours)
   const timeSlots = useMemo(() => {
@@ -178,22 +187,22 @@ export function Timeline({
   }, []);
 
   // Generate past 7 days for selected user view
- const past7Days = useMemo(() => {
-  const days = [];
-  // Use selectedDate instead of today
-  const baseDate = selectedDate ? moment(selectedDate) : moment();
-  
-  for (let i = 6; i >= 0; i--) {
-    const date = baseDate.clone().subtract(i, 'days');
-    days.push({
-      date: date.format('YYYY-MM-DD'),
-      displayDate: date.format('ddd DD/MM'),
-      fullDate: date.format('dddd DD/MM/YYYY'),
-      isToday: date.isSame(moment(), 'day') // Check if this day is actually today
-    });
-  }
-  return days;
-}, [selectedDate]);
+  const past7Days = useMemo(() => {
+    const days = [];
+    // Use selectedDate instead of today
+    const baseDate = selectedDate ? moment(selectedDate) : moment();
+
+    for (let i = 6; i >= 0; i--) {
+      const date = baseDate.clone().subtract(i, 'days');
+      days.push({
+        date: date.format('YYYY-MM-DD'),
+        displayDate: date.format('ddd DD/MM'),
+        fullDate: date.format('dddd DD/MM/YYYY'),
+        isToday: date.isSame(moment(), 'day') // Check if this day is actually today
+      });
+    }
+    return days;
+  }, [selectedDate]);
 
   // Get task position for daily view (hours)
   const getTaskPosition = (startTime: string, endTime: string) => {
@@ -409,6 +418,10 @@ export function Timeline({
                             onContextMenu={(e) => e.stopPropagation()} // optional safeguard
                             className={`absolute top-1 h-6 shadow-lg sm:h-10 ${task.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
                             style={position}
+                            onClick={() => {
+                              setSelectedTask(task);
+                              setIsDialogOpen(true);
+                            }}
                           >
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -507,6 +520,135 @@ export function Timeline({
               </div>
             ))}
           </div>
+        </div>
+
+        <TaskDetailDialog
+          task={selectedTask}
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+        />
+      </div>
+    </div>
+  );
+}
+
+function TaskDetailDialog({
+  task,
+  isOpen,
+  onClose
+}: {
+  task: {
+    title: string;
+    startTime: string;
+    endTime: string;
+    type: 'service-user' | 'employee';
+    serviceType: string;
+    status: 'allocated' | string;
+    assigneeId: string;
+    date?: string;
+  };
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  if (!isOpen || !task) return null;
+
+  return (
+    <div
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      onClick={onClose}
+    >
+      <div
+        className="animate-scale-in w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between">
+          <h3 className="text-xl font-semibold text-gray-900">{task.title}</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 transition-colors hover:text-gray-500"
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <div className="flex items-start">
+            <Clock className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
+            <div>
+              <p className="text-sm text-gray-500">Time</p>
+              <p className="text-sm font-medium">
+                {task.startTime} - {task.endTime}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <User className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
+            <div>
+              <p className="text-sm text-gray-500">Type</p>
+              <p className="text-sm font-medium">
+                {task.type === 'service-user' ? 'Service User' : 'Employee'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <ClipboardList className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
+            <div>
+              <p className="text-sm text-gray-500">Service Type</p>
+              <p className="text-sm font-medium">{task.serviceType}</p>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            {task.status === 'allocated' ? (
+              <CheckCircle2 className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
+            ) : (
+              <AlertCircle className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-500" />
+            )}
+            <div>
+              <p className="text-sm text-gray-500">Status</p>
+              <Badge
+                variant={
+                  task.status === 'allocated' ? 'default' : 'destructive'
+                }
+                className="mt-1"
+              >
+                {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <User className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
+            <div>
+              <p className="text-sm text-gray-500">Assignee ID</p>
+              <p className="text-sm font-medium">{task.assigneeId}</p>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <Calendar className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
+            <div>
+              <p className="text-sm text-gray-500">Date</p>
+              <p className="text-sm font-medium">
+                {task.date || moment().format('YYYY-MM-DD')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose} className="gap-2">
+            Close
+          </Button>
+          <Button
+            variant="default"
+            className="bg-supperagent text-white hover:bg-supperagent/90"
+          >
+            Edit Schedule
+          </Button>
         </div>
       </div>
     </div>

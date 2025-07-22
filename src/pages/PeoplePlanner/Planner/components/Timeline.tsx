@@ -15,10 +15,11 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Calendar, CheckCircle2, ClipboardList, Clock, User, X } from 'lucide-react';
 import type { ServiceUser, Employee, Task } from '@/types/planner';
 import { employees } from '@/data/plannerData';
 import moment from 'moment';
+import { Badge } from '@/components/ui/badge';
 
 interface TimelineProps {
   currentData: (ServiceUser | Employee)[];
@@ -27,6 +28,7 @@ interface TimelineProps {
   zoomLevel: number;
   selectedDate: string;
   contentRef: React.RefObject<HTMLDivElement>;
+  onTaskClick: (task: Task) => void;
 }
 
 export function Timeline({
@@ -35,7 +37,8 @@ export function Timeline({
   tasks,
   zoomLevel,
   contentRef,
-  selectedDate
+  selectedDate,
+  onTaskClick
 }: TimelineProps) {
   const [selectedUser, setSelectedUser] = useState<
     ServiceUser | Employee | null
@@ -45,6 +48,8 @@ export function Timeline({
   const userListRef = useRef<HTMLDivElement>(null);
   const isUserScroll = useRef(false);
   const isContentScroll = useRef(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Generate time slots (always 24 hours)
   const timeSlots = useMemo(() => {
@@ -55,19 +60,22 @@ export function Timeline({
   }, []);
 
   // Generate past 7 days for selected user view
-  const past7Days = useMemo(() => {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = moment().subtract(i, 'days');
-      days.push({
-        date: date.format('YYYY-MM-DD'),
-        displayDate: date.format('ddd DD/MM'),
-        fullDate: date.format('dddd DD/MM/YYYY'),
-        isToday: i === 0
-      });
-    }
-    return days;
-  }, []);
+ const past7Days = useMemo(() => {
+  const days = [];
+  // Use selectedDate instead of today
+  const baseDate = selectedDate ? moment(selectedDate) : moment();
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = baseDate.clone().subtract(i, 'days');
+    days.push({
+      date: date.format('YYYY-MM-DD'),
+      displayDate: date.format('ddd DD/MM'),
+      fullDate: date.format('dddd DD/MM/YYYY'),
+      isToday: date.isSame(moment(), 'day') // Check if this day is actually today
+    });
+  }
+  return days;
+}, [selectedDate]);
 
   // Synchronize scrolling between user list and timeline content
   useEffect(() => {
@@ -170,7 +178,12 @@ export function Timeline({
     return baseTasks;
   }, [tasks, selectedUser, filterBy, selectedDate]);
 
-  const today = useMemo(() => moment().format('dddd DD/MM/YYYY'), []);
+const displayDate = useMemo(() => {
+  return selectedDate
+    ? moment(selectedDate).format('dddd DD/MM/YYYY')
+    : moment().format('dddd DD/MM/YYYY');
+}, [selectedDate]);
+
 
   // Helper to calculate duration in minutes from startTime and endTime strings like '08:00'
   function getDurationMinutes(startTime: string, endTime: string) {
@@ -218,7 +231,7 @@ export function Timeline({
                 variant="ghost"
                 size="sm"
                 onClick={handleBackToMain}
-                className="flex items-center gap-1 text-xs  hover:text-white hover:bg-supperagent/90"
+                className="flex items-center gap-1 text-xs  hover:bg-supperagent/90 hover:text-white"
               >
                 <ArrowLeft className="h-3 w-3" />
                 Back to All Users
@@ -228,7 +241,7 @@ export function Timeline({
               {!selectedUser ? (
                 <>
                   <Clock className="h-3 w-3" />
-                  {today}
+                  {displayDate}
                 </>
               ) : (
                 <>
@@ -427,6 +440,7 @@ export function Timeline({
                                   <div
                                     className={`absolute top-1 h-6 shadow-lg sm:h-10 ${task.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
                                     style={position}
+                                    onClick={() => onTaskClick(task)}
                                   >
                                     <div className="truncate text-xs font-medium">
                                       {task.startTime}-{task.endTime}
@@ -561,6 +575,7 @@ export function Timeline({
                                 onContextMenu={(e) => e.stopPropagation()} // optional safeguard
                                 className={`absolute top-1 h-6 shadow-lg sm:h-10 ${task.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
                                 style={position}
+                                onClick={() => onTaskClick(task)}
                               >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -661,6 +676,136 @@ export function Timeline({
                   </div>
                 ))}
           </div>
+          <TaskDetailDialog
+  task={selectedTask}
+  isOpen={isDialogOpen}
+  onClose={() => setIsDialogOpen(false)}
+/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+function TaskDetailDialog({
+  task,
+  isOpen,
+  onClose
+}: {
+  task: {
+    title: string;
+    startTime: string;
+    endTime: string;
+    type: 'service-user' | 'employee';
+    serviceType: string;
+    status: 'allocated' | string;
+    assigneeId: string;
+    date?: string;
+  };
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  if (!isOpen || !task) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in"
+      onClick={onClose}
+    >
+      <div 
+        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-start">
+          <h3 className="text-xl font-semibold text-gray-900">{task.title}</h3>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-500 transition-colors"
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <div className="flex items-start">
+            <Clock className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-gray-500">Time</p>
+              <p className="text-sm font-medium">
+                {task.startTime} - {task.endTime}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <User className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-gray-500">Type</p>
+              <p className="text-sm font-medium">
+                {task.type === 'service-user' ? 'Service User' : 'Employee'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <ClipboardList className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-gray-500">Service Type</p>
+              <p className="text-sm font-medium">{task.serviceType}</p>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            {task.status === 'allocated' ? (
+              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
+            ) : (
+              <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5 mr-3 flex-shrink-0" />
+            )}
+            <div>
+              <p className="text-sm text-gray-500">Status</p>
+              <Badge
+                variant={task.status === 'allocated' ? 'default' : 'destructive'}
+                className="mt-1"
+              >
+                {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <User className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-gray-500">Assignee ID</p>
+              <p className="text-sm font-medium">{task.assigneeId}</p>
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <Calendar className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-gray-500">Date</p>
+              <p className="text-sm font-medium">
+                {task.date || moment().format('YYYY-MM-DD')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="gap-2"
+          >
+           Close
+          </Button>
+          <Button variant="default" className='bg-supperagent text-white hover:bg-supperagent/90'>
+            Edit Schedule
+          </Button>
         </div>
       </div>
     </div>

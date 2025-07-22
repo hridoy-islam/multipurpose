@@ -67,14 +67,43 @@ import ProfilePage from '@/pages/PeoplePlanner/profilePage';
 import { NoticeBoardPage } from '@/pages/PeoplePlanner/NoticePage';
 import { TrainingPage } from '@/pages/PeoplePlanner/trainingPage';
 import SchedulePage from '@/pages/PeoplePlanner/Schedule';
-import { PayslipsPage } from '@/pages/PeoplePlanner/payslips';
 import DocumentRequestPage from '@/pages/PeoplePlanner/RequestDocument';
 import InvoicePage from '@/pages/PeoplePlanner/Invoice';
 import ServiceUserPlannerPage from '@/pages/PeoplePlanner/ServiceUser/planner';
 import ServiceUserTask from '@/pages/PeoplePlanner/ServiceUser/task';
 import ViewTaskPage from '@/pages/PeoplePlanner/ServiceUser/task/view-task';
-
-
+import PayslipsPage from '@/pages/PeoplePlanner/payslips/components/payslipPage';
+import PayslipPage from '@/pages/PeoplePlanner/payslips';
+import PeoplePlannerProfilePage from '@/pages/PeoplePlanner/Profile';
+import PeoplePlannerDepartment from '@/pages/PeoplePlanner/Department';
+import PeoplePlannerDesignation from '@/pages/PeoplePlanner/Designation';
+import PeoplePlannerAddDesignation from '@/pages/PeoplePlanner/Designation/CreateDesignation';
+import PeopleplannerEditDesignation from '@/pages/PeoplePlanner/Designation/EditDesignation';
+import PeoplePlannerEmailSetup from '@/pages/PeoplePlanner/Email-Setup';
+import PeoplePlannerEmployee from '@/pages/PeoplePlanner/Employee';
+import EditPeoplePlannerEmployee from '@/pages/PeoplePlanner/Employee/editEmployee';
+import PeoplePlannerEmployeeRate from '@/pages/PeoplePlanner/Employee/employeeRate';
+import PeoplePlannerHoliday from '@/pages/PeoplePlanner/Holidays';
+import PeoplePlannerLeaveApprovalPage from '@/pages/PeoplePlanner/LeaveManagement/LeaveApproval';
+import PeoplePlannerMyStuff from '@/pages/PeoplePlanner/MyStuff';
+import PeoplePlannerNoticeBoard from '@/pages/PeoplePlanner/NoticeBoard';
+import PeoplePlannerRecruitApplicantForm from '@/pages/PeoplePlanner/Recruitment';
+import PeoplePlannerShift from '@/pages/PeoplePlanner/Shift';
+import PeoplePlannerCreateShift from '@/pages/PeoplePlanner/Shift/CreateShift';
+import PeoplePlannerEditShift from '@/pages/PeoplePlanner/Shift/EditShift';
+import PeoplePlannerVacancy from '@/pages/PeoplePlanner/Vacancy';
+import PeoplePlannerEditVacancy from '@/pages/PeoplePlanner/Vacancy/EditVacancy';
+import PeoplePlannerCreateVacancy from '@/pages/PeoplePlanner/Vacancy/CreateVacancy';
+import PeoplePlannerViewApplicant from '@/pages/PeoplePlanner/Vacancy/ViewApplicants';
+import PeoplePlannerAddApplicant from '@/pages/PeoplePlanner/Vacancy/AddApplicant';
+import PeoplePlannerApplicantDetailPage from '@/pages/PeoplePlanner/Vacancy/viewApplicant';
+import PeoplePlannerTrainingPage from '@/pages/PeoplePlanner/Training';
+import PeoplePlannerAttendance from '@/pages/PeoplePlanner/Attendance';
+import PeoplePlannerAttendanceList from '@/pages/PeoplePlanner/Attendance/attendaceList';
+import PeoplePlannerEntryAttendance from '@/pages/PeoplePlanner/Attendance/entry-attendance';
+import PeoplePlannerAttendanceApprovalPage from '@/pages/PeoplePlanner/Attendance/Attendance-Approve';
+import PeoplePlannerAttendanceApproveList from '@/pages/PeoplePlanner/Attendance/Attendance-Approve/attendance-list';
+import PeoplePlannerAttendanceReport from '@/pages/PeoplePlanner/Attendance/Attendance-Report';
 
 const SignInPage = lazy(() => import('@/pages/auth/signin'));
 
@@ -126,12 +155,12 @@ export default function AppRouter() {
               path: 'employee/:id',
               element: <EditEmployee />
             },
-           
+
             {
               path: 'employee/:id/employee-rate',
               element: <EmployeeRate />
             },
-           
+
             {
               path: 'department',
               element: <Department />
@@ -204,44 +233,43 @@ export default function AppRouter() {
               path: 'leave-approve',
               element: <LeaveApprovalPage />
             },
-           
+
             {
               path: 'notice',
               element: <NoticeBoard />
             },
             {
               path: 'vacancy',
-              element: <Vacancy />,
-              
-            },  
+              element: <Vacancy />
+            },
             {
               path: 'create-vacancy',
-              element: <CreateVacancy/>
-            },     
-            {
-              path: 'add-applicant/:id',
-              element: <AddApplicant/>
-            },     
-            {
-              path: 'view-applicants/:id',
-              element: <ViewApplicant/>
-            },     
-            {
-              path: 'view-applicant/:id',
-              element: <ApplicantDetailPage/>
-            },     
-            {
-              path: 'recruit-applicant/:id',
-              element: <RecruitApplicantForm/>
-            },     
-            {
-              path: 'recruit-applicant/employee',
-              element: <EmployeeForm/>
-            },     
+              element: <CreateVacancy />
+            },
             {
               path: 'edit-vacancy/:id',
-              element: <EditVacancy/>
-            },     
+              element: <EditVacancy />
+            },
+            {
+              path: 'add-applicant/:id',
+              element: <AddApplicant />
+            },
+            {
+              path: 'view-applicants/:id',
+              element: <ViewApplicant />
+            },
+            {
+              path: 'view-applicant/:id',
+              element: <ApplicantDetailPage />
+            },
+            {
+              path: 'recruit-applicant/:id',
+              element: <RecruitApplicantForm />
+            },
+            {
+              path: 'recruit-applicant/employee',
+              element: <EmployeeForm />
+            },
 
             {
               path: 'recruitment',
@@ -273,7 +301,7 @@ export default function AppRouter() {
               element: <PeoplePlannerPage />,
               index: true
             },
-        
+
             {
               path: 'service-user',
               element: <PServiceUserList />
@@ -336,11 +364,11 @@ export default function AppRouter() {
             },
             {
               path: 'notice',
-              element: <NoticeBoardPage />
+              element: <PeoplePlannerNoticeBoard />
             },
             {
               path: 'training',
-              element: <TrainingPage />
+              element: <PeoplePlannerTrainingPage />
             },
             {
               path: 'schedule',
@@ -348,7 +376,7 @@ export default function AppRouter() {
             },
             {
               path: 'payslip',
-              element: <PayslipsPage />
+              element: <PayslipPage />
             },
             {
               path: 'request/document',
@@ -357,7 +385,120 @@ export default function AppRouter() {
             {
               path: 'invoice',
               element: <InvoicePage />
-            }
+            },
+            {
+              path: 'departments',
+              element: <PeoplePlannerDepartment />
+            },
+            {
+              path: 'designations',
+              element: <PeoplePlannerDesignation />
+            },
+            {
+              path: 'designations/create',
+              element: <PeoplePlannerAddDesignation />
+            },
+            {
+              path: 'designations/edit/:id',
+              element: <PeopleplannerEditDesignation />
+            },
+            {
+              path: 'email-setup',
+              element: <PeoplePlannerEmailSetup />
+            },
+            {
+              path: 'email-setup',
+              element: <PeoplePlannerEmailSetup />
+            },
+            {
+              path: 'employee',
+              element: <PeoplePlannerEmployee />
+            },
+            {
+              path: 'employee/:id',
+              element: <EditPeoplePlannerEmployee />
+            },
+            {
+              path: 'employee/:id/employee-rate',
+              element: <PeoplePlannerEmployeeRate />
+            },
+            {
+              path: 'holiday',
+              element: <PeoplePlannerHoliday />
+            },
+            {
+              path: 'leave-approval',
+              element: <PeoplePlannerLeaveApprovalPage />
+            },
+            {
+              path: 'my-stuff',
+              element: <PeoplePlannerMyStuff />
+            },
+
+            {
+              path: 'shifts',
+              element: <PeoplePlannerShift />
+            },
+            {
+              path: 'shift/create',
+              element: <PeoplePlannerCreateShift />
+            },
+            {
+              path: 'shift/edit/:id',
+              element: <PeoplePlannerEditShift />
+            },
+            {
+              path: 'vacancy',
+              element: <PeoplePlannerVacancy />
+            },
+            {
+              path: 'create-vacancy',
+              element: <PeoplePlannerCreateVacancy />
+            },
+            {
+              path: 'edit-vacancy/:id',
+              element: <PeoplePlannerEditVacancy />
+            },
+            {
+              path: 'add-applicant/:id',
+              element: <PeoplePlannerAddApplicant />
+            },
+            {
+              path: 'view-applicants/:id',
+              element: <PeoplePlannerViewApplicant />
+            },
+            {
+              path: 'view-applicant/:id',
+              element: <PeoplePlannerApplicantDetailPage />
+            },
+            {
+              path: 'recruit-applicant/:id',
+              element: <PeoplePlannerRecruitApplicantForm />
+            },
+             {
+              path: 'attendance',
+              element: <PeoplePlannerAttendance />
+            },
+            {
+              path: 'attendance/attendance-list',
+              element: <PeoplePlannerAttendanceList />
+            },
+            {
+              path: 'attendance/attendance-entry',
+              element: <PeoplePlannerEntryAttendance />
+            },
+            {
+              path: 'attendance-approve',
+              element: <PeoplePlannerAttendanceApprovalPage />
+            },
+            {
+              path: 'attendance-approve/attendance-list',
+              element: <PeoplePlannerAttendanceApproveList />
+            },
+            {
+              path: 'attendance-report',
+              element: <PeoplePlannerAttendanceReport />
+            },
           ]
         }
       ]

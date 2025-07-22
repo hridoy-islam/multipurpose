@@ -43,7 +43,7 @@ export default function UserAuthForm() {
   const onSubmit = async (data: UserFormValue) => {
     const result: any = await dispatch(loginUser(data));
     if (result?.payload?.success) {
-      router.push('/admin');
+      router.push('/admin/people-planner');
     }
   };
 

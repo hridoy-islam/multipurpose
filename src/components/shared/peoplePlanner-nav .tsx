@@ -17,7 +17,17 @@ import {
   Clock,
   FileBadge,
   FolderPlus,
-  Wallet
+  Wallet,
+  User2,
+  UsersIcon,
+  Users,
+  LayoutPanelTop,
+  ArrowBigUp,
+  Award,
+  BookText,
+  BetweenVerticalStart,
+  CircleCheckBig,
+  FileCheck2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -27,15 +37,51 @@ import { logout } from '@/redux/features/authSlice';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/people-planner' },
-  { icon: Newspaper , label: 'Notice', href: 'notice' },
-  { icon: BriefcaseIcon, label: 'Tasks', href: 'jobs' },
-  { icon: File, label: 'Report', href: 'report' },
   { icon: User, label: 'Profile', href: 'profile' },
-  { icon: Layers  , label: 'Training', href: 'training' },
-  { icon: Clock  , label: 'Schedule', href: 'schedule' },
-  { icon: FileBadge  , label: 'Payslip', href: 'payslip' },
-  { icon: Wallet    , label: 'Invoice', href: 'invoice' },
+  {
+    icon: Calendar,
+    label: 'Planner',
+    href: 'planner'
+  },
 
+  { icon: User2, label: 'My Stuff', href: 'my-stuff' },
+  { icon: Newspaper, label: 'Notice', href: 'notice' },
+  // { icon: Layers, label: 'Training', href: 'training' },
+  { icon: Clock, label: 'Schedule', href: 'schedule' },
+  { icon: FileBadge, label: 'Payslip', href: 'payslip' },
+  { icon: Wallet, label: 'Invoice', href: 'invoice' },
+
+  {
+    icon: UsersIcon,
+    label: 'Employee',
+    href: 'employee',
+    subItems: [
+      { icon: Users, label: 'Employee List', href: 'employee' },
+      { icon: LayoutPanelTop, label: 'Department', href: 'departments' },
+      { icon: ArrowBigUp, label: 'Shift', href: 'shifts' },
+      { icon: Award, label: 'Designation', href: 'designations' },
+      { icon: BookText, label: 'Training', href: 'training' }
+    ]
+  },
+  {
+    icon: FileCheck2,
+    label: 'Attendance',
+    href: 'attendance',
+    subItems: [
+      { icon: FileCheck2, label: 'Attendance List', href: 'attendance' },
+      {
+        icon: CircleCheckBig,
+        label: 'Attendance Approve',
+        href: 'attendance-approve'
+      },
+      {
+        icon: BetweenVerticalStart,
+        label: 'Attendance Entry',
+        href: '/admin/people-planner/attendance/attendance-entry'
+      },
+      { icon: Calendar, label: 'Attendance Report', href: 'attendance-report' }
+    ]
+  },
   {
     icon: UserCog2,
     label: 'Service User',
@@ -48,12 +94,16 @@ const navItems = [
       }
     ]
   },
+  { icon: File, label: 'Report', href: 'report' },
   {
-    icon: FolderPlus ,
+    icon: FolderPlus,
     label: 'Requests',
     subItems: [
-      { icon: LucideUserPlus, label: 'Document Requests', href: 'request/document' },
-     
+      {
+        icon: LucideUserPlus,
+        label: 'Document Requests',
+        href: 'request/document'
+      }
     ]
   },
   {
@@ -67,11 +117,6 @@ const navItems = [
         href: 'service-funder'
       }
     ]
-  },
-  {
-    icon: Calendar,
-    label: 'Planner',
-    href: 'planner'
   }
 ];
 

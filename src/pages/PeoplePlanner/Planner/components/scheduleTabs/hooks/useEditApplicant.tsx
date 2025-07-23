@@ -118,16 +118,15 @@ export const useEditApplicant = () => {
         sendInvoice: undefined
       }
     ],
-    criticalInfo: [
-    { date: '', type: null, details: '' } 
-  ],
-   primaryBranch: [
-    {
-      fromDate: '',
-      branch: '',
-      area:'',
-      note: ''
-    },]
+    criticalInfo: [{ date: '', type: null, details: '' }],
+    primaryBranch: [
+      {
+        fromDate: '',
+        branch: '',
+        area: '',
+        note: ''
+      }
+    ]
   });
 
   // Define required fields for each tab
@@ -148,23 +147,10 @@ export const useEditApplicant = () => {
       { field: 'postCode', label: 'Postal Code' },
       { field: 'country', label: 'Country' }
     ],
-    contact: [
-      { field: 'phone', label: 'Phone Number' },
-      { field: 'mobilePhone', label: 'Mobile Phone' },
-      { field: 'email', label: 'Email' }
-    ],
-    equality: [
-      { field: 'gender', label: 'Gender' },
-      { field: 'maritalStatus', label: 'Marital Status' }
-    ],
-    other: [
-      { field: 'serviceLocationExId', label: 'Service Location Ex ID' },
-      { field: 'timesheetSignature', label: 'Timesheet Signature Required' },
-      {
-        field: 'timesheetSignatureNote',
-        label: 'Timesheet Signature Not Required Note'
-      }
-    ],
+    equipment: [],
+    expense: [],
+    tag: [],
+    dayOnOff: [],
     emergency: [
       { field: 'emergencyContactName', label: 'Name' },
       { field: 'relationship', label: 'Relationship' }
@@ -174,13 +160,11 @@ export const useEditApplicant = () => {
       { field: 'type', label: 'Type' },
       { field: 'details', label: 'Details' }
     ],
-    equipment: [],
-    primaryBranch: [
-       { field: 'fromDate', label: 'From Date' },
-      { field: 'branch', label: 'Branch' },
-      { field: 'area', label: 'Area' }
-    ],
-    note: []
+
+    primaryBranch: [],
+    note: [],
+    po: [{ field: 'purchaseOrder', label: 'Requires Purchase Order?' }],
+    break:[]
   };
 
   const getMissingFields = (
@@ -192,97 +176,93 @@ export const useEditApplicant = () => {
       .map(({ field }) => field); // Return field names instead of labels
   };
 
-const validateTab = (tabId: string): ValidationResult => {
-  const missingFields: string[] = [];
+  const validateTab = (tabId: string): ValidationResult => {
+    const missingFields: string[] = [];
 
-  if (tabId === 'emergency') {
-    formData.emergencyContacts?.forEach((contact: any, index: number) => {
-      requiredFieldsByTab.emergency.forEach(({ field }) => {
-        if (!contact[field] || contact[field].toString().trim() === '') {
-          missingFields.push(`${field}[${index}]`);
-        }
+    if (tabId === 'emergency') {
+      formData.emergencyContacts?.forEach((contact: any, index: number) => {
+        requiredFieldsByTab.emergency.forEach(({ field }) => {
+          if (!contact[field] || contact[field].toString().trim() === '') {
+            missingFields.push(`${field}[${index}]`);
+          }
+        });
       });
-    });
 
-    return {
-      isValid: missingFields.length === 0,
-      missingFields
-    };
-  }
+      return {
+        isValid: missingFields.length === 0,
+        missingFields
+      };
+    }
 
-  if (tabId === 'primaryBranch') {
-  formData.primaryBranch?.forEach((item: any, index: number) => {
-    requiredFieldsByTab.primaryBranch.forEach(({ field }) => {
-      const value = item[field];
+    if (tabId === 'primaryBranch') {
+      formData.primaryBranch?.forEach((item: any, index: number) => {
+        requiredFieldsByTab.primaryBranch.forEach(({ field }) => {
+          const value = item[field];
 
-      const isEmpty =
-        value === null ||
-        value === undefined ||
-        (typeof value === 'string' && value.trim() === '') ||
-        (typeof value === 'object' && !value.value); // for select fields
+          const isEmpty =
+            value === null ||
+            value === undefined ||
+            (typeof value === 'string' && value.trim() === '') ||
+            (typeof value === 'object' && !value.value); // for select fields
 
-      if (isEmpty) {
-        missingFields.push(`${field}[${index}]`);
+          if (isEmpty) {
+            missingFields.push(`${field}[${index}]`);
+          }
+        });
+      });
+
+      return {
+        isValid: missingFields.length === 0,
+        missingFields
+      };
+    }
+
+    if (tabId === 'criticalInfo') {
+      formData.criticalInfo?.forEach((info: any, index: number) => {
+        requiredFieldsByTab.criticalInfo.forEach(({ field }) => {
+          const value = info[field];
+          const isEmpty =
+            value === null ||
+            value === undefined ||
+            (typeof value === 'string' && value.trim() === '') ||
+            (typeof value === 'object' && !value.value); // for { label, value } objects like `type`
+
+          if (isEmpty) {
+            missingFields.push(`${field}[${index}]`);
+          }
+        });
+      });
+
+      return {
+        isValid: missingFields.length === 0,
+        missingFields
+      };
+    }
+
+    // All other tabs
+    const requiredFields =
+      requiredFieldsByTab[tabId as keyof typeof requiredFieldsByTab] || [];
+
+    requiredFields.forEach(({ field }) => {
+      // Conditionally require timesheetSignatureNote
+      if (
+        field === 'timesheetSignatureNote' &&
+        formData['timesheetSignature'] !== false
+      ) {
+        return;
+      }
+
+      const value = formData[field];
+      if (!value || (typeof value === 'string' && value.trim() === '')) {
+        missingFields.push(field);
       }
     });
-  });
-
-  return {
-    isValid: missingFields.length === 0,
-    missingFields
-  };
-}
-
-
-  if (tabId === 'criticalInfo') {
-    formData.criticalInfo?.forEach((info: any, index: number) => {
-      requiredFieldsByTab.criticalInfo.forEach(({ field }) => {
-        const value = info[field];
-        const isEmpty =
-          value === null ||
-          value === undefined ||
-          (typeof value === 'string' && value.trim() === '') ||
-          (typeof value === 'object' && !value.value); // for { label, value } objects like `type`
-
-        if (isEmpty) {
-          missingFields.push(`${field}[${index}]`);
-        }
-      });
-    });
-
-    
 
     return {
       isValid: missingFields.length === 0,
       missingFields
     };
-  }
-
-  // All other tabs
-  const requiredFields =
-    requiredFieldsByTab[tabId as keyof typeof requiredFieldsByTab] || [];
-
-  requiredFields.forEach(({ field }) => {
-    // Conditionally require timesheetSignatureNote
-    if (
-      field === 'timesheetSignatureNote' &&
-      formData['timesheetSignature'] !== false
-    ) {
-      return;
-    }
-
-    const value = formData[field];
-    if (!value || (typeof value === 'string' && value.trim() === '')) {
-      missingFields.push(field);
-    }
-  });
-
-  return {
-    isValid: missingFields.length === 0,
-    missingFields
   };
-};
-
 
   const getTabValidation = (): TabValidation => {
     const validation: TabValidation = {};

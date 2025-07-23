@@ -1,18 +1,22 @@
 import React from 'react';
-import { ChevronRight, CheckCircle } from 'lucide-react';
+import { ChevronRight, CheckCircle, Tag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ValidationNotificationProps {
   validation: { [key: string]: { isValid: boolean; missingFields: string[] } };
   onTabClick: (tabId: string) => void;
-  userId
+  userId;
 }
 
 const tabLabels: { [key: string]: string } = {
   general: 'General',
   equipment: 'Equipment',
-  // emergency: 'Emergency Contact',
-  // note: 'Note'
+  expense: 'Expenses',
+  tag: 'Tag',
+  dayOnOff: 'Day ON/OFF',
+  note: 'Note',
+  po: 'PO',
+  break: 'Break'
 };
 
 export const ValidationNotification: React.FC<ValidationNotificationProps> = ({
@@ -21,10 +25,11 @@ export const ValidationNotification: React.FC<ValidationNotificationProps> = ({
   userId
 }) => {
   const allTabs = Object.entries(validation).filter(([tabId]) =>
-  Object.keys(tabLabels).includes(tabId)
-);
+    Object.keys(tabLabels).includes(tabId)
+  );
 
-const navigate = useNavigate()
+  const navigate = useNavigate();
+  
   if (allTabs.length === 0) return null;
 
   return (
@@ -37,9 +42,7 @@ const navigate = useNavigate()
           return (
             <div
               key={tabId}
-              className={`group cursor-pointer rounded-md border px-2 py-1 transition-all duration-200 hover:border-supperagent ${
-                isInvalid ? 'border-red-300' : 'border-gray-300'
-              }`}
+              className={`group cursor-pointer rounded-md border border-gray-300 px-2 py-1 transition-all duration-200 hover:border-supperagent`}
               onClick={() => onTabClick(tabId)}
             >
               <div className="flex items-center justify-between">
@@ -47,13 +50,13 @@ const navigate = useNavigate()
                   <span className="text-sm font-medium text-black">
                     {tabLabels[tabId] || tabId}
                   </span>
-                  {isInvalid ? (
+                  {/* {isInvalid ? (
                     <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                       {missingCount}
                     </span>
                   ) : (
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                  )}
+                  )} */}
                 </div>
                 <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
               </div>

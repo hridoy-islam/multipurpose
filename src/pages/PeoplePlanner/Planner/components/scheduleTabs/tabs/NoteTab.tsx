@@ -18,11 +18,7 @@ interface NoteTabProps {
   isFieldSaving: Record<string, boolean>;
 }
 
-const typeOptions = [
-  { value: 'general', label: 'General' },
-  { value: 'medical', label: 'Medical' },
-  { value: 'legal', label: 'Legal' },
-];
+
 
 const NoteTab: React.FC<NoteTabProps> = ({
   formData,
@@ -46,7 +42,7 @@ const NoteTab: React.FC<NoteTabProps> = ({
   const addNote = () => {
     const updatedNotes = [
       ...notes,
-      { date: '', type: '', note: '' }
+      { note: '' }
     ];
     onUpdate('notes', updatedNotes);
   };
@@ -60,25 +56,7 @@ const NoteTab: React.FC<NoteTabProps> = ({
 
         {notes.map((note, index) => (
           <div key={index} className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <EditableField
-              id={`note-date-${index}`}
-              label="Date"
-              value={note.date}
-              type="date"
-              onUpdate={(val) => handleNoteChange(index, 'date', val)}
-              isSaving={isFieldSaving[`notes.${index}.date`]}
-            />
-
-            <EditableField
-              id={`note-type-${index}`}
-              label="Type"
-              value={note.type}
-              type="select"
-              options={typeOptions}
-              onUpdate={(val) => handleNoteChange(index, 'type', val)}
-              isSaving={isFieldSaving[`notes.${index}.type`]}
-            />
-
+        
             <EditableField
               id={`note-text-${index}`}
               label="Note"

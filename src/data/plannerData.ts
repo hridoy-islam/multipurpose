@@ -104,7 +104,7 @@ export const employees: Employee[] = [
   }
 ];
 
-export const tasks: Task[] = [
+export const schedules: Task[] = [
   // Original 4 tasks for user with id '2'
   {
     id: '1',

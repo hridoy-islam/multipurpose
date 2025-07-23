@@ -16,7 +16,7 @@ export interface Employee {
   avatar?: string;
 }
 
-export interface Task {
+export interface schedule {
   id: string;
   title: string;
   startTime: string;

@@ -33,7 +33,7 @@ const ServiceuserDetailPage = () => {
   } = useEditApplicant();
 
   const tabValidation = getTabValidation();
-const {id} = useParams()
+  const { id } = useParams();
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
@@ -210,15 +210,13 @@ const {id} = useParams()
             />
           </div>
 
-         
-            <div className="">
-              <ValidationNotification
-                validation={tabValidation}
-                onTabClick={handleTabNavigation}
-                userId={id}
-              />
-            </div>
-        
+          <div className="">
+            <ValidationNotification
+              validation={tabValidation}
+              onTabClick={handleTabNavigation}
+              userId={id}
+            />
+          </div>
         </div>
       </div>
     </div>

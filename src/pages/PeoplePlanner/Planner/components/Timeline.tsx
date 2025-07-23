@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, ArrowLeft, Calendar, CheckCircle2, ClipboardList, Clock, User, X } from 'lucide-react';
-import type { ServiceUser, Employee, Task } from '@/types/planner';
+import type { ServiceUser, Employee, schedule } from '@/types/planner';
 import { employees } from '@/data/plannerData';
 import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
@@ -24,21 +24,21 @@ import { Badge } from '@/components/ui/badge';
 interface TimelineProps {
   currentData: (ServiceUser | Employee)[];
   filterBy: string;
-  tasks: Task[];
+  schedules: schedule[];
   zoomLevel: number;
   selectedDate: string;
   contentRef: React.RefObject<HTMLDivElement>;
-  onTaskClick: (task: Task) => void;
+  onScheduleClick: (schedule: schedule) => void;
 }
 
 export function Timeline({
   currentData,
   filterBy,
-  tasks,
+  schedules,
   zoomLevel,
   contentRef,
   selectedDate,
-  onTaskClick
+  onScheduleClick
 }: TimelineProps) {
   const [selectedUser, setSelectedUser] = useState<
     ServiceUser | Employee | null
@@ -48,7 +48,7 @@ export function Timeline({
   const userListRef = useRef<HTMLDivElement>(null);
   const isUserScroll = useRef(false);
   const isContentScroll = useRef(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<schedule | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Generate time slots (always 24 hours)
@@ -120,7 +120,7 @@ export function Timeline({
   };
 
   // Get task position for daily view (hours)
-  const getTaskPosition = (startTime: string, endTime: string) => {
+  const getSchedulePosition = (startTime: string, endTime: string) => {
     const [startHour, startMinute] = startTime.split(':').map(Number);
     const [endHour, endMinute] = endTime.split(':').map(Number);
 
@@ -141,42 +141,42 @@ export function Timeline({
     return currentData;
   }, [selectedUser, currentData, past7Days]);
 
-  // Get filtered tasks for current view
-  const filteredTasks = useMemo(() => {
-    let baseTasks = tasks;
+  // Get filtered Schedules for current view
+  const filteredSchedules = useMemo(() => {
+    let baseSchedules = schedules;
 
     if (selectedUser) {
-      // Filter tasks for selected user in the past 7 days
+      // Filter Schedules for selected user in the past 7 days
       const sevenDaysAgo = moment().subtract(7, 'days').startOf('day');
-      baseTasks = tasks.filter((task) => {
-        const taskDate = moment(
-          task.date || moment().format('YYYY-MM-DD'),
+      baseSchedules = schedules?.filter((schedule) => {
+        const ScheduleDate = moment(
+          schedule.date || moment().format('YYYY-MM-DD'),
           'YYYY-MM-DD'
         );
         return (
-          task.assigneeId === selectedUser.id &&
-          taskDate.isSameOrAfter(sevenDaysAgo)
+          schedule.assigneeId === selectedUser.id &&
+          ScheduleDate.isSameOrAfter(sevenDaysAgo)
         );
       });
     } else {
       // Filter for selected date only (changed from today)
-      baseTasks = tasks.filter((task) => {
-        const taskDate = task.date || selectedDate;
-        return taskDate === selectedDate;
+      baseSchedules = schedules.filter((schedule) => {
+        const scheduleDate = schedule.date || selectedDate;
+        return scheduleDate === selectedDate;
       });
     }
 
     // Apply additional filters
     if (filterBy !== 'All') {
-      baseTasks = baseTasks.filter(
-        (task) =>
-          task.type ===
+      baseSchedules = baseSchedules.filter(
+        (schedule) =>
+          schedule.type ===
           (filterBy === 'Service User' ? 'service-user' : 'employee')
       );
     }
 
-    return baseTasks;
-  }, [tasks, selectedUser, filterBy, selectedDate]);
+    return baseSchedules;
+  }, [schedules, selectedUser, filterBy, selectedDate]);
 
 const displayDate = useMemo(() => {
   return selectedDate
@@ -196,18 +196,18 @@ const displayDate = useMemo(() => {
   }
 
   const totalMinutes = useMemo(() => {
-    return filteredTasks.reduce((acc, task) => {
-      return acc + getDurationMinutes(task.startTime, task.endTime);
+    return filteredSchedules.reduce((acc, schedule) => {
+      return acc + getDurationMinutes(schedule.startTime, schedule.endTime);
     }, 0);
-  }, [filteredTasks]);
+  }, [filteredSchedules]);
 
   const allocatedMinutes = useMemo(() => {
-    return filteredTasks
-      .filter((task) => task.status === 'allocated')
-      .reduce((acc, task) => {
-        return acc + getDurationMinutes(task.startTime, task.endTime);
+    return filteredSchedules
+      .filter((schedule) => schedule.status === 'allocated')
+      .reduce((acc, schedule) => {
+        return acc + getDurationMinutes(schedule.startTime, schedule.endTime);
       }, 0);
-  }, [filteredTasks]);
+  }, [filteredSchedules]);
 
   const unallocatedMinutes = totalMinutes - allocatedMinutes;
 
@@ -274,8 +274,8 @@ const displayDate = useMemo(() => {
               ? // User list view
                 currentData.map((item, index) => {
                   const isServiceUser = 'type' in item;
-                  const taskCount = filteredTasks.filter(
-                    (task) => task.assigneeId === item.id
+                  const scheduleCount = filteredSchedules.filter(
+                    (schedule) => schedule.assigneeId === item.id
                   ).length;
 
                   return (
@@ -321,9 +321,9 @@ const displayDate = useMemo(() => {
                 })
               : // Days list view for selected user
                 past7Days.map((day, index) => {
-                  const dayTasks = filteredTasks.filter(
-                    (task) =>
-                      (task.date || moment().format('YYYY-MM-DD')) === day.date
+                  const daySchedules = filteredSchedules.filter(
+                    (schedule) =>
+                      (schedule.date || moment().format('YYYY-MM-DD')) === day.date
                   );
 
                   return (
@@ -358,9 +358,9 @@ const displayDate = useMemo(() => {
                           <p className="text-xs text-gray-500">
                             {day.isToday ? 'Today' : moment(day.date).fromNow()}
                           </p>
-                          {dayTasks.length > 0 && (
+                          {daySchedules.length > 0 && (
                             <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                              {dayTasks.length}
+                              {daySchedules.length}
                             </span>
                           )}
                         </div>
@@ -398,7 +398,7 @@ const displayDate = useMemo(() => {
             </div>
           </div>
 
-          {/* Rows with Tasks */}
+          {/* Rows with Schedules */}
           <div
             className="divide-y divide-gray-200"
             style={{ width: `${timeSlots.length * SLOT_WIDTH}rem` }}
@@ -423,13 +423,13 @@ const displayDate = useMemo(() => {
                       ))}
                     </div>
 
-                    {/* Tasks */}
-                    {filteredTasks
-                      .filter((task) => task.assigneeId === item.id)
-                      .map((task) => {
-                        const position = getTaskPosition(
-                          task.startTime,
-                          task.endTime
+                    {/* Schedules */}
+                    {filteredSchedules
+                      .filter((schedule) => schedule.assigneeId === item.id)
+                      .map((schedule) => {
+                        const position = getSchedulePosition(
+                          schedule.startTime,
+                          schedule.endTime
                         );
 
                         return (
@@ -438,15 +438,15 @@ const displayDate = useMemo(() => {
                               <ContextMenuTrigger asChild>
                                 <TooltipTrigger asChild>
                                   <div
-                                    className={`absolute top-1 h-6 shadow-lg sm:h-10 ${task.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
+                                    className={`absolute top-1 h-6 shadow-lg sm:h-10 ${schedule.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
                                     style={position}
-                                    onClick={() => onTaskClick(task)}
+                                    onClick={() => onScheduleClick(schedule)}
                                   >
                                     <div className="truncate text-xs font-medium">
-                                      {task.startTime}-{task.endTime}
+                                      {schedule.startTime}-{schedule.endTime}
                                     </div>
                                     <div className="truncate text-xs">
-                                      {task.title}
+                                      {schedule.title}
                                     </div>
                                   </div>
                                 </TooltipTrigger>
@@ -515,15 +515,15 @@ const displayDate = useMemo(() => {
                             <TooltipContent className="z-50 shadow-lg">
                               <div className="space-y-1 p-1">
                                 <p className="text-xs font-medium">
-                                  {task.title}
+                                  {schedule.title}
                                 </p>
                                 <p className="text-xs">
-                                  {task.startTime} - {task.endTime}
+                                  {schedule.startTime} - {schedule.endTime}
                                 </p>
-                                <p className="text-xs">{task.serviceType}</p>
+                                <p className="text-xs">{schedule.serviceType}</p>
                                 <p className="text-xs">
                                   Status:{' '}
-                                  {task.status === 'allocated'
+                                  {schedule.status === 'allocated'
                                     ? 'Allocated'
                                     : 'Unallocated'}
                                 </p>
@@ -555,53 +555,53 @@ const displayDate = useMemo(() => {
                       ))}
                     </div>
 
-                    {/* Tasks for this day */}
-                    {filteredTasks
+                    {/* schedules for this day */}
+                    {filteredSchedules
                       .filter(
-                        (task) =>
-                          (task.date || moment().format('YYYY-MM-DD')) ===
+                        (schedule) =>
+                          (schedule.date || moment().format('YYYY-MM-DD')) ===
                           day.date
                       )
-                      .map((task) => {
-                        const position = getTaskPosition(
-                          task.startTime,
-                          task.endTime
+                      .map((schedule) => {
+                        const position = getSchedulePosition(
+                          schedule.startTime,
+                          schedule.endTime
                         );
 
                         return (
-                          <ContextMenu key={task.id}>
+                          <ContextMenu key={schedule.id}>
                             <ContextMenuTrigger asChild>
                               <div
                                 onContextMenu={(e) => e.stopPropagation()} // optional safeguard
-                                className={`absolute top-1 h-6 shadow-lg sm:h-10 ${task.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
+                                className={`absolute top-1 h-6 shadow-lg sm:h-10 ${schedule.color} z-20 cursor-pointer truncate rounded p-1 text-xs text-white transition-all hover:opacity-80 hover:shadow-xl`}
                                 style={position}
-                                onClick={() => onTaskClick(task)}
+                                onClick={() => onScheduleClick(schedule)}
                               >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div>
                                       <div className="truncate text-xs font-medium">
-                                        {task.startTime}-{task.endTime}
+                                        {schedule.startTime}-{schedule.endTime}
                                       </div>
                                       <div className="truncate text-xs">
-                                        {task.title}
+                                        {schedule.title}
                                       </div>
                                     </div>
                                   </TooltipTrigger>
                                   <TooltipContent className="z-50 shadow-lg">
                                     <div className="space-y-1 p-1">
                                       <p className="text-xs font-medium">
-                                        {task.title}
+                                        {schedule.title}
                                       </p>
                                       <p className="text-xs">
-                                        {task.startTime} - {task.endTime}
+                                        {schedule.startTime} - {schedule.endTime}
                                       </p>
                                       <p className="text-xs">
-                                        {task.serviceType}
+                                        {schedule.serviceType}
                                       </p>
                                       <p className="text-xs">
                                         Status:{' '}
-                                        {task.status === 'allocated'
+                                        {schedule.status === 'allocated'
                                           ? 'Allocated'
                                           : 'Unallocated'}
                                       </p>
@@ -676,8 +676,8 @@ const displayDate = useMemo(() => {
                   </div>
                 ))}
           </div>
-          <TaskDetailDialog
-  task={selectedTask}
+          <ScheduleDetailDialog
+  schedule={selectedSchedule}
   isOpen={isDialogOpen}
   onClose={() => setIsDialogOpen(false)}
 />
@@ -690,12 +690,12 @@ const displayDate = useMemo(() => {
 
 
 
-function TaskDetailDialog({
-  task,
+function ScheduleDetailDialog({
+  schedule,
   isOpen,
   onClose
 }: {
-  task: {
+  schedule: {
     title: string;
     startTime: string;
     endTime: string;
@@ -708,7 +708,7 @@ function TaskDetailDialog({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  if (!isOpen || !task) return null;
+  if (!isOpen || !schedule) return null;
 
   return (
     <div 
@@ -720,7 +720,7 @@ function TaskDetailDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-start">
-          <h3 className="text-xl font-semibold text-gray-900">{task.title}</h3>
+          <h3 className="text-xl font-semibold text-gray-900">{schedule.title}</h3>
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500 transition-colors"
@@ -736,7 +736,7 @@ function TaskDetailDialog({
             <div>
               <p className="text-sm text-gray-500">Time</p>
               <p className="text-sm font-medium">
-                {task.startTime} - {task.endTime}
+                {schedule.startTime} - {schedule.endTime}
               </p>
             </div>
           </div>
@@ -746,7 +746,7 @@ function TaskDetailDialog({
             <div>
               <p className="text-sm text-gray-500">Type</p>
               <p className="text-sm font-medium">
-                {task.type === 'service-user' ? 'Service User' : 'Employee'}
+                {schedule.type === 'service-user' ? 'Service User' : 'Employee'}
               </p>
             </div>
           </div>
@@ -755,12 +755,12 @@ function TaskDetailDialog({
             <ClipboardList className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
             <div>
               <p className="text-sm text-gray-500">Service Type</p>
-              <p className="text-sm font-medium">{task.serviceType}</p>
+              <p className="text-sm font-medium">{schedule.serviceType}</p>
             </div>
           </div>
 
           <div className="flex items-start">
-            {task.status === 'allocated' ? (
+            {schedule.status === 'allocated' ? (
               <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
             ) : (
               <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5 mr-3 flex-shrink-0" />
@@ -768,10 +768,10 @@ function TaskDetailDialog({
             <div>
               <p className="text-sm text-gray-500">Status</p>
               <Badge
-                variant={task.status === 'allocated' ? 'default' : 'destructive'}
+                variant={schedule.status === 'allocated' ? 'default' : 'destructive'}
                 className="mt-1"
               >
-                {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                {schedule.status.charAt(0).toUpperCase() + schedule.status.slice(1)}
               </Badge>
             </div>
           </div>
@@ -780,7 +780,7 @@ function TaskDetailDialog({
             <User className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
             <div>
               <p className="text-sm text-gray-500">Assignee ID</p>
-              <p className="text-sm font-medium">{task.assigneeId}</p>
+              <p className="text-sm font-medium">{schedule.assigneeId}</p>
             </div>
           </div>
 
@@ -789,7 +789,7 @@ function TaskDetailDialog({
             <div>
               <p className="text-sm text-gray-500">Date</p>
               <p className="text-sm font-medium">
-                {task.date || moment().format('YYYY-MM-DD')}
+                {schedule.date || moment().format('YYYY-MM-DD')}
               </p>
             </div>
           </div>

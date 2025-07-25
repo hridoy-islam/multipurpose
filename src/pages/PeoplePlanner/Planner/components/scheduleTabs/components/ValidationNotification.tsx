@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, CheckCircle, Tag } from 'lucide-react';
+import { ChevronRight, CheckCircle, Tag, CrossIcon, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ValidationNotificationProps {
@@ -64,34 +64,26 @@ export const ValidationNotification: React.FC<ValidationNotificationProps> = ({
           );
         })}
 
-        {/* ✅ Static clickable "Funder" block */}
-        {/* <div
+      
+        <div
           className="group cursor-pointer rounded-md border border-gray-300 px-2 py-1 transition-all duration-200 hover:border-supperagent"
-          onClick={() => navigate(`/admin/people-planner/service-user/${userId}/tasks`)}
+          onClick={() => ({})}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-black">Schedule</span>
-            <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
+            <span className="text-sm font-medium text-black">Complete</span>
+            {/* <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" /> */}
           </div>
         </div>
         <div
-          className="group cursor-pointer rounded-md border border-gray-300 px-2 py-1 transition-all duration-200 hover:border-supperagent"
-          onClick={() => navigate(`/admin/people-planner/service-user/${userId}/funder`)}
+          className="group cursor-pointer rounded-md border border-gray-300 px-2 py-1 transition-all duration-200 hover:border-destructive"
+          onClick={() => ({})}
         >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-black">Funder</span>
-            <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
+          <div className="flex items-center justify-start gap-2">
+            <X className="h-4 w-4 text-red-500 transition-transform group-hover:translate-x-1" />
+            <span className="text-sm font-medium text-red-500 transition-transform group-hover:translate-x-1">Cancel</span>
           </div>
         </div>
-        <div
-          className="group cursor-pointer rounded-md border border-gray-300 px-2 py-1 transition-all duration-200 hover:border-supperagent"
-          onClick={() => navigate(`/admin/people-planner/service-user/${userId}/planner`)}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-black">Planning</span>
-            <ChevronRight className="h-4 w-4 text-supperagent transition-transform group-hover:translate-x-1" />
-          </div>
-        </div> */}
+        
       </div>
     </div>
   );

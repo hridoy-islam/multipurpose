@@ -8,6 +8,16 @@ import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import moment from 'moment';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+interface TimeScrollListProps {
+  title: string;
+  items: { value: number; label: string }[];
+  selectedValue: number;
+  onSelect: (value: number) => void;
+}
 
 interface EditableFieldProps {
   id: string;
@@ -20,7 +30,8 @@ interface EditableFieldProps {
     | 'email'
     | 'textarea'
     | 'select'
-    | 'checkbox';
+    | 'checkbox'
+    | 'time';
   options?: { value: string; label: string }[];
   isSaving?: boolean;
   required?: boolean;
@@ -31,7 +42,34 @@ interface EditableFieldProps {
   max?: string;
   rows?: number;
   multiple?: boolean;
-  isMissing?: boolean; // New prop to indicate if this is a missing required field
+  isMissing?: boolean;
+}
+
+function TimeScrollList({
+  items,
+  selectedValue,
+  onSelect
+}: TimeScrollListProps) {
+  return (
+    <ScrollArea className="h-40 rounded-md">
+      <div className="flex flex-col gap-1 p-1">
+        {items.map((item) => (
+          <Button
+            key={item.value}
+            variant="ghost"
+            className={cn(
+              'h-9 w-full justify-center px-2',
+              item.value === selectedValue && 'bg-gray-100 font-medium'
+            )}
+            onClick={() => onSelect(item.value)}
+          >
+            {item.label}
+          </Button>
+        ))}
+      </div>
+      <ScrollBar orientation="vertical" />
+    </ScrollArea>
+  );
 }
 
 export const EditableField: React.FC<EditableFieldProps> = ({
@@ -49,15 +87,27 @@ export const EditableField: React.FC<EditableFieldProps> = ({
   max,
   rows = 3,
   multiple = false,
-  isMissing = false // Default to false
+  isMissing = false
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [fieldValue, setFieldValue] = useState(value);
+  const [tempTime, setTempTime] = useState({
+    hour: 0,
+    minute: 0
+  });
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setFieldValue(value);
-  }, [value]);
+
+    if (type === 'time' && typeof value === 'string') {
+      const [hour, minute] = value.split(':').map(Number);
+      setTempTime({
+        hour: isNaN(hour) ? 0 : hour,
+        minute: isNaN(minute) ? 0 : minute
+      });
+    }
+  }, [value, type]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -69,6 +119,15 @@ export const EditableField: React.FC<EditableFieldProps> = ({
     if (!dateStr) return '';
     const m = moment(dateStr);
     return m.isValid() ? m.format('MM-DD-YYYY') : dateStr.toString();
+  };
+
+  const formatTime = (timeStr: string | number) => {
+    if (!timeStr) return '';
+    if (typeof timeStr === 'string') {
+      const [hour, minute] = timeStr.split(':').map(Number);
+      return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    }
+    return timeStr.toString();
   };
 
   const handleBlur = () => {
@@ -108,7 +167,13 @@ export const EditableField: React.FC<EditableFieldProps> = ({
     onUpdate(checked);
   };
 
-  // Determine border color based on missing status
+  const handleTimeSave = () => {
+    const timeStr = `${String(tempTime.hour).padStart(2, '0')}:${String(tempTime.minute).padStart(2, '0')}`;
+    setFieldValue(timeStr);
+    onUpdate(timeStr);
+    setIsEditing(false);
+  };
+
   const getBorderColor = () => {
     if (isMissing) return 'border-red-500';
     if (isEditing) return 'border-blue-500';
@@ -125,7 +190,10 @@ export const EditableField: React.FC<EditableFieldProps> = ({
           disabled={isSaving}
           className={isMissing ? 'border-red-500' : ''}
         />
-        <Label htmlFor={id} className={`${isSaving ? 'opacity-70' : ''} ${isMissing ? 'text-red-600' : ''}`}>
+        <Label
+          htmlFor={id}
+          className={`${isSaving ? 'opacity-70' : ''} ${isMissing ? 'text-red-600' : ''}`}
+        >
           {label}
           {isSaving && <Loader2 className="ml-2 inline h-3 w-3 animate-spin" />}
           {isMissing && <span className="ml-1 text-red-500">*</span>}
@@ -257,6 +325,100 @@ export const EditableField: React.FC<EditableFieldProps> = ({
             showYearDropdown
             dropdownMode="select"
           />
+        ) : type === 'time' ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-full max-w-sm rounded-lg bg-white p-6">
+              <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center py-2">
+                  <div className="mb-2 text-lg font-medium">Select {label}</div>
+                  <div className="mb-4 flex items-center justify-center space-x-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="23"
+                      value={tempTime.hour.toString().padStart(2, '0')}
+                      onChange={(e) => {
+                        const val = Math.min(
+                          23,
+                          Math.max(0, parseInt(e.target.value)) || 0
+                        );
+                        setTempTime((prev) => ({ ...prev, hour: val }));
+                      }}
+                      className="w-16 text-center text-2xl font-medium [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                    <span className="text-2xl font-medium">:</span>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={tempTime.minute.toString().padStart(2, '0')}
+                      onChange={(e) => {
+                        const val = Math.min(
+                          59,
+                          Math.max(0, parseInt(e.target.value)) || 0
+                        );
+                        setTempTime((prev) => ({ ...prev, minute: val }));
+                      }}
+                      className="w-16 text-center text-2xl font-medium [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-1 border border-gray-300 rounded-lg">
+                    <div className="mb-1 text-center text-sm font-medium">
+                      Hours
+                    </div>
+                    <TimeScrollList
+                      items={Array.from({ length: 24 }, (_, i) => ({
+                        value: i,
+                        label: String(i).padStart(2, '0')
+                      }))}
+                      selectedValue={tempTime.hour}
+                      onSelect={(val) =>
+                        setTempTime((prev) => ({ ...prev, hour: val }))
+                      }
+                    />
+                  </div>
+                  <div className="flex-1  border border-gray-300 rounded-lg">
+                    <div className="mb-1 text-center text-sm font-medium">
+                      Minutes
+                    </div>
+                    <TimeScrollList
+                      items={Array.from({ length: 60 }, (_, i) => i).map(
+                        (m) => ({
+                          value: m,
+                          label: String(m).padStart(2, '0')
+                        })
+                      )}
+                      selectedValue={tempTime.minute}
+                      onSelect={(val) =>
+                        setTempTime((prev) => ({ ...prev, minute: val }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setFieldValue(value);
+                      setIsEditing(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleTimeSave}
+                    className="hover:bg-suppergant/90 bg-supperagent text-white"
+                  >
+                    Confirm
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         ) : (
           <Input
             ref={inputRef as React.RefObject<HTMLInputElement>}
@@ -282,10 +444,18 @@ export const EditableField: React.FC<EditableFieldProps> = ({
           {type === 'checkbox' ? (
             <span>{(fieldValue as boolean) ? 'Yes' : 'No'}</span>
           ) : (
-            <span className={`${!fieldValue ? 'italic text-gray-400' : ''} ${isMissing ? 'text-red-600' : ''}`}>
-              {type === 'date' 
-                ? (fieldValue ? formatDate(fieldValue) : 'Click to select') 
-                : (fieldValue || 'Click to edit')}
+            <span
+              className={`${!fieldValue ? 'italic text-gray-400' : ''} ${isMissing ? 'text-red-600' : ''}`}
+            >
+              {type === 'date'
+                ? fieldValue
+                  ? formatDate(fieldValue)
+                  : 'Click to select'
+                : type === 'time'
+                  ? fieldValue
+                    ? formatTime(fieldValue)
+                    : 'Click to select'
+                  : fieldValue || 'Click to edit'}
             </span>
           )}
         </div>

@@ -26,7 +26,6 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
     return missingFields.includes(fieldKey);
   };
 
-  // Calculate duration based on start and end times
   const calculateDuration = (startTime: string, endTime: string): string => {
     if (!startTime || !endTime) return '';
     const start = moment(startTime, 'HH:mm');
@@ -36,13 +35,11 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-3">
       {/* Date & Time Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
-          Date & Time
-        </h3>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="rounded border border-gray-200 bg-white p-2">
+        <h3 className="mb-2 text-xs font-semibold text-gray-900">Date & Time</h3>
+        <div className="grid grid-cols-3 gap-2">
           <EditableField
             id="date"
             label="Date"
@@ -52,26 +49,29 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             isSaving={isFieldSaving.date}
             required
             isMissing={isFieldMissing('date')}
+            compact
           />
           <EditableField
             id="startTime"
-            label="Start Time"
+            label="Start"
             value={formData.startTime}
             type="time"
             onUpdate={(value) => onUpdate('startTime', value)}
             isSaving={isFieldSaving.startTime}
             required
             isMissing={isFieldMissing('startTime')}
+            compact
           />
           <EditableField
             id="endTime"
-            label="End Time"
+            label="End"
             value={formData.endTime}
             type="time"
             onUpdate={(value) => onUpdate('endTime', value)}
             isSaving={isFieldSaving.endTime}
             required
             isMissing={isFieldMissing('endTime')}
+            compact
           />
           <EditableField
             id="duration"
@@ -79,45 +79,37 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             value={calculateDuration(formData.startTime, formData.endTime)}
             readOnly
             isSaving={false}
+            compact
           />
           <EditableField
             id="timeInMinutes"
-            label="Time (Minutes)"
+            label="Mins"
             value={formData.timeInMinutes}
             type="number"
             onUpdate={(value) => onUpdate('timeInMinutes', value)}
             isSaving={isFieldSaving.timeInMinutes}
             required
             isMissing={isFieldMissing('timeInMinutes')}
+            compact
           />
-        </div>
-      </div>
-
-      {/* Travel Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
-          Travel
-        </h3>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <EditableField
             id="travelTime"
-            label="Time (Minutes)"
+            label="Travel (mins)"
             value={formData.travelTime}
             type="number"
             onUpdate={(value) => onUpdate('travelTime', value)}
             isSaving={isFieldSaving.travelTime}
             required
             isMissing={isFieldMissing('travelTime')}
+            compact
           />
         </div>
       </div>
 
-      {/* Service User & Service Funder Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
-          Service User & Service Funder
-        </h3>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Service User & Funder Section */}
+      <div className="rounded border border-gray-200 bg-white p-2">
+        <h3 className="mb-2 text-xs font-semibold text-gray-900">Service User & Funder</h3>
+        <div className="grid grid-cols-4 gap-2">
           <EditableField
             id="branch"
             label="Branch"
@@ -125,12 +117,12 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             type="select"
             options={[
               { value: 'Everycare Romford', label: 'Everycare Romford' },
-              // Add more branches as needed
             ]}
             onUpdate={(value) => onSelectChange('branch', value)}
             isSaving={isFieldSaving.branch}
             required
             isMissing={isFieldMissing('branch')}
+            compact
           />
           <EditableField
             id="area"
@@ -139,50 +131,48 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             type="select"
             options={[
               { value: 'Care', label: 'Care' },
-              // Add more areas as needed
             ]}
             onUpdate={(value) => onSelectChange('area', value)}
             isSaving={isFieldSaving.area}
             required
             isMissing={isFieldMissing('area')}
+            compact
           />
           <EditableField
             id="serviceUser"
             label="Service User"
-            value={formData.serviceFunder}
+            value={formData.serviceUser}
             type="select"
             options={[
               { value: 'Hasan Mahi', label: 'Hasan Mahi' },
-              // Add more funders as needed
             ]}
             onUpdate={(value) => onSelectChange('serviceUser', value)}
-            isSaving={isFieldSaving.serviceFunder}
+            isSaving={isFieldSaving.serviceUser}
             required
             isMissing={isFieldMissing('serviceUser')}
+            compact
           />
           <EditableField
             id="serviceFunder"
-            label="Service Funder"
+            label="Funder"
             value={formData.serviceFunder}
             type="select"
             options={[
               { value: 'Independent Living Agency', label: 'Independent Living Agency' },
-              // Add more funders as needed
             ]}
             onUpdate={(value) => onSelectChange('serviceFunder', value)}
             isSaving={isFieldSaving.serviceFunder}
             required
             isMissing={isFieldMissing('serviceFunder')}
+            compact
           />
         </div>
       </div>
 
       {/* Employee Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
-          Employee
-        </h3>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="rounded border border-gray-200 bg-white p-2">
+        <h3 className="mb-2 text-xs font-semibold text-gray-900">Employee</h3>
+        <div className="grid grid-cols-3 gap-2">
           <EditableField
             id="employeeBranch"
             label="Branch"
@@ -190,12 +180,12 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             type="select"
             options={[
               { value: 'Everycare Romford', label: 'Everycare Romford' },
-              // Add more branches as needed
             ]}
             onUpdate={(value) => onSelectChange('employeeBranch', value)}
             isSaving={isFieldSaving.employeeBranch}
             required
             isMissing={isFieldMissing('employeeBranch')}
+            compact
           />
           <EditableField
             id="employeeArea"
@@ -204,12 +194,12 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             type="select"
             options={[
               { value: 'Care', label: 'Care' },
-              // Add more areas as needed
             ]}
             onUpdate={(value) => onSelectChange('employeeArea', value)}
             isSaving={isFieldSaving.employeeArea}
             required
             isMissing={isFieldMissing('employeeArea')}
+            compact
           />
           <EditableField
             id="employee"
@@ -218,22 +208,20 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             type="select"
             options={[
               { value: 'AKTER, FARHANA', label: 'AKTER, FARHANA' },
-              // Add more employees as needed
             ]}
             onUpdate={(value) => onSelectChange('employee', value)}
             isSaving={isFieldSaving.employee}
             required
             isMissing={isFieldMissing('employee')}
+            compact
           />
         </div>
       </div>
 
-      {/* Service Type & Rates Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
-          Service Type & Rates
-        </h3>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Service & Rates Section */}
+      <div className="rounded border border-gray-200 bg-white p-2">
+        <h3 className="mb-2 text-xs font-semibold text-gray-900">Service & Rates</h3>
+        <div className="grid grid-cols-4 gap-2">
           <EditableField
             id="serviceType"
             label="Service Type"
@@ -241,32 +229,12 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             type="select"
             options={[
               { value: 'Care', label: 'Care' },
-              // Add more service types as needed
             ]}
             onUpdate={(value) => onSelectChange('serviceType', value)}
             isSaving={isFieldSaving.serviceType}
             required
             isMissing={isFieldMissing('serviceType')}
-          />
-          <EditableField
-            id="payRate"
-            label="Pay Rate (Hourly)"
-            value={formData.payRate}
-            type="number"
-            onUpdate={(value) => onUpdate('payRate', value)}
-            isSaving={isFieldSaving.payRate}
-            required
-            isMissing={isFieldMissing('payRate')}
-          />
-          <EditableField
-            id="invoiceRate"
-            label="Invoice Rate (Hourly)"
-            value={formData.invoiceRate}
-            type="number"
-            onUpdate={(value) => onUpdate('invoiceRate', value)}
-            isSaving={isFieldSaving.invoiceRate}
-            required
-            isMissing={isFieldMissing('invoiceRate')}
+            compact
           />
           <EditableField
             id="visitType"
@@ -275,22 +243,42 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             type="select"
             options={[
               { value: 'Other', label: 'Other' },
-              // Add more visit types as needed
             ]}
             onUpdate={(value) => onSelectChange('visitType', value)}
             isSaving={isFieldSaving.visitType}
             required
             isMissing={isFieldMissing('visitType')}
+            compact
+          />
+          <EditableField
+            id="payRate"
+            label="Pay Rate"
+            value={formData.payRate}
+            type="number"
+            onUpdate={(value) => onUpdate('payRate', value)}
+            isSaving={isFieldSaving.payRate}
+            required
+            isMissing={isFieldMissing('payRate')}
+            compact
+          />
+          <EditableField
+            id="invoiceRate"
+            label="Invoice Rate"
+            value={formData.invoiceRate}
+            type="number"
+            onUpdate={(value) => onUpdate('invoiceRate', value)}
+            isSaving={isFieldSaving.invoiceRate}
+            required
+            isMissing={isFieldMissing('invoiceRate')}
+            compact
           />
         </div>
       </div>
 
       {/* Summary Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
-          Summary
-        </h3>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="rounded border border-gray-200 bg-white p-2">
+        <h3 className="mb-2 text-xs font-semibold text-gray-900">Summary</h3>
+        <div className="grid grid-cols-3 gap-2">
           <EditableField
             id="cancellation"
             label="Cancellation"
@@ -298,18 +286,11 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
             type="select"
             options={[
               { value: '', label: '' },
-              // Add cancellation options as needed
             ]}
             onUpdate={(value) => onSelectChange('cancellation', value)}
             isSaving={isFieldSaving.cancellation}
+            compact
           />
-          {/* <div>
-            <label className="block mb-2 text-sm font-medium text-gray-900">Summary Status</label>
-            <div className="flex items-center space-x-2">
-              <span className="text-green-500">Successful</span>
-              <span className="text-gray-500">All planning rules passed successfully.</span>
-            </div>
-          </div> */}
         </div>
       </div>
     </div>

@@ -15,7 +15,19 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, ArrowLeft, Calendar, CheckCircle2, ClipboardList, Clock, User, X } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Calendar,
+  CalendarClock,
+  CheckCircle,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  MapPin,
+  User,
+  X
+} from 'lucide-react';
 import type { ServiceUser, Employee, schedule } from '@/types/planner';
 import { employees } from '@/data/plannerData';
 import moment from 'moment';
@@ -48,7 +60,9 @@ export function Timeline({
   const userListRef = useRef<HTMLDivElement>(null);
   const isUserScroll = useRef(false);
   const isContentScroll = useRef(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<schedule | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<schedule | null>(
+    null
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Generate time slots (always 24 hours)
@@ -60,22 +74,22 @@ export function Timeline({
   }, []);
 
   // Generate past 7 days for selected user view
- const past7Days = useMemo(() => {
-  const days = [];
-  // Use selectedDate instead of today
-  const baseDate = selectedDate ? moment(selectedDate) : moment();
-  
-  for (let i = 6; i >= 0; i--) {
-    const date = baseDate.clone().subtract(i, 'days');
-    days.push({
-      date: date.format('YYYY-MM-DD'),
-      displayDate: date.format('ddd DD/MM'),
-      fullDate: date.format('dddd DD/MM/YYYY'),
-      isToday: date.isSame(moment(), 'day') // Check if this day is actually today
-    });
-  }
-  return days;
-}, [selectedDate]);
+  const past7Days = useMemo(() => {
+    const days = [];
+    // Use selectedDate instead of today
+    const baseDate = selectedDate ? moment(selectedDate) : moment();
+
+    for (let i = 6; i >= 0; i--) {
+      const date = baseDate.clone().subtract(i, 'days');
+      days.push({
+        date: date.format('YYYY-MM-DD'),
+        displayDate: date.format('ddd DD/MM'),
+        fullDate: date.format('dddd DD/MM/YYYY'),
+        isToday: date.isSame(moment(), 'day') // Check if this day is actually today
+      });
+    }
+    return days;
+  }, [selectedDate]);
 
   // Synchronize scrolling between user list and timeline content
   useEffect(() => {
@@ -140,29 +154,42 @@ export function Timeline({
     }
     return currentData;
   }, [selectedUser, currentData, past7Days]);
+  const calculateDuration = (start: string, end: string) => {
+    const [startH, startM] = start.split(':').map(Number);
+    const [endH, endM] = end.split(':').map(Number);
+
+    let startMinutes = startH * 60 + startM;
+    let endMinutes = endH * 60 + endM;
+    let duration = endMinutes - startMinutes;
+
+    const hours = Math.floor(duration / 60);
+    const minutes = duration % 60;
+
+    return `${hours > 0 ? `${hours}h ` : ''}${minutes}m`;
+  };
 
   // Get filtered Schedules for current view
   const filteredSchedules = useMemo(() => {
     let baseSchedules = schedules;
 
     if (selectedUser) {
-      // Filter Schedules for selected user in the past 7 days
-      const sevenDaysAgo = moment().subtract(7, 'days').startOf('day');
-      baseSchedules = schedules?.filter((schedule) => {
-        const ScheduleDate = moment(
-          schedule.date || moment().format('YYYY-MM-DD'),
-          'YYYY-MM-DD'
-        );
+      // Filter schedules for selected user in the past 7 days
+      const sevenDaysAgo = moment(selectedDate)
+        .subtract(7, 'days')
+        .startOf('day');
+      const today = moment(selectedDate).endOf('day');
+
+      baseSchedules = schedules.filter((schedule) => {
+        const scheduleDate = moment(schedule.date || selectedDate);
         return (
           schedule.assigneeId === selectedUser.id &&
-          ScheduleDate.isSameOrAfter(sevenDaysAgo)
+          scheduleDate.isBetween(sevenDaysAgo, today, null, '[]') // inclusive of both dates
         );
       });
     } else {
-      // Filter for selected date only (changed from today)
+      // Filter for selected date only
       baseSchedules = schedules.filter((schedule) => {
-        const scheduleDate = schedule.date || selectedDate;
-        return scheduleDate === selectedDate;
+        return (schedule.date || selectedDate) === selectedDate;
       });
     }
 
@@ -177,13 +204,11 @@ export function Timeline({
 
     return baseSchedules;
   }, [schedules, selectedUser, filterBy, selectedDate]);
-
-const displayDate = useMemo(() => {
-  return selectedDate
-    ? moment(selectedDate).format('dddd DD/MM/YYYY')
-    : moment().format('dddd DD/MM/YYYY');
-}, [selectedDate]);
-
+  const displayDate = useMemo(() => {
+    return selectedDate
+      ? moment(selectedDate).format('dddd DD/MM/YYYY')
+      : moment().format('dddd DD/MM/YYYY');
+  }, [selectedDate]);
 
   // Helper to calculate duration in minutes from startTime and endTime strings like '08:00'
   function getDurationMinutes(startTime: string, endTime: string) {
@@ -323,7 +348,8 @@ const displayDate = useMemo(() => {
                 past7Days.map((day, index) => {
                   const daySchedules = filteredSchedules.filter(
                     (schedule) =>
-                      (schedule.date || moment().format('YYYY-MM-DD')) === day.date
+                      (schedule.date || moment().format('YYYY-MM-DD')) ===
+                      day.date
                   );
 
                   return (
@@ -512,21 +538,108 @@ const displayDate = useMemo(() => {
                                 </ContextMenuItem>
                               </ContextMenuContent>
                             </ContextMenu>
-                            <TooltipContent className="z-50 shadow-lg">
-                              <div className="space-y-1 p-1">
-                                <p className="text-xs font-medium">
-                                  {schedule.title}
-                                </p>
-                                <p className="text-xs">
-                                  {schedule.startTime} - {schedule.endTime}
-                                </p>
-                                <p className="text-xs">{schedule.serviceType}</p>
-                                <p className="text-xs">
-                                  Status:{' '}
-                                  {schedule.status === 'allocated'
-                                    ? 'Allocated'
-                                    : 'Unallocated'}
-                                </p>
+                            <TooltipContent className="z-50 w-auto rounded-md bg-white p-4 shadow-lg">
+                              <div className="space-y-3 text-sm text-gray-700">
+                                {/* Service User Info */}
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2 font-semibold">
+                                    <User size={16} />
+                                    <span>{schedule?.serviceUser.name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <MapPin
+                                      size={16}
+                                      className="text-muted-foreground"
+                                    />
+                                    <span>{schedule?.serviceUser.address}</span>
+                                  </div>
+                                </div>
+                                <div className="flex flex-row items-center justify-between gap-4">
+                                  {/* Service Requirement */}
+                                  <div>
+                                    <div className="flex items-center gap-2 font-medium text-gray-800">
+                                      <ClipboardList
+                                        size={16}
+                                        className="text-blue-500"
+                                      />
+                                      <span>Service Requirement</span>
+                                    </div>
+                                    <div className="ml-6 mt-1 space-y-1 text-xs text-gray-600">
+                                      <p>
+                                        <CalendarClock
+                                          size={14}
+                                          className="mr-1 inline-block"
+                                        />
+                                        {schedule.startTime} -{' '}
+                                        {schedule.endTime}
+                                      </p>
+                                      <p>
+                                        <Clock
+                                          size={14}
+                                          className="mr-1 inline-block"
+                                        />
+                                        Duration:{' '}
+                                        {calculateDuration(
+                                          schedule.startTime,
+                                          schedule.endTime
+                                        )}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {/* Planned Section (Same as Service Requirement) */}
+                                  <div>
+                                    <div className="flex items-center gap-2 font-medium text-gray-800">
+                                      <ClipboardList
+                                        size={16}
+                                        className="text-purple-500"
+                                      />
+                                      <span>Planned</span>
+                                    </div>
+                                    <div className="ml-6 mt-1 space-y-1 text-xs text-gray-600">
+                                      <p>
+                                        <CalendarClock
+                                          size={14}
+                                          className="mr-1 inline-block"
+                                        />
+                                        {schedule.startTime} -{' '}
+                                        {schedule.endTime}
+                                      </p>
+                                      <p>
+                                        <Clock
+                                          size={14}
+                                          className="mr-1 inline-block"
+                                        />
+                                        Duration:{' '}
+                                        {calculateDuration(
+                                          schedule.startTime,
+                                          schedule.endTime
+                                        )}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Service Type and Status */}
+                                <div className="space-y-1 border-t border-gray-200 pt-2">
+                                  <p className="text-xs">
+                                    <ClipboardList
+                                      size={14}
+                                      className="mr-1 inline-block text-gray-500"
+                                    />
+                                    {schedule.serviceType}
+                                  </p>
+                                  <p className="text-xs">
+                                    <CheckCircle
+                                      size={14}
+                                      className="mr-1 inline-block text-green-500"
+                                    />
+                                    Status:{' '}
+                                    {schedule.status === 'allocated'
+                                      ? 'Allocated'
+                                      : 'Unallocated'}
+                                  </p>
+                                </div>
                               </div>
                             </TooltipContent>
                           </Tooltip>
@@ -588,25 +701,110 @@ const displayDate = useMemo(() => {
                                       </div>
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent className="z-50 shadow-lg">
-                                    <div className="space-y-1 p-1">
-                                      <p className="text-xs font-medium">
-                                        {schedule.title}
+<TooltipContent className="z-50 w-auto rounded-md bg-white p-4 shadow-lg">
+                              <div className="space-y-3 text-sm text-gray-700">
+                                {/* Service User Info */}
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2 font-semibold">
+                                    <User size={16} />
+                                    <span>{schedule?.serviceUser.name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <MapPin
+                                      size={16}
+                                      className="text-muted-foreground"
+                                    />
+                                    <span>{schedule?.serviceUser.address}</span>
+                                  </div>
+                                </div>
+                                <div className="flex flex-row items-center justify-between gap-4">
+                                  {/* Service Requirement */}
+                                  <div>
+                                    <div className="flex items-center gap-2 font-medium text-gray-800">
+                                      <ClipboardList
+                                        size={16}
+                                        className="text-blue-500"
+                                      />
+                                      <span>Service Requirement</span>
+                                    </div>
+                                    <div className="ml-6 mt-1 space-y-1 text-xs text-gray-600">
+                                      <p>
+                                        <CalendarClock
+                                          size={14}
+                                          className="mr-1 inline-block"
+                                        />
+                                        {schedule.startTime} -{' '}
+                                        {schedule.endTime}
                                       </p>
-                                      <p className="text-xs">
-                                        {schedule.startTime} - {schedule.endTime}
-                                      </p>
-                                      <p className="text-xs">
-                                        {schedule.serviceType}
-                                      </p>
-                                      <p className="text-xs">
-                                        Status:{' '}
-                                        {schedule.status === 'allocated'
-                                          ? 'Allocated'
-                                          : 'Unallocated'}
+                                      <p>
+                                        <Clock
+                                          size={14}
+                                          className="mr-1 inline-block"
+                                        />
+                                        Duration:{' '}
+                                        {calculateDuration(
+                                          schedule.startTime,
+                                          schedule.endTime
+                                        )}
                                       </p>
                                     </div>
-                                  </TooltipContent>
+                                  </div>
+
+                                  {/* Planned Section (Same as Service Requirement) */}
+                                  <div>
+                                    <div className="flex items-center gap-2 font-medium text-gray-800">
+                                      <ClipboardList
+                                        size={16}
+                                        className="text-purple-500"
+                                      />
+                                      <span>Planned</span>
+                                    </div>
+                                    <div className="ml-6 mt-1 space-y-1 text-xs text-gray-600">
+                                      <p>
+                                        <CalendarClock
+                                          size={14}
+                                          className="mr-1 inline-block"
+                                        />
+                                        {schedule.startTime} -{' '}
+                                        {schedule.endTime}
+                                      </p>
+                                      <p>
+                                        <Clock
+                                          size={14}
+                                          className="mr-1 inline-block"
+                                        />
+                                        Duration:{' '}
+                                        {calculateDuration(
+                                          schedule.startTime,
+                                          schedule.endTime
+                                        )}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Service Type and Status */}
+                                <div className="space-y-1 border-t border-gray-200 pt-2">
+                                  <p className="text-xs">
+                                    <ClipboardList
+                                      size={14}
+                                      className="mr-1 inline-block text-gray-500"
+                                    />
+                                    {schedule.serviceType}
+                                  </p>
+                                  <p className="text-xs">
+                                    <CheckCircle
+                                      size={14}
+                                      className="mr-1 inline-block text-green-500"
+                                    />
+                                    Status:{' '}
+                                    {schedule.status === 'allocated'
+                                      ? 'Allocated'
+                                      : 'Unallocated'}
+                                  </p>
+                                </div>
+                              </div>
+                            </TooltipContent>
                                 </Tooltip>
                               </div>
                             </ContextMenuTrigger>
@@ -677,18 +875,15 @@ const displayDate = useMemo(() => {
                 ))}
           </div>
           <ScheduleDetailDialog
-  schedule={selectedSchedule}
-  isOpen={isDialogOpen}
-  onClose={() => setIsDialogOpen(false)}
-/>
+            schedule={selectedSchedule}
+            isOpen={isDialogOpen}
+            onClose={() => setIsDialogOpen(false)}
+          />
         </div>
       </div>
     </div>
   );
 }
-
-
-
 
 function ScheduleDetailDialog({
   schedule,
@@ -711,19 +906,21 @@ function ScheduleDetailDialog({
   if (!isOpen || !schedule) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in"
+    <div
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       onClick={onClose}
     >
-      <div 
-        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl animate-scale-in"
+      <div
+        className="animate-scale-in w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-start">
-          <h3 className="text-xl font-semibold text-gray-900">{schedule.title}</h3>
-          <button 
+        <div className="flex items-start justify-between">
+          <h3 className="text-xl font-semibold text-gray-900">
+            {schedule.title}
+          </h3>
+          <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500 transition-colors"
+            className="text-gray-400 transition-colors hover:text-gray-500"
             aria-label="Close"
           >
             <X size={20} />
@@ -732,7 +929,7 @@ function ScheduleDetailDialog({
 
         <div className="mt-6 space-y-4">
           <div className="flex items-start">
-            <Clock className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <Clock className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
             <div>
               <p className="text-sm text-gray-500">Time</p>
               <p className="text-sm font-medium">
@@ -742,7 +939,7 @@ function ScheduleDetailDialog({
           </div>
 
           <div className="flex items-start">
-            <User className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <User className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
             <div>
               <p className="text-sm text-gray-500">Type</p>
               <p className="text-sm font-medium">
@@ -752,7 +949,7 @@ function ScheduleDetailDialog({
           </div>
 
           <div className="flex items-start">
-            <ClipboardList className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <ClipboardList className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
             <div>
               <p className="text-sm text-gray-500">Service Type</p>
               <p className="text-sm font-medium">{schedule.serviceType}</p>
@@ -761,23 +958,26 @@ function ScheduleDetailDialog({
 
           <div className="flex items-start">
             {schedule.status === 'allocated' ? (
-              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
+              <CheckCircle2 className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
             ) : (
-              <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5 mr-3 flex-shrink-0" />
+              <AlertCircle className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-500" />
             )}
             <div>
               <p className="text-sm text-gray-500">Status</p>
               <Badge
-                variant={schedule.status === 'allocated' ? 'default' : 'destructive'}
+                variant={
+                  schedule.status === 'allocated' ? 'default' : 'destructive'
+                }
                 className="mt-1"
               >
-                {schedule.status.charAt(0).toUpperCase() + schedule.status.slice(1)}
+                {schedule.status.charAt(0).toUpperCase() +
+                  schedule.status.slice(1)}
               </Badge>
             </div>
           </div>
 
           <div className="flex items-start">
-            <User className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <User className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
             <div>
               <p className="text-sm text-gray-500">Assignee ID</p>
               <p className="text-sm font-medium">{schedule.assigneeId}</p>
@@ -785,7 +985,7 @@ function ScheduleDetailDialog({
           </div>
 
           <div className="flex items-start">
-            <Calendar className="h-5 w-5 text-gray-500 mt-0.5 mr-3 flex-shrink-0" />
+            <Calendar className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
             <div>
               <p className="text-sm text-gray-500">Date</p>
               <p className="text-sm font-medium">
@@ -796,14 +996,13 @@ function ScheduleDetailDialog({
         </div>
 
         <div className="mt-8 flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="gap-2"
-          >
-           Close
+          <Button variant="outline" onClick={onClose} className="gap-2">
+            Close
           </Button>
-          <Button variant="default" className='bg-supperagent text-white hover:bg-supperagent/90'>
+          <Button
+            variant="default"
+            className="bg-supperagent text-white hover:bg-supperagent/90"
+          >
             Edit Schedule
           </Button>
         </div>

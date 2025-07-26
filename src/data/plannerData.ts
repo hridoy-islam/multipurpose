@@ -105,23 +105,31 @@ export const employees: Employee[] = [
 ];
 
 export const schedules: Task[] = [
-  // Original 4 tasks for user with id '2'
+  // Manually defined tasks
   {
     id: '1',
     title: 'Care-AM',
     startTime: '08:00',
+    serviceUser: {
+      name: 'Hasan Mahi',
+      address: 'Mymensingh',
+    },
     endTime: '09:30',
     type: 'service-user',
     assigneeId: '1',
     serviceType: 'Care - AM Visit',
     status: 'allocated',
-    color: 'bg-green-400',  // green for allocated
+    color: 'bg-green-400',
     date: '2025-07-07',
   },
   {
     id: '2',
     title: 'Care-Lunch',
     startTime: '10:00',
+    serviceUser: {
+      name: 'Hasan Mahi',
+      address: 'Mymensingh',
+    },
     endTime: '14:00',
     type: 'service-user',
     assigneeId: '1',
@@ -141,11 +149,15 @@ export const schedules: Task[] = [
     status: 'allocated',
     color: 'bg-green-400',
     date: '2025-07-18',
+    serviceUser: {
+      name: 'Hasan Mahi',
+      address: 'Mymensingh',
+    },
   },
   {
     id: '4',
     title: 'Care-Night',
-    startTime: '1:00',
+    startTime: '01:00',
     endTime: '10:00',
     type: 'service-user',
     assigneeId: '1',
@@ -153,42 +165,57 @@ export const schedules: Task[] = [
     status: 'unallocated',
     color: 'bg-green-400',
     date: '2025-07-18',
+    serviceUser: {
+      name: 'Hasan Mahi',
+      address: 'Mymensingh',
+    },
   },
 
-  // Generate 26 more tasks for different users & employees
+  // Auto-generated tasks
   ...Array.from({ length: 26 }, (_, i) => {
     const taskId = i + 5;
-    const isServiceUser = taskId % 2 === 0; // even ids assigned to service users, odd to employees
-    const assigneeList = isServiceUser ? ['1','3','4','5','6','7'] : ['8','9','10','11','12','13','14'];
+    const isServiceUser = taskId % 2 === 0;
+    const assigneeList = isServiceUser
+      ? ['1', '3', '4', '5', '6', '7']
+      : ['8', '9', '10', '11', '12', '13', '14'];
     const assigneeId = assigneeList[taskId % assigneeList.length];
 
-    // Random start hour from 7 to 18
     const startHour = 7 + (taskId % 12);
-    const startTime = `${startHour.toString().padStart(2,'0')}:00`;
-    const endHour = startHour + 1 + (taskId % 3); // 1 to 3 hours duration
-    const endTime = `${endHour.toString().padStart(2,'0')}:00`;
+    const startTime = `${startHour.toString().padStart(2, '0')}:00`;
+    const endHour = startHour + 1 + (taskId % 3);
+    const endTime = `${endHour.toString().padStart(2, '0')}:00`;
 
-    // Randomly decide if allocated or not (for demo, you can customize)
-    const status: "allocated" | "unallocated" = taskId % 4 === 0 ? 'unallocated' : 'allocated';
-
-    // Set color based on status
+    const status: 'allocated' | 'unallocated' =
+      taskId % 4 === 0 ? 'unallocated' : 'allocated';
     const color = status === 'allocated' ? 'bg-green-400' : 'bg-red-400';
 
-    return {
+    const task: any = {
       id: taskId.toString(),
-      title: isServiceUser ? `Care Task ${taskId}` : `Employee Task ${taskId}`,
+      title: isServiceUser
+        ? `Care Task ${taskId}`
+        : `Employee Task ${taskId}`,
       startTime,
       endTime,
-      type: isServiceUser ? 'service-user' as const : 'employee' as const,
+      type: isServiceUser ? 'service-user' : 'employee',
       assigneeId,
-      serviceType: isServiceUser ? `Care Visit ${taskId}` : `Employee Duty ${taskId}`,
+      serviceType: isServiceUser
+        ? `Care Visit ${taskId}`
+        : `Employee Duty ${taskId}`,
       status,
       color,
       date: '2025-07-07',
     };
+
+    if (isServiceUser) {
+      task.serviceUser = {
+        name: `Service User ${taskId}`,
+        address: `Address ${taskId}`,
+      };
+    }
+
+    return task;
   }),
 ];
-
 
 
 export const dayStats: DayStats[] = [

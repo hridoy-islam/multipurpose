@@ -9,21 +9,21 @@ const PeoplePlannerPage = () => {
 console.log(user)
   if (user.role === 'staff') {
     return (
-      <div className="min-h-screen p-4">
+      <div className="min-h-screen">
         <StaffDashboardPage  />
       </div>
     );
   }
   if (user.role === 'serviceUser') {
     return (
-      <div className="min-h-screen p-4">
+      <div className="min-h-screen ">
         <ServiceUserDashboardPage  />
       </div>
     );
   }
   if (user.role === 'admin') {
     return (
-      <div className="min-h-screen p-4">
+      <div className="min-h-screen ">
         <AdminDashboardPage  />
       </div>
     );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { EditableField } from '../components/EditableField';
+import { Button } from '@/components/ui/button';
 
 interface Tag {
   tag: string;
@@ -67,13 +68,13 @@ const TagTab: React.FC<TagTabProps> = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2">
       {tags.map((tag, index) => (
         <div
           key={index}
           className="rounded-lg border border-gray-300 bg-white p-6 shadow-sm"
         >
-          <div className="flex justify-between items-center mb-4">
+          <div className="mb-2 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">
               Tag #{index + 1}
             </h3>
@@ -85,7 +86,7 @@ const TagTab: React.FC<TagTabProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <EditableField
               id={`tag-${index}`}
               label="Tag"
@@ -96,7 +97,7 @@ const TagTab: React.FC<TagTabProps> = ({
               isSaving={isFieldSaving[`tag-${index}`]}
               required
             />
-            
+
             <EditableField
               id={`deliveryOption-${index}`}
               label="Delivery Option"
@@ -113,7 +114,9 @@ const TagTab: React.FC<TagTabProps> = ({
               label="Delivery Duration (minutes)"
               value={tag.deliveryDuration}
               type="number"
-              onUpdate={(val) => updateTagField(index, 'deliveryDuration', Number(val) || null)}
+              onUpdate={(val) =>
+                updateTagField(index, 'deliveryDuration', Number(val) || null)
+              }
               isSaving={isFieldSaving[`deliveryDuration-${index}`]}
             />
 
@@ -132,12 +135,12 @@ const TagTab: React.FC<TagTabProps> = ({
       ))}
 
       <div className="flex justify-end">
-        <button
+        <Button
           onClick={addNewTag}
-          className="mt-4 rounded bg-supperagent px-4 py-2 text-white hoverbg-supperagent/90"
+          className="  bg-supperagent  text-white hover:bg-supperagent/90"
         >
           Add Tag
-        </button>
+        </Button>
       </div>
     </div>
   );

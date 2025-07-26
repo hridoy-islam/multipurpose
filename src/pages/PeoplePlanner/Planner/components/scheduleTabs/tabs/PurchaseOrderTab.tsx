@@ -21,10 +21,7 @@ const PurchaseOrderTab: React.FC<PurchaseOrderTabProps> = ({
   onSelectChange,
   onDateChange,
   isFieldSaving,
-  getMissingFields,
 }) => {
-  const missingFields = getMissingFields('po', formData);
-  const isFieldMissing = (key: string) => missingFields.includes(key);
 
   return (
     <div className="space-y-8">
@@ -36,14 +33,13 @@ const PurchaseOrderTab: React.FC<PurchaseOrderTabProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <EditableField
             id="purchaseOrder"
-            label="Requires Purchase Order?"
+            label="Purchase Order No:"
             type="select"
             options={purchaseOrderOptions}
             value={formData.purchaseOrder}
             onUpdate={(value) => onSelectChange('purchaseOrder', value)}
             isSaving={isFieldSaving.purchaseOrder}
-            required
-            isMissing={isFieldMissing('purchaseOrder')}
+            
           />
         </div>
       </div>

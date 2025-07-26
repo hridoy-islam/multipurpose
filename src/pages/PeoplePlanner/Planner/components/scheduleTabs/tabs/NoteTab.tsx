@@ -49,8 +49,8 @@ const NoteTab: React.FC<NoteTabProps> = ({
 
   return (
     <div className="space-y-8">
-      <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
+      <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
+        <h3 className="mb-4 border-b border-gray-200  text-lg font-semibold text-gray-900">
           Notes
         </h3>
 
@@ -68,7 +68,8 @@ const NoteTab: React.FC<NoteTabProps> = ({
           </div>
         ))}
 
-        <Button type="button" onClick={addNote}>
+        <Button type="button" onClick={addNote}           className="  bg-supperagent  text-white hover:bg-supperagent/90"
+>
           + Add Note
         </Button>
       </div>

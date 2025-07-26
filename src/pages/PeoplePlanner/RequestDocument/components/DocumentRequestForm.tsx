@@ -1,13 +1,27 @@
-    import React, { useState } from 'react';
-import { FileText, Send, Clock, User, Building, MessageSquare } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  FileText,
+  Send,
+  Clock,
+  User,
+  Building,
+  MessageSquare
+} from 'lucide-react';
 import moment from 'moment';
 import { DocumentRequest, DocumentTemplate } from '../types/DocumentTypes';
+import { Button } from '@/components/ui/button';
 
 interface DocumentRequestFormProps {
-  onSubmitRequest: (request: Omit<DocumentRequest, 'id' | 'requestDate' | 'status'>) => void;
+  onSubmitRequest: (
+    request: Omit<DocumentRequest, 'id' | 'requestDate' | 'status'>
+  ) => void;
+  onCancel: () => void;
 }
 
-const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({ onSubmitRequest }) => {
+const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({
+  onSubmitRequest,
+  onCancel
+}) => {
   const [selectedDocument, setSelectedDocument] = useState<string>('');
   const [reason, setReason] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -50,7 +64,7 @@ const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({ onSubmitReque
     setIsSubmitting(true);
 
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const newRequest: Omit<DocumentRequest, 'id' | 'requestDate' | 'status'> = {
       staffId: 'STAFF001',
@@ -62,7 +76,7 @@ const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({ onSubmitReque
     };
 
     onSubmitRequest(newRequest);
-    
+
     // Reset form
     setSelectedDocument('');
     setReason('');
@@ -70,28 +84,36 @@ const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({ onSubmitReque
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center space-x-3 mb-6">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="mb-6 flex items-center space-x-3">
         <FileText className="h-6 w-6 text-blue-600" />
-        <h2 className="text-xl font-semibold text-gray-900">Request Document</h2>
+        <h2 className="text-xl font-semibold text-gray-900">
+          Request Document
+        </h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Staff Information */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Staff Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-lg bg-gray-50 p-4">
+          <h3 className="mb-3 text-sm font-medium text-gray-900">
+            Staff Information
+          </h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="flex items-center space-x-3">
               <User className="h-4 w-4 text-gray-400" />
               <div>
-                <div className="text-sm font-medium text-gray-900">John Smith</div>
+                <div className="text-sm font-medium text-gray-900">
+                  John Smith
+                </div>
                 <div className="text-xs text-gray-500">Staff ID: STAFF001</div>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <Building className="h-4 w-4 text-gray-400" />
               <div>
-                <div className="text-sm font-medium text-gray-900">Care Services</div>
+                <div className="text-sm font-medium text-gray-900">
+                  Care Services
+                </div>
                 <div className="text-xs text-gray-500">Department</div>
               </div>
             </div>
@@ -100,10 +122,10 @@ const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({ onSubmitReque
 
         {/* Document Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="mb-3 block text-sm font-medium text-gray-700">
             Select Document Type *
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {documentTypes.map((doc) => (
               <div
                 key={doc.type}
@@ -117,18 +139,24 @@ const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({ onSubmitReque
                 <div className="flex items-start space-x-3">
                   <span className="text-2xl">{doc.icon}</span>
                   <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900">{doc.title}</h4>
-                    <p className="text-xs text-gray-600 mt-1">{doc.description}</p>
-                    <div className="flex items-center space-x-1 mt-2">
+                    <h4 className="text-sm font-medium text-gray-900">
+                      {doc.title}
+                    </h4>
+                    <p className="mt-1 text-xs text-gray-600">
+                      {doc.description}
+                    </p>
+                    <div className="mt-2 flex items-center space-x-1">
                       <Clock className="h-3 w-3 text-gray-400" />
-                      <span className="text-xs text-gray-500">{doc.processingTime}</span>
+                      <span className="text-xs text-gray-500">
+                        {doc.processingTime}
+                      </span>
                     </div>
                   </div>
                 </div>
                 {selectedDocument === doc.type && (
-                  <div className="absolute top-2 right-2">
-                    <div className="h-4 w-4 bg-blue-500 rounded-full flex items-center justify-center">
-                      <div className="h-2 w-2 bg-white rounded-full"></div>
+                  <div className="absolute right-2 top-2">
+                    <div className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500">
+                      <div className="h-2 w-2 rounded-full bg-white"></div>
                     </div>
                   </div>
                 )}
@@ -139,35 +167,45 @@ const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({ onSubmitReque
 
         {/* Reason for Request */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-gray-700">
             Reason for Request *
           </label>
           <div className="relative">
-            <MessageSquare className="absolute top-3 left-3 h-4 w-4 text-gray-400" />
+            <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Please provide a brief reason for requesting this document..."
               rows={4}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full resize-none rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="mt-1 text-xs text-gray-500">
             Minimum 10 characters required
           </p>
         </div>
 
         {/* Submit Button */}
-        <div className="flex justify-end">
-          <button
+        <div className="flex justify-end gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            className="rounded-md border border-gray-300 px-6 py-3 text-white hover:bg-black/90"
+          >
+            Cancel
+          </Button>
+          <Button
             type="submit"
-            disabled={!selectedDocument || reason.trim().length < 10 || isSubmitting}
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-supperagent text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            disabled={
+              !selectedDocument || reason.trim().length < 10 || isSubmitting
+            }
+            className="inline-flex items-center space-x-2 rounded-md bg-supperagent px-6 py-3 text-white transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                 <span>Submitting...</span>
               </>
             ) : (
@@ -176,7 +214,7 @@ const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({ onSubmitReque
                 <span>Submit Request</span>
               </>
             )}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

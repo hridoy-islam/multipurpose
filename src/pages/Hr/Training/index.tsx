@@ -158,7 +158,7 @@ export default function TrainingBoard() {
         </Button>
       </div>
 
-      <div className="rounded-md bg-white p-4 shadow-2xl">
+      <div className="rounded-md bg-white p-4 shadow-lg">
         {initialLoading ? (
           <div className="flex justify-center py-6">
             <BlinkingDots size="large" color="bg-supperagent" />

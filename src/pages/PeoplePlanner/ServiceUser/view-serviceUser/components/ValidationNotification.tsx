@@ -66,7 +66,7 @@ const navigate = useNavigate()
         {/* ✅ Static clickable "Funder" block */}
         <div
           className="group cursor-pointer rounded-md border border-gray-300 px-2 py-1 transition-all duration-200 hover:border-supperagent"
-          onClick={() => navigate(`/admin/people-planner/service-user/${userId}/tasks`)}
+          onClick={() => navigate(`/admin/people-planner/service-user/${userId}/schedule`)}
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-black">Schedule</span>

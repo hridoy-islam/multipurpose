@@ -12,7 +12,7 @@ import { ScheduleDetailComponent } from './components/ScheduleDetail';
 
 export default function PlannerPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [filterBy, setFilterBy] = useState('All');
+  const [filterBy, setFilterBy] = useState('Service User');
   const [designation, setDesignation] = useState('All');
   const [department, setDepartment] = useState('All');
   const [status, setStatus] = useState('all');

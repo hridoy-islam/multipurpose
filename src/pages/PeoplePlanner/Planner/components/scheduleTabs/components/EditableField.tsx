@@ -43,6 +43,7 @@ interface EditableFieldProps {
   rows?: number;
   multiple?: boolean;
   isMissing?: boolean;
+  compact?: boolean;
 }
 
 function TimeScrollList({
@@ -51,14 +52,14 @@ function TimeScrollList({
   onSelect
 }: TimeScrollListProps) {
   return (
-    <ScrollArea className="h-40 rounded-md">
+    <ScrollArea className="h-32 rounded-md">
       <div className="flex flex-col gap-1 p-1">
         {items.map((item) => (
           <Button
             key={item.value}
             variant="ghost"
             className={cn(
-              'h-9 w-full justify-center px-2',
+              'h-8 w-full justify-center px-1 text-xs',
               item.value === selectedValue && 'bg-gray-100 font-medium'
             )}
             onClick={() => onSelect(item.value)}
@@ -85,9 +86,10 @@ export const EditableField: React.FC<EditableFieldProps> = ({
   onUpdate,
   maxLength,
   max,
-  rows = 3,
+  rows = 2,
   multiple = false,
-  isMissing = false
+  isMissing = false,
+  compact = false
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [fieldValue, setFieldValue] = useState(value);
@@ -188,15 +190,15 @@ export const EditableField: React.FC<EditableFieldProps> = ({
           checked={fieldValue as boolean}
           onCheckedChange={handleCheckboxChange}
           disabled={isSaving}
-          className={isMissing ? 'border-red-500' : ''}
+          className={`h-4 w-4 ${isMissing ? 'border-red-500' : ''}`}
         />
         <Label
           htmlFor={id}
-          className={`${isSaving ? 'opacity-70' : ''} ${isMissing ? 'text-red-600' : ''}`}
+          className={`text-xs ${isSaving ? 'opacity-70' : ''} ${isMissing ? 'text-red-600' : ''}`}
         >
           {label}
-          {isSaving && <Loader2 className="ml-2 inline h-3 w-3 animate-spin" />}
-          {isMissing && <span className="ml-1 text-red-500">*</span>}
+          {isSaving && <Loader2 className="ml-1 inline h-3 w-3 animate-spin" />}
+          {isMissing && <span className="ml-0.5 text-red-500">*</span>}
         </Label>
       </div>
     );
@@ -217,11 +219,11 @@ export const EditableField: React.FC<EditableFieldProps> = ({
       : formattedOptions.find((opt) => opt.value === fieldValue) || null;
 
     return (
-      <div className={`space-y-2 ${className}`}>
+      <div className={`space-y-1 ${className}`}>
         <div className="flex items-center justify-between">
-          <Label htmlFor={id} className={isMissing ? 'text-red-600' : ''}>
+          <Label htmlFor={id} className={`text-xs ${isMissing ? 'text-red-600' : ''}`}>
             {label}
-            {required && <span className="ml-1 text-red-500">*</span>}
+            {required && <span className="ml-0.5 text-red-500">*</span>}
           </Label>
           {isSaving && (
             <Loader2 className="h-3 w-3 animate-spin text-gray-500" />
@@ -249,16 +251,41 @@ export const EditableField: React.FC<EditableFieldProps> = ({
             styles={{
               control: (base) => ({
                 ...base,
+                minHeight: '32px',
+                fontSize: '0.75rem',
                 borderColor: isMissing ? '#ef4444' : base.borderColor,
                 '&:hover': {
                   borderColor: isMissing ? '#ef4444' : base.borderColor
                 }
+              }),
+              option: (base) => ({
+                ...base,
+                fontSize: '0.75rem',
+                padding: '4px 8px'
+              }),
+              menu: (base) => ({
+                ...base,
+                fontSize: '0.75rem'
+              }),
+              singleValue: (base) => ({
+                ...base,
+                fontSize: '0.75rem'
+              }),
+              multiValue: (base) => ({
+                ...base,
+                fontSize: '0.75rem'
+              }),
+              input: (base) => ({
+                ...base,
+                fontSize: '0.75rem',
+                margin: 0,
+                padding: 0
               })
             }}
           />
         ) : (
           <div
-            className={`flex min-h-[38px] cursor-pointer items-center rounded-md border ${getBorderColor()} p-2 transition-all hover:border-gray-200 hover:bg-gray-50`}
+            className={`flex min-h-[32px] cursor-pointer items-center rounded-md border ${getBorderColor()} p-1.5 text-xs transition-all hover:border-gray-200 hover:bg-gray-50`}
             onClick={() => setIsEditing(true)}
           >
             <span
@@ -283,11 +310,11 @@ export const EditableField: React.FC<EditableFieldProps> = ({
   }
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-1 ${className}`}>
       <div className="flex items-center justify-between">
-        <Label htmlFor={id} className={isMissing ? 'text-red-600' : ''}>
+        <Label htmlFor={id} className={`text-xs ${isMissing ? 'text-red-600' : ''}`}>
           {label}
-          {required && <span className="ml-1 text-red-500">*</span>}
+          {required && <span className="ml-0.5 text-red-500">*</span>}
         </Label>
       </div>
 
@@ -305,7 +332,7 @@ export const EditableField: React.FC<EditableFieldProps> = ({
             required={required}
             maxLength={maxLength}
             rows={rows}
-            className={`w-full ${isMissing ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full text-xs ${isMissing ? 'border-red-500' : 'border-gray-300'}`}
           />
         ) : type === 'date' ? (
           <DatePicker
@@ -319,7 +346,7 @@ export const EditableField: React.FC<EditableFieldProps> = ({
             onBlur={handleBlur}
             placeholderText={placeholder || 'Select date'}
             disabled={isSaving}
-            className={`w-full rounded-md border ${isMissing ? 'border-red-500' : 'border-gray-300'} px-3 py-2 text-sm`}
+            className={`w-full rounded-md border text-xs ${isMissing ? 'border-red-500' : 'border-gray-300'} px-2 py-1.5`}
             dateFormat="MM-dd-yyyy"
             showMonthDropdown
             showYearDropdown
@@ -327,11 +354,11 @@ export const EditableField: React.FC<EditableFieldProps> = ({
           />
         ) : type === 'time' ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-full max-w-sm rounded-lg bg-white p-6">
-              <div className="space-y-4">
-                <div className="flex flex-col items-center justify-center py-2">
-                  <div className="mb-2 text-lg font-medium">Select {label}</div>
-                  <div className="mb-4 flex items-center justify-center space-x-2">
+            <div className="w-full max-w-xs rounded-lg bg-white p-4">
+              <div className="space-y-3">
+                <div className="flex flex-col items-center justify-center py-1">
+                  <div className="mb-1 text-sm font-medium">Select {label}</div>
+                  <div className="mb-2 flex items-center justify-center space-x-1">
                     <Input
                       type="number"
                       min="0"
@@ -344,9 +371,9 @@ export const EditableField: React.FC<EditableFieldProps> = ({
                         );
                         setTempTime((prev) => ({ ...prev, hour: val }));
                       }}
-                      className="w-16 text-center text-2xl font-medium [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      className="w-14 text-center text-xl font-medium [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
-                    <span className="text-2xl font-medium">:</span>
+                    <span className="text-xl font-medium">:</span>
                     <Input
                       type="number"
                       min="0"
@@ -359,14 +386,14 @@ export const EditableField: React.FC<EditableFieldProps> = ({
                         );
                         setTempTime((prev) => ({ ...prev, minute: val }));
                       }}
-                      className="w-16 text-center text-2xl font-medium [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      className="w-14 text-center text-xl font-medium [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
                   </div>
                 </div>
 
-                <div className="flex gap-4">
-                  <div className="flex-1 border border-gray-300 rounded-lg">
-                    <div className="mb-1 text-center text-sm font-medium">
+                <div className="flex gap-2">
+                  <div className="flex-1 border border-gray-300 rounded-md">
+                    <div className="mb-0.5 text-center text-xs font-medium">
                       Hours
                     </div>
                     <TimeScrollList
@@ -380,8 +407,8 @@ export const EditableField: React.FC<EditableFieldProps> = ({
                       }
                     />
                   </div>
-                  <div className="flex-1  border border-gray-300 rounded-lg">
-                    <div className="mb-1 text-center text-sm font-medium">
+                  <div className="flex-1 border border-gray-300 rounded-md">
+                    <div className="mb-0.5 text-center text-xs font-medium">
                       Minutes
                     </div>
                     <TimeScrollList
@@ -399,9 +426,10 @@ export const EditableField: React.FC<EditableFieldProps> = ({
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-4">
+                <div className="flex justify-end gap-1 pt-2">
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={() => {
                       setFieldValue(value);
                       setIsEditing(false);
@@ -410,6 +438,7 @@ export const EditableField: React.FC<EditableFieldProps> = ({
                     Cancel
                   </Button>
                   <Button
+                    size="sm"
                     onClick={handleTimeSave}
                     className="hover:bg-suppergant/90 bg-supperagent text-white"
                   >
@@ -433,12 +462,12 @@ export const EditableField: React.FC<EditableFieldProps> = ({
             required={required}
             maxLength={maxLength}
             max={max}
-            className={`w-full ${isMissing ? 'border-red-500' : ''}`}
+            className={`w-full text-xs ${isMissing ? 'border-red-500' : ''}`}
           />
         )
       ) : (
         <div
-          className={`flex min-h-[38px] cursor-pointer items-center rounded-md border ${getBorderColor()} p-2 transition-all hover:border-gray-200 hover:bg-gray-50`}
+          className={`flex min-h-[32px] cursor-pointer items-center rounded-md border ${getBorderColor()} p-1.5 text-xs transition-all hover:border-gray-200 hover:bg-gray-50`}
           onClick={() => setIsEditing(true)}
         >
           {type === 'checkbox' ? (

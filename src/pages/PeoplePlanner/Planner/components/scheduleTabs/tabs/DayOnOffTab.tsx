@@ -21,14 +21,14 @@ const DayOnOffTab: React.FC<DayOnOffTabProps> = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Duty Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
+      <div className="rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
+        <h3 className=" text-lg font-semibold text-gray-900">
           Duty
         </h3>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <EditableField
             id="plannedDate"
             label="Planned Date"
@@ -88,12 +88,12 @@ const DayOnOffTab: React.FC<DayOnOffTabProps> = ({
       </div>
 
       {/* Book On Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
+      <div className="rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
+        <h3 className=" text-lg font-semibold text-gray-900">
           Book On
         </h3>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <EditableField
             id="bookOnMethod"
             label="Method"
@@ -135,12 +135,12 @@ const DayOnOffTab: React.FC<DayOnOffTabProps> = ({
       </div>
 
       {/* Book Off Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-gray-200 pb-3 text-lg font-semibold text-gray-900">
+      <div className="rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
+        <h3 className="  border-gray-200  text-lg font-semibold text-gray-900">
           Book Off
         </h3>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <EditableField
             id="bookOffMethod"
             label="Method"

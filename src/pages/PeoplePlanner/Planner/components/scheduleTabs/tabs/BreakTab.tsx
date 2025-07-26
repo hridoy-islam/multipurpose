@@ -1,5 +1,6 @@
 import React from 'react';
 import { EditableField } from '../components/EditableField';
+import { Button } from '@/components/ui/button';
 
 interface Break {
   startDate: string; // e.g., "23/07/2025"
@@ -59,7 +60,7 @@ const BreakTab: React.FC<BreakTabProps> = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2">
       {breaks.map((breakItem, index) => (
         <div
           key={index}
@@ -77,7 +78,7 @@ const BreakTab: React.FC<BreakTabProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
             <EditableField
               id={`startDate-${index}`}
               label="Start Date"
@@ -123,12 +124,12 @@ const BreakTab: React.FC<BreakTabProps> = ({
       ))}
 
       <div className="flex justify-end">
-        <button
+        <Button
           onClick={addNewBreak}
-          className="mt-4 rounded bg-supperagent px-4 py-2 text-white hover:bg-supperagent/90"
+          className=" rounded bg-supperagent  text-white hover:bg-supperagent/90"
         >
           Add Break
-        </button>
+        </Button>
       </div>
     </div>
   );

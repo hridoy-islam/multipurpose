@@ -130,7 +130,7 @@ export default function Invoice({ onCreateInvoice }: InvoicesPageProps) {
   const pendingAmount = totalAmount - paidAmount;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 ">
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>

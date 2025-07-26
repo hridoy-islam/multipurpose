@@ -168,7 +168,7 @@ export function ScheduleDetailComponent({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 p-4">
+        <div className="flex items-center justify-between border-b border-gray-200 p-2">
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-semibold text-gray-900">
               {schedule.title}
@@ -186,7 +186,7 @@ export function ScheduleDetailComponent({
         {/* Main Content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Tabs Content */}
-          <div className="flex-1 overflow-auto p-4">
+          <div className="flex-1 overflow-auto p-2">
             <Tabs
               tabs={tabs}
               activeTab={activeTab}
@@ -196,7 +196,7 @@ export function ScheduleDetailComponent({
           </div>
 
           {/* Validation Sidebar */}
-          <div className="w-auto overflow-auto border-l border-gray-200 bg-gray-50 p-4">
+          <div className="w-auto overflow-auto border-l border-gray-200 bg-gray-50 p-2">
             <ValidationNotification
               validation={tabValidation}
               onTabClick={handleTabNavigation}

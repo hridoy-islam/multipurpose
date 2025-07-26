@@ -319,7 +319,7 @@ export default function AppRouter() {
               element: <ServiceUserPlannerPage />
             },
             {
-              path: 'service-user/:id/tasks',
+              path: 'service-user/:id/schedule',
               element: <ServiceUserTask />
             },
             {

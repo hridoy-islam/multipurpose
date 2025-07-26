@@ -2,6 +2,7 @@ import React from 'react';
 import { FileText, Clock, CheckCircle, XCircle, Download, Eye, Calendar, User } from 'lucide-react';
 import moment from 'moment';
 import { DocumentRequest } from '../types/DocumentTypes';
+import { Button } from '@/components/ui/button';
 
 interface DocumentRequestListProps {
   requests: DocumentRequest[];
@@ -131,20 +132,20 @@ const DocumentRequestList: React.FC<DocumentRequestListProps> = ({
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               {request.status === 'approved' && request.documentUrl && (
                 <>
-                  <button
+                  <Button
                     onClick={() => onViewDocument(request)}
-                    className="inline-flex items-center space-x-2 px-4 py-2 bg-supperagent text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                    className="inline-flex items-center space-x-2 px-4 py-2 bg-supperagent text-white rounded-md hover:bg-supperagent/90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
                   >
                     <Eye className="h-4 w-4" />
                     <span>View</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => onDownloadDocument(request)}
                     className="inline-flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
                   >
                     <Download className="h-4 w-4" />
                     <span>Download</span>
-                  </button>
+                  </Button>
                 </>
               )}
               

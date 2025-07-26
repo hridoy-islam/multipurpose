@@ -9,8 +9,13 @@ import {
   Trash2
 } from 'lucide-react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
 
 import Select from 'react-select';
 import { Button } from '@/components/ui/button';
@@ -18,7 +23,6 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-
 
 interface IndividualInvoiceFormProps {
   onClose: () => void;
@@ -102,7 +106,9 @@ const mockServiceLines: ServiceLine[] = [
 const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
   onClose
 }) => {
-  const [currentStep, setCurrentStep] = useState<'create' | 'review' | 'finalized'>('create');
+  const [currentStep, setCurrentStep] = useState<
+    'create' | 'review' | 'finalized'
+  >('create');
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [serviceLines, setServiceLines] = useState<ServiceLine[]>([]);
@@ -129,11 +135,20 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
     setEditingLine(lineId);
   };
 
-  const handleSaveLine = (lineId: string, updatedLine: Partial<ServiceLine>) => {
-    setServiceLines(prev => 
-      prev.map(line => 
-        line.id === lineId 
-          ? { ...line, ...updatedLine, amount: (updatedLine.duration || line.duration) * (updatedLine.rate || line.rate) }
+  const handleSaveLine = (
+    lineId: string,
+    updatedLine: Partial<ServiceLine>
+  ) => {
+    setServiceLines((prev) =>
+      prev.map((line) =>
+        line.id === lineId
+          ? {
+              ...line,
+              ...updatedLine,
+              amount:
+                (updatedLine.duration || line.duration) *
+                (updatedLine.rate || line.rate)
+            }
           : line
       )
     );
@@ -141,7 +156,7 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
   };
 
   const handleDeleteLine = (lineId: string) => {
-    setServiceLines(prev => prev.filter(line => line.id !== lineId));
+    setServiceLines((prev) => prev.filter((line) => line.id !== lineId));
   };
 
   const userOptions = mockUsers.map((user) => ({
@@ -158,36 +173,36 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="sticky  ">
-        <div className=" py-4">
+        <div className=" ">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={onClose} size="sm" className='bg-supperagent text-white hover:bg-supperagent/90'>
+              <Button
+                variant="ghost"
+                onClick={onClose}
+                size="sm"
+                className="bg-supperagent text-white hover:bg-supperagent/90"
+              >
                 <ArrowLeft className="h-5 w-5" />
                 Back
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
                   <FileText className="h-6 w-6" />
                   {currentStep === 'create' && 'Create Payslip'}
                   {currentStep === 'review' && 'Review Payslip'}
                   {currentStep === 'finalized' && 'Payslip Generated'}
                 </h1>
                 <p className="text-sm text-gray-600">
-                  {currentStep === 'create' && 'Enter staff and date information'}
-                  {currentStep === 'review' && 'Review and edit payslip details'}
-                  {currentStep === 'finalized' && 'Payslip has been successfully generated'}
+                  {currentStep === 'create' &&
+                    'Enter staff and date information'}
+                  {currentStep === 'review' &&
+                    'Review and edit payslip details'}
+                  {currentStep === 'finalized' &&
+                    'Payslip has been successfully generated'}
                 </p>
               </div>
             </div>
-            {currentStep === 'create' && (
-              <Button
-                onClick={handleGenerate}
-                disabled={!isGenerateEnabled}
-                className="bg-supperagent text-white hover:bg-supperagent/90 disabled:bg-gray-300"
-              >
-                Generate Payslip
-              </Button>
-            )}
+
             {currentStep === 'review' && (
               <Button
                 onClick={handleSavePayslip}
@@ -202,9 +217,9 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
       </div>
 
       {/* Content */}
-      <div className=" mx-auto p-6">
+      <div className=" py-6">
         {currentStep === 'create' && (
-          <div className="max-w-2xl mx-auto space-y-8">
+          <div className="mx-auto max-w-2xl space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>Payslip Information</CardTitle>
@@ -217,7 +232,11 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
                   <Label htmlFor="staff">Staff Member *</Label>
                   <Select
                     options={userOptions}
-                    value={userOptions.find(option => option.value === selectedUserId) || null}
+                    value={
+                      userOptions.find(
+                        (option) => option.value === selectedUserId
+                      ) || null
+                    }
                     onChange={(selectedOption) => {
                       if (selectedOption) {
                         setSelectedUserId(selectedOption.value);
@@ -241,25 +260,18 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
                     />
                   </div>
                 </div>
+<div className='flex justify-end'>
 
-                {selectedUser && (
-                  <Card className="bg-blue-50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                          <span className="text-blue-600 font-semibold text-lg">
-                            {selectedUser.name.split(' ').map(n => n[0]).join('')}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">{selectedUser.name}</div>
-                          <div className="text-sm text-gray-600">{selectedUser.email}</div>
-                          <div className="text-sm text-gray-600">{selectedUser.phone}</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                {currentStep === 'create' && (
+                  <Button
+                  onClick={handleGenerate}
+                  disabled={!isGenerateEnabled}
+                  className="bg-supperagent text-white hover:bg-supperagent/90 disabled:bg-gray-300"
+                  >
+                    Generate Payslip
+                  </Button>
                 )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -275,24 +287,33 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
                   <Badge className="bg-blue-100 text-blue-800">Review</Badge>
                 </CardTitle>
                 <CardDescription>
-                  {selectedUser?.name} • {new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  {selectedUser?.name} •{' '}
+                  {new Date(selectedDate).toLocaleDateString('en-US', {
+                    month: 'long',
+                    year: 'numeric'
+                  })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{serviceLines.length}</div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div className="rounded-lg bg-blue-50 p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {serviceLines.length}
+                    </div>
                     <div className="text-sm text-blue-800">Services</div>
                   </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{totalHours}h</div>
+                  <div className="rounded-lg bg-green-50 p-4 text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {totalHours}h
+                    </div>
                     <div className="text-sm text-green-800">Total Hours</div>
                   </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">${totalAmount.toFixed(2)}</div>
+                  <div className="rounded-lg bg-purple-50 p-4 text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      ${totalAmount.toFixed(2)}
+                    </div>
                     <div className="text-sm text-purple-800">Total Amount</div>
                   </div>
-                  
                 </div>
               </CardContent>
             </Card>
@@ -301,21 +322,28 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
             <Card>
               <CardHeader>
                 <CardTitle>Service</CardTitle>
-                <CardDescription>Review and edit individual service entries</CardDescription>
+                <CardDescription>
+                  Review and edit individual service entries
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {serviceLines.map((line) => (
-                    <div key={line.id} className="px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                    <div
+                      key={line.id}
+                      className="rounded-lg border border-gray-300 bg-white px-4 py-2"
+                    >
                       {editingLine === line.id ? (
                         <EditLineForm
                           line={line}
-                          onSave={(updatedLine) => handleSaveLine(line.id, updatedLine)}
+                          onSave={(updatedLine) =>
+                            handleSaveLine(line.id, updatedLine)
+                          }
                           onCancel={() => setEditingLine(null)}
                         />
                       ) : (
                         <div className="flex items-center justify-between">
-                          <div className="w-full grid grid-cols-1 md:grid-cols-4 ">
+                          <div className="grid w-full grid-cols-1 md:grid-cols-4 ">
                             <div>
                               <div className="text-xs text-gray-500">Date</div>
                               <div className="text-sm font-medium text-gray-900">
@@ -323,20 +351,32 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
                               </div>
                             </div>
                             <div>
-                              <div className="text-xs text-gray-500">Service</div>
-                              <div className="text-sm font-medium text-gray-900">{line.service}</div>
+                              <div className="text-xs text-gray-500">
+                                Service
+                              </div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {line.service}
+                              </div>
                             </div>
                             <div>
-                              <div className="text-xs text-gray-500">Duration</div>
-                              <div className="text-sm font-medium text-gray-900">{line.duration}h</div>
+                              <div className="text-xs text-gray-500">
+                                Duration
+                              </div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {line.duration}h
+                              </div>
                             </div>
 
                             <div>
-                              <div className="text-xs text-gray-500">Amount</div>
-                              <div className="text-sm font-bold text-gray-900">${line.amount.toFixed(2)}</div>
+                              <div className="text-xs text-gray-500">
+                                Amount
+                              </div>
+                              <div className="text-sm font-bold text-gray-900">
+                                ${line.amount.toFixed(2)}
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 ml-4">
+                          <div className="ml-4 flex items-center gap-2">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -355,7 +395,6 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
                           </div>
                         </div>
                       )}
-                      
                     </div>
                   ))}
                 </div>
@@ -365,19 +404,22 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
         )}
 
         {currentStep === 'finalized' && (
-          <div className="max-w-2xl mx-auto">
+          <div className="mx-auto max-w-2xl">
             <Card>
               <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
                   <Check className="h-8 w-8 text-green-600" />
                 </div>
-                <CardTitle className="text-2xl text-green-900">Payslip Generated Successfully!</CardTitle>
+                <CardTitle className="text-2xl text-green-900">
+                  Payslip Generated Successfully!
+                </CardTitle>
                 <CardDescription>
-                  The payslip for {selectedUser?.name} has been created and saved.
+                  The payslip for {selectedUser?.name} has been created and
+                  saved.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="rounded-lg bg-gray-50 p-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm text-gray-600">Staff</div>
@@ -386,7 +428,10 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
                     <div>
                       <div className="text-sm text-gray-600">Period</div>
                       <div className="font-medium">
-                        {new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        {new Date(selectedDate).toLocaleDateString('en-US', {
+                          month: 'long',
+                          year: 'numeric'
+                        })}
                       </div>
                     </div>
                     <div>
@@ -395,7 +440,9 @@ const IndividualInvoiceForm: React.FC<IndividualInvoiceFormProps> = ({
                     </div>
                     <div>
                       <div className="text-sm text-gray-600">Total Amount</div>
-                      <div className="font-medium text-green-600">${totalAmount.toFixed(2)}</div>
+                      <div className="font-medium text-green-600">
+                        ${totalAmount.toFixed(2)}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -417,13 +464,17 @@ interface EditLineFormProps {
   onCancel: () => void;
 }
 
-const EditLineForm: React.FC<EditLineFormProps> = ({ line, onSave, onCancel }) => {
+const EditLineForm: React.FC<EditLineFormProps> = ({
+  line,
+  onSave,
+  onCancel
+}) => {
   const [formData, setFormData] = useState({
     date: line.date,
     service: line.service,
     duration: line.duration,
     rate: line.rate,
-    
+    amount:line.amount
   });
 
   const handleSave = () => {
@@ -432,20 +483,24 @@ const EditLineForm: React.FC<EditLineFormProps> = ({ line, onSave, onCancel }) =
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <Label>Date</Label>
           <Input
             type="date"
             value={formData.date}
-            onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, date: e.target.value }))
+            }
           />
         </div>
         <div>
           <Label>Service</Label>
           <Input
             value={formData.service}
-            onChange={(e) => setFormData(prev => ({ ...prev, service: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, service: e.target.value }))
+            }
           />
         </div>
         <div>
@@ -454,15 +509,38 @@ const EditLineForm: React.FC<EditLineFormProps> = ({ line, onSave, onCancel }) =
             type="number"
             step="0.5"
             value={formData.duration}
-            onChange={(e) => setFormData(prev => ({ ...prev, duration: parseFloat(e.target.value) || 0 }))}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                duration: parseFloat(e.target.value) || 0
+              }))
+            }
           />
         </div>
-        
+        <div>
+          <Label>Amount</Label>
+          <Input
+            type="text"
+            step="0.5"
+            value={formData.amount}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                amount: parseFloat(e.target.value) || 0
+              }))
+            }
+          />
+        </div>
       </div>
-    
+
       <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button onClick={handleSave} className="bg-supperagent text-white hover:bg-supperagent/90">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          className="bg-supperagent text-white hover:bg-supperagent/90"
+        >
           Save Changes
         </Button>
       </div>

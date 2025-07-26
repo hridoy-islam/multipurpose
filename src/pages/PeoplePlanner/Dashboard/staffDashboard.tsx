@@ -9,7 +9,7 @@ import { UpcomingShifts } from '../components/UpcomingShifts';
 const StaffDashboardPage = (user) => {
   return (
     <div className="min-h-screen ">
-      <div className=" py-2">
+      <div className=" ">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
            

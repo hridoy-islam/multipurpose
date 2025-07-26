@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import {
   Card,
@@ -39,19 +37,20 @@ interface Visit {
   startTime: string;
   endTime: string;
   carerName: string;
+  amount: string; // Add amount to Visit
 }
 
 interface DayConfig {
   visits: Visit[];
-  price: number | null;
+  // price: number | null; // Remove price from DayConfig
 }
 
 interface GeneratedVisit {
   id: string;
   date: string;
   dayName: string;
-  visits: Visit[];
-  price: number;
+  visits: Visit[]; // This now includes amount
+  price: number; // This will be the total for the day based on visit amounts
 }
 
 const WEEKDAYS = [
@@ -79,22 +78,21 @@ export default function ServiceUserTask() {
   const [dayConfigs, setDayConfigs] = useState<Record<string, DayConfig>>({
     monday: {
       visits: [
-        { id: '1', startTime: '10:00', endTime: '12:00', carerName: 'Hasan' }
-      ],
-      price: null
+        { id: '1', startTime: '10:00', endTime: '12:00', carerName: 'Hasan', amount: '100' }
+      ]
     },
-    tuesday: { visits: [], price: null },
-    wednesday: { visits: [], price: null },
-    thursday: { visits: [], price: null },
+    tuesday: { visits: [] },
+    wednesday: { visits: [] },
+    thursday: { visits: [] },
     friday: {
-      visits: [{ id: '2', startTime: '14:00', endTime: '16:00', carerName: 'Sarah' }],
-      price: null
+      visits: [{ id: '2', startTime: '14:00', endTime: '16:00', carerName: 'Sarah', amount: '100' }]
     },
-    saturday: { visits: [], price: null },
-    sunday: { visits: [], price: null }
+    saturday: { visits: [] },
+    sunday: { visits: [] }
   });
+
   const [generatedPlan, setGeneratedPlan] = useState<GeneratedVisit[]>([]);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>(([]));
   const [isEditVisitOpen, setIsEditVisitOpen] = useState(false);
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
@@ -109,7 +107,8 @@ export default function ServiceUserTask() {
   const [bulkEditData, setBulkEditData] = useState({
     startTime: '',
     endTime: '',
-    carerName: ''
+    carerName: '',
+    amount: '' // Add amount to bulk edit data
   });
 
   const addVisit = (dayKey: string) => {
@@ -122,24 +121,22 @@ export default function ServiceUserTask() {
     setIsEditVisitOpen(true);
   };
 
-  const saveVisit = (startTime: string, endTime: string, carerName: string) => {
+  const saveVisit = (startTime: string, endTime: string, carerName: string, amount: string) => { // Update signature
     const { dayKey, visit } = editingVisit;
-
     setDayConfigs((prev) => ({
       ...prev,
       [dayKey]: {
         ...prev[dayKey],
         visits: visit
           ? prev[dayKey].visits.map((v) =>
-              v.id === visit.id ? { ...v, startTime, endTime, carerName } : v
+              v.id === visit.id ? { ...v, startTime, endTime, carerName, amount } : v // Include amount
             )
           : [
               ...prev[dayKey].visits,
-              { id: Date.now().toString(), startTime, endTime, carerName }
+              { id: Date.now().toString(), startTime, endTime, carerName, amount } // Include amount
             ]
       }
     }));
-
     setIsEditVisitOpen(false);
     setEditingVisit({ dayKey: '', visit: null });
   };
@@ -154,23 +151,26 @@ export default function ServiceUserTask() {
     }));
   };
 
-  const updatePrice = (dayKey: string, price: number) => {
-    setDayConfigs((prev) => ({
-      ...prev,
-      [dayKey]: { ...prev[dayKey], price }
-    }));
-  };
+  // const updatePrice = (dayKey: string, price: number) => { // Remove price update function
+  //   setDayConfigs((prev) => ({
+  //     ...prev,
+  //     [dayKey]: { ...prev[dayKey], price }
+  //   }));
+  // };
 
   const validatePlan = () => {
     const errors: string[] = [];
-
+    // Example validation: Check if any configured day has visits without amounts
     WEEKDAYS.forEach((weekday) => {
       const config = dayConfigs[weekday.key];
-      if (config.visits.length > 0 && (config.price === null || config.price <= 0)) {
-        errors.push(`Price is missing for ${weekday.label}. Cannot generate plan.`);
+      if (config.visits.length > 0) {
+        // Check if all visits on this day have an amount
+        const hasMissingAmount = config.visits.some(visit => !visit.amount || isNaN(Number(visit.amount)) || Number(visit.amount) <= 0);
+        if (hasMissingAmount) {
+          errors.push(`Some visits on ${weekday.label} are missing a valid amount.`);
+        }
       }
     });
-
     setValidationErrors(errors);
     return errors.length === 0;
   };
@@ -182,11 +182,9 @@ export default function ServiceUserTask() {
 
   const generatePlan = () => {
     if (!dateRange.from || !dateRange.to) return;
-
     const startDate = new Date(dateRange.from);
     const endDate = new Date(dateRange.to);
     const plan: GeneratedVisit[] = [];
-
     for (
       let date = new Date(startDate);
       date <= endDate;
@@ -194,19 +192,25 @@ export default function ServiceUserTask() {
     ) {
       const dayOfWeek = date.getDay();
       const weekdayKey = WEEKDAYS[(dayOfWeek + 6) % 7].key; // Adjust for Monday = 0
-
       const config = dayConfigs[weekdayKey];
-      if (config.visits.length > 0 && config.price !== null) {
+
+      // Only generate if there are visits (no need to check DayConfig price anymore)
+      if (config.visits.length > 0) {
+        // Calculate total price for the day based on visit amounts
+        const totalPrice = config.visits.reduce((sum, visit) => {
+          const amount = parseFloat(visit.amount);
+          return sum + (isNaN(amount) ? 0 : amount);
+        }, 0);
+
         plan.push({
           id: `${date.toISOString().split('T')[0]}-${weekdayKey}`,
           date: date.toLocaleDateString(),
           dayName: WEEKDAYS.find((w) => w.key === weekdayKey)?.label || '',
-          visits: config.visits,
-          price: config.price
+          visits: config.visits, // This now includes amount
+          price: totalPrice // Calculate total price from visit amounts
         });
       }
     }
-
     setGeneratedPlan(plan);
     setIsDateRangeOpen(false);
   };
@@ -221,44 +225,42 @@ export default function ServiceUserTask() {
 
   const loadBulkSchedules = () => {
     if (!bulkDateRange.from || !bulkDateRange.to) return;
-
     const startDate = new Date(bulkDateRange.from);
     const endDate = new Date(bulkDateRange.to);
-    
     const filteredSchedules = generatedPlan.filter((schedule) => {
       const scheduleDate = new Date(schedule.date);
       return scheduleDate >= startDate && scheduleDate <= endDate;
     });
-
     setBulkSchedules(filteredSchedules);
     setIsBulkDateRangeOpen(false);
     setIsBulkEditOpen(true);
   };
 
   const applyBulkEdit = () => {
-    if (!bulkEditData.startTime && !bulkEditData.endTime && !bulkEditData.carerName) {
+    if (!bulkEditData.startTime && !bulkEditData.endTime && !bulkEditData.carerName && !bulkEditData.amount) { // Check amount too
       return;
     }
-
     const updatedPlan = generatedPlan.map((schedule) => {
       const isInBulkRange = bulkSchedules.some((bulk) => bulk.id === schedule.id);
-      
       if (isInBulkRange) {
         const updatedVisits = schedule.visits.map((visit) => ({
           ...visit,
           startTime: bulkEditData.startTime || visit.startTime,
           endTime: bulkEditData.endTime || visit.endTime,
-          carerName: bulkEditData.carerName || visit.carerName
+          carerName: bulkEditData.carerName || visit.carerName,
+          amount: bulkEditData.amount || visit.amount // Add amount update
         }));
-        
-        return { ...schedule, visits: updatedVisits };
+        // Recalculate the daily total price
+        const newTotalPrice = updatedVisits.reduce((sum, visit) => {
+          const amount = parseFloat(visit.amount);
+          return sum + (isNaN(amount) ? 0 : amount);
+        }, 0);
+        return { ...schedule, visits: updatedVisits, price: newTotalPrice };
       }
-      
       return schedule;
     });
-
     setGeneratedPlan(updatedPlan);
-    setBulkEditData({ startTime: '', endTime: '', carerName: '' });
+    setBulkEditData({ startTime: '', endTime: '', carerName: '', amount: '' }); // Reset amount
     setIsBulkEditOpen(false);
     setBulkSchedules([]);
   };
@@ -289,7 +291,6 @@ export default function ServiceUserTask() {
           </Button>
         </div>
       </div>
-
       {/* Validation Errors */}
       {validationErrors.length > 0 && (
         <div className="mb-6 space-y-2">
@@ -301,17 +302,15 @@ export default function ServiceUserTask() {
           ))}
         </div>
       )}
-
       <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {WEEKDAYS.map((weekday) => {
           const config = dayConfigs[weekday.key];
-
           return (
             <Card key={weekday.key} className="relative">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-lg">
                   {weekday.label}
-                  {config.visits.length > 0 ? (
+                  {/* {config.visits.length > 0 ? (
                     config.price !== null && config.price > 0 ? (
                       <Badge
                         variant="secondary"
@@ -329,7 +328,7 @@ export default function ServiceUserTask() {
                     <Badge variant="outline" className="text-gray-500">
                       No Visits
                     </Badge>
-                  )}
+                  )} */}
                 </CardTitle>
                 <CardDescription>
                   {config.visits.length} visit
@@ -346,6 +345,7 @@ export default function ServiceUserTask() {
                     <div className="space-y-1">
                       <p className="text-sm font-medium">{visit.startTime} - {visit.endTime}</p>
                       <p className="text-sm">Carer: {visit.carerName}</p>
+                      <p className="text-sm">Amount: ${visit.amount}</p> {/* Display Amount */}
                     </div>
                     <div className="flex gap-1">
                       <Button
@@ -365,7 +365,6 @@ export default function ServiceUserTask() {
                     </div>
                   </div>
                 ))}
-
                 {/* Add Visit Button */}
                 <Button
                   variant="default"
@@ -375,37 +374,11 @@ export default function ServiceUserTask() {
                   <Plus className="mr-2 h-4 w-4" />
                   Add Visit
                 </Button>
-
-                {/* Only show price input if there are visits */}
-                {config.visits.length > 0 && (
-                  <div>
-                    <Label
-                      htmlFor={`price-${weekday.key}`}
-                      className="text-sm font-medium"
-                    >
-                      Daily Price ($)
-                    </Label>
-                    <Input
-                      id={`price-${weekday.key}`}
-                      type="number"
-                      placeholder="150"
-                      value={config.price || ''}
-                      onChange={(e) =>
-                        updatePrice(
-                          weekday.key,
-                          Number.parseFloat(e.target.value) || 0
-                        )
-                      }
-                      className="mt-1"
-                    />
-                  </div>
-                )}
               </CardContent>
             </Card>
           );
         })}
       </div>
-
       {/* Generated Plan Summary */}
       {generatedPlan.length > 0 && (
         <Card className="mb-6">
@@ -432,7 +405,6 @@ export default function ServiceUserTask() {
           </CardContent>
         </Card>
       )}
-
       {/* Date Range Picker Dialog */}
       <Dialog open={isDateRangeOpen} onOpenChange={setIsDateRangeOpen}>
         <DialogContent>
@@ -479,7 +451,6 @@ export default function ServiceUserTask() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Bulk Edit Date Range Dialog */}
       <Dialog open={isBulkDateRangeOpen} onOpenChange={setIsBulkDateRangeOpen}>
         <DialogContent>
@@ -526,7 +497,6 @@ export default function ServiceUserTask() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Bulk Edit Dialog */}
       <Dialog open={isBulkEditOpen} onOpenChange={setIsBulkEditOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -536,7 +506,6 @@ export default function ServiceUserTask() {
               Editing {bulkSchedules.length} schedules from {bulkDateRange.from} to {bulkDateRange.to}
             </DialogDescription>
           </DialogHeader>
-          
           <div className="space-y-6">
             {/* Bulk Edit Controls */}
             <Card>
@@ -587,9 +556,20 @@ export default function ServiceUserTask() {
                     />
                   </div>
                 </div>
+                <div> {/* Add Amount Input for Bulk Edit */}
+                  <Label htmlFor="bulk-amount">Amount ($)</Label>
+                  <Input
+                    id="bulk-amount"
+                    type="number"
+                    value={bulkEditData.amount}
+                    onChange={(e) =>
+                      setBulkEditData((prev) => ({ ...prev, amount: e.target.value }))
+                    }
+                    placeholder="Enter amount"
+                  />
+                </div>
               </CardContent>
             </Card>
-
             {/* Preview of affected schedules */}
             <Card>
               <CardHeader>
@@ -604,7 +584,7 @@ export default function ServiceUserTask() {
                         <div className="text-sm text-gray-600">
                           {schedule.visits.map((visit, index) => (
                             <div key={index}>
-                              {visit.startTime} - {visit.endTime} ({visit.carerName})
+                              {visit.startTime} - {visit.endTime} ({visit.carerName}) - ${visit.amount}
                             </div>
                           ))}
                         </div>
@@ -616,21 +596,19 @@ export default function ServiceUserTask() {
               </CardContent>
             </Card>
           </div>
-
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsBulkEditOpen(false)}>
               Cancel
             </Button>
             <Button
               onClick={applyBulkEdit}
-              disabled={!bulkEditData.startTime && !bulkEditData.endTime && !bulkEditData.carerName}
+              disabled={!bulkEditData.startTime && !bulkEditData.endTime && !bulkEditData.carerName && !bulkEditData.amount} // Update disabled condition
             >
               Apply Changes to {bulkSchedules.length} Schedules
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Edit Visit Dialog */}
       <Dialog open={isEditVisitOpen} onOpenChange={setIsEditVisitOpen}>
         <DialogContent>
@@ -660,7 +638,7 @@ function VisitForm({
   onCancel
 }: {
   initialVisit: Visit | null;
-  onSave: (startTime: string, endTime: string, carerName: string) => void;
+  onSave: (startTime: string, endTime: string, carerName: string, amount: string) => void; // Update signature
   onCancel: () => void;
 }) {
   const [startTime, setStartTime] = useState(initialVisit?.startTime || '10:00');
@@ -669,36 +647,35 @@ function VisitForm({
     CARER_OPTIONS.find((option) => option.label === initialVisit?.carerName) ||
       null
   );
+  const [amount, setAmount] = useState(initialVisit?.amount || ''); // Add amount state
 
   const handleSave = () => {
     if (startTime && endTime && selectedCarer) {
       // Ensure times are properly formatted as HH:MM
       const formattedStart = formatTimeTo24Hour(startTime);
       const formattedEnd = formatTimeTo24Hour(endTime);
-      onSave(formattedStart, formattedEnd, selectedCarer.label);
+      onSave(formattedStart, formattedEnd, selectedCarer.label, amount); // Pass amount
     }
   };
 
   // Helper function to ensure time is in HH:MM format
   const formatTimeTo24Hour = (time: string) => {
     if (!time.includes(':')) return '00:00';
-    
     let [hours, minutes] = time.split(':');
     hours = hours.padStart(2, '0');
     minutes = minutes.padStart(2, '0').substring(0, 2); // Ensure only 2 digits
-    
     return `${hours}:${minutes}`;
   };
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <TimePicker24 
+        <TimePicker24
           value={startTime}
           onChange={setStartTime}
           label="Start Time"
         />
-        <TimePicker24 
+        <TimePicker24
           value={endTime}
           onChange={setEndTime}
           label="End Time"
@@ -712,6 +689,16 @@ function VisitForm({
           options={CARER_OPTIONS}
           placeholder="Select a carer..."
           className="mt-1"
+        />
+      </div>
+      <div> {/* Add Amount Input */}
+        <Label htmlFor="visit-amount">Amount ($)</Label>
+        <Input
+          id="visit-amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Enter amount"
         />
       </div>
       <DialogFooter>
